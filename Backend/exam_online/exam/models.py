@@ -11,6 +11,20 @@ class User(AbstractUser):
     role = models.CharField(
         max_length=20, choices=UserRole.choices, default=UserRole.Player
     )
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='exam_user_set', 
+        blank=True,
+        help_text='The groups this user belongs to.',
+        verbose_name='groups',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='exam_user_permissions_set',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
 
     def __str__(self):
         return f"{self.username} - {self.role}"

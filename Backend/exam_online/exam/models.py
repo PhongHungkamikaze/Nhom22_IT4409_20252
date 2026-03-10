@@ -12,18 +12,18 @@ class User(AbstractUser):
         max_length=20, choices=UserRole.choices, default=UserRole.Player
     )
     groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='exam_user_set', 
+        "auth.Group",
+        related_name="exam_user_set",
         blank=True,
-        help_text='The groups this user belongs to.',
-        verbose_name='groups',
+        help_text="The groups this user belongs to.",
+        verbose_name="groups",
     )
     user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='exam_user_permissions_set',
+        "auth.Permission",
+        related_name="exam_user_permissions_set",
         blank=True,
-        help_text='Specific permissions for this user.',
-        verbose_name='user permissions',
+        help_text="Specific permissions for this user.",
+        verbose_name="user permissions",
     )
 
     def __str__(self):

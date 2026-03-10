@@ -1,11 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import QuizViewSet, QuestionViewSet
+from .views import QuizViewSet
 
 router = DefaultRouter()
-router.register(r'quizs', QuizViewSet, basename='quizs')
-router.register(r"questions", QuestionViewSet, basename="questions")
+router.register(r"quizzes", QuizViewSet, basename="quizs")
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]

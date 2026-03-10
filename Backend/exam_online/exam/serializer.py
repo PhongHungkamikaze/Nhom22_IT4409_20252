@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.decorators import action
 from .models import Question, Quiz
 
 
@@ -8,11 +7,12 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ["quiz", "type", "content", "quiz_title",]
-
-    @action(detail=True, methods=["get"])
-    def question(self, request, pk=None):
-        pass
+        fields = [
+            "quiz",
+            "type",
+            "content",
+            "quiz_title",
+        ]
 
 
 class QuizSerializer(serializers.ModelSerializer):

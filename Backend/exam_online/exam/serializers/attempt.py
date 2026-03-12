@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from models import Attempt
+from ..models import Attempt
 
 
 class AttemptSerializer(serializers.Serializer):

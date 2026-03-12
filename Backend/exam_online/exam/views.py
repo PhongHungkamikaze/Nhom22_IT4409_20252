@@ -9,11 +9,13 @@ from .serializers import (
     LoginSerializer,
     UserRegisterSerializer,
     UserSerializer,
+    ChangePasswordSerializer,
+    ResetPasswordSerializer,
 )
 
 from rest_framework import viewsets, response, status
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 # Create your views here.
 
@@ -70,6 +72,38 @@ class LoginView(APIView):
                     "token": token.key,
                     "user": UserSerializer(user).data,
                 },
+                status=status.HTTP_200_OK,
+            )
+        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(APIView):
+    """POST /auth/change-password/ - Đổi mật khẩu (yêu cầu đăng nhập)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            serializer.save()
+            return response.Response(
+                {"message": "Đổi mật khẩu thành công!"},
+                status=status.HTTP_200_OK,
+            )
+        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResetPasswordView(APIView):
+    """POST /auth/reset-password/ - Đặt lại mật khẩu theo username (yêu cầu đăng nhập)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return response.Response(
+                {"message": "Đặt lại mật khẩu thành công!"},
                 status=status.HTTP_200_OK,
             )
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

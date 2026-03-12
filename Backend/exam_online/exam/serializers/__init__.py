@@ -1,6 +1,11 @@
 from .quiz_question_choices import ChoiceSerializer, QuestionSerializer, QuizSerializer
 from .attempt import AttemptSerializer
-from .User_login_register import UserRegisterSerializer, LoginSerializer, UserSerializer
+from .User_login_register import (
+    UserRegisterSerializer,
+    LoginSerializer,
+    UserSerializer,
+)
+from .change_reset_password import ChangePasswordSerializer, ResetPasswordSerializer
 
 __all__ = [
     "ChoiceSerializer",
@@ -10,4 +15,6 @@ __all__ = [
     "UserRegisterSerializer",
     "LoginSerializer",
     "UserSerializer",
+    "ChangePasswordSerializer",
+    "ResetPasswordSerializer",
 ]

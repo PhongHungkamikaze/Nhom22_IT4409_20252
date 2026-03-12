@@ -92,4 +92,4 @@ class Answer(models.Model):
 
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
-    selected_choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
+    selected_choice = models.ManyToManyField(Choice)

@@ -10,10 +10,7 @@ class QuizViewSet(viewsets.ModelViewSet):
     queryset = Quiz.objects.prefetch_related("questions").all()
     serializer_class = QuizSerializer
 
+
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.prefetch_related("choices").all()
     serializer_class = QuestionSerializer
-
-class ChoiceViewSet(viewsets.ModelViewSet):
-    queryset = Choice.objects.all()
-    serializer_class = ChoiceSerializer

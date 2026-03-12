@@ -1,17 +1,19 @@
 from rest_framework import viewsets, response
-from .models import Quiz
+from .models import Choice, Quiz, Question
 from rest_framework.decorators import action
-from .serializer import QuizSerializer, QuestionSerializer
+from drf_spectacular.utils import extend_schema
+from .serializer import QuizSerializer, QuestionSerializer, ChoiceSerializer
 # Create your views here.
 
 
 class QuizViewSet(viewsets.ModelViewSet):
-    queryset = Quiz.objects.all()
+    queryset = Quiz.objects.prefetch_related("questions").all()
     serializer_class = QuizSerializer
 
-    @action(detail=True, methods=["GET"])
-    def questions(self, request, pk=None):
-        quiz = self.get_object()
-        questions = quiz.questions.all()
-        serializer = QuestionSerializer(questions, many=True)
-        return response.Response(serializer.data)
+class QuestionViewSet(viewsets.ModelViewSet):
+    queryset = Question.objects.prefetch_related("choices").all()
+    serializer_class = QuestionSerializer
+
+class ChoiceViewSet(viewsets.ModelViewSet):
+    queryset = Choice.objects.all()
+    serializer_class = ChoiceSerializer

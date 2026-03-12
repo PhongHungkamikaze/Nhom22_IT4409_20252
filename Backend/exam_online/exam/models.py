@@ -66,11 +66,21 @@ class Choice(models.Model):
 
 
 class Attempt(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attempts")
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
 
     score = models.FloatField(default=0)
 
+    class StatusChoices(models.TextChoices):
+        Ongoing = (
+            "ongoing",
+            "Ongoing",
+        )
+        Completed = "completed", "Completed"
+
+    status = models.CharField(
+        max_length=20, choices=StatusChoices.choices, default=StatusChoices.Ongoing
+    )
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True)
 

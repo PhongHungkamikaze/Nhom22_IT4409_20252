@@ -137,3 +137,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom User Model
 AUTH_USER_MODEL = "exam.User"
+
+# Email configuration (Console backend for development)
+# Để gửi email thật, thay EMAIL_BACKEND bằng smtp và điền thông tin bên dưới
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = "smtp.gmail.com"
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = "your-email@gmail.com"
+# EMAIL_HOST_PASSWORD = "your-app-password"
+
+# URL frontend dùng trong link reset password (đổi khi deploy production)
+FRONTEND_URL = "http://localhost:3000"

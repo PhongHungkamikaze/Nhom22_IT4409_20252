@@ -1,7 +1,11 @@
-from rest_framework import viewsets, response
+from rest_framework import viewsets, response, status
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.authtoken.models import Token
+from django.core.mail import send_mail
+from django.conf import settings
+
 from .models import Choice, Quiz, Question, Attempt
-from rest_framework.decorators import action
-from drf_spectacular.utils import extend_schema
 from .serializers import (
     QuizSerializer,
     QuestionSerializer,
@@ -10,15 +14,12 @@ from .serializers import (
     UserRegisterSerializer,
     UserSerializer,
     ChangePasswordSerializer,
+    ForgotPasswordSerializer,
     ResetPasswordSerializer,
 )
 
-from rest_framework import viewsets, response, status
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.authtoken.models import Token
-# Create your views here.
 
+# Create your views here.
 
 class QuizViewSet(viewsets.ModelViewSet):
     queryset = Quiz.objects.prefetch_related("questions").all()
@@ -93,17 +94,50 @@ class ChangePasswordView(APIView):
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ResetPasswordView(APIView):
-    """POST /auth/reset-password/ - Đặt lại mật khẩu theo username (yêu cầu đăng nhập)."""
+class ForgotPasswordView(APIView):
+    """POST /auth/forgot-password/ - Bước 1: Yêu cầu reset mật khẩu, gửi email."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            reset_token = serializer.save()
+            frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
+            reset_link = f"{frontend_url}/reset-password?token={reset_token.token}"
+
+            # Gửi email (Console backend sẽ in ra terminal khi dev)
+            send_mail(
+                subject="[Exam Online] Yêu cầu đặt lại mật khẩu",
+                message=(
+                    f"Xin chào {reset_token.user.username},\n\n"
+                    f"Chúng tôi nhận được yêu cầu đặt lại mật khẩu của bạn.\n"
+                    f"Click vào link bên dưới để đặt lại mật khẩu (hết hạn sau 30 phút):\n\n"
+                    f"{reset_link}\n\n"
+                    f"Nếu bạn không yêu cầu điều này, hãy bỏ qua email này."
+                ),
+                from_email="noreply@exam-online.com",
+                recipient_list=[reset_token.user.email],
+                fail_silently=False,
+            )
+            return response.Response(
+                {"message": "Email đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư."},
+                status=status.HTTP_200_OK,
+            )
+        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResetPasswordView(APIView):
+    """POST /auth/reset-password/ - Bước 3+4: Xác thực token, đặt mật khẩu mới."""
+
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return response.Response(
-                {"message": "Đặt lại mật khẩu thành công!"},
+                {"message": "Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại."},
                 status=status.HTTP_200_OK,
             )
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

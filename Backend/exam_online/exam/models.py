@@ -1,5 +1,8 @@
+import uuid
+from datetime import timedelta
 from django.db import models
 from django.contrib.auth.models import User, AbstractUser
+from django.utils import timezone
 
 
 # Create your models here.
@@ -93,3 +96,23 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
     selected_choice = models.ManyToManyField(Choice)
+
+
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="password_reset_tokens"
+    )
+    token = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(minutes=30)
+
+    @staticmethod
+    def generate_token():
+        return uuid.uuid4().hex
+
+    def __str__(self):
+        return f"Reset token for {self.user.username} (used={self.is_used})"
+

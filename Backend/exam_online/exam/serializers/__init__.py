@@ -5,7 +5,11 @@ from .User_login_register import (
     LoginSerializer,
     UserSerializer,
 )
-from .change_reset_password import ChangePasswordSerializer, ResetPasswordSerializer
+from .change_reset_password import (
+    ChangePasswordSerializer,
+    ForgotPasswordSerializer,
+    ResetPasswordSerializer,
+)
 
 __all__ = [
     "ChoiceSerializer",

@@ -1,0 +1,16 @@
+def calculate_score(attempt):
+    total_questions = attempt.quiz.questions.count()
+    answers = attempt.answers.all()
+    correct_count = 0
+
+    for answer in answers:
+        correct_choices = {c.id for c in answer.question.choices.all() if c.is_correct}
+        selected_choices = {c.id for c in answer.selected_choices.all()}
+
+        if correct_choices == selected_choices:
+            correct_count += 1
+
+    if total_questions == 0:
+        return 0
+
+    return round((correct_count / total_questions) * 100, 2)

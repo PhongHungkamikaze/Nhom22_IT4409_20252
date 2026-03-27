@@ -5,6 +5,7 @@ from .views import (
     QuestionViewSet,
     AttemptViewSet,
     RegisterView,
+    AnswerViewSet,
     LoginView,
     ChangePasswordView,
     ResetPasswordView,
@@ -15,6 +16,7 @@ router = DefaultRouter()
 router.register(r"quizzes", QuizViewSet)
 router.register(r"questions", QuestionViewSet)
 router.register(r"attempts", AttemptViewSet)
+router.register(r"answers", AnswerViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),

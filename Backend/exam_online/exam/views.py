@@ -1,5 +1,5 @@
 from django.core.mail import send_mail
-from .models import Answer, Quiz, Question, Attempt
+from .models import Answer, Quiz, Question, Attempt, User
 from .serializers import (
     QuizSerializer,
     QuestionSerializer,
@@ -14,10 +14,11 @@ from .serializers import (
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework_simplejwt.views import TokenBlacklistView, TokenObtainPairView
-from .models import User
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import permissions, status, views, viewsets
 from rest_framework.response import Response
+from rest_framework.decorators import action
+from .calculate_score import calculate_score
 # Create your views here.
 
 
@@ -32,8 +33,16 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
 
 class AttemptViewSet(viewsets.ModelViewSet):
-    queryset = Attempt.objects.all()
+    queryset = Attempt.objects.all().prefetch_related("answers")
     serializer_class = AttemptSerializer
+
+    @action(detail=True, methods=["post"], url_path="submit")
+    def submit(self, request, pk=None):
+        attempt = self.get_object()
+        attempt.score = calculate_score(attempt)
+        attempt.status = "completed"
+        attempt.save()
+        return Response({"score": attempt.score})
 
 
 class AnswerViewSet(viewsets.ModelViewSet):

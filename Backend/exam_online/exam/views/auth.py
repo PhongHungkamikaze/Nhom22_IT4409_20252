@@ -1,54 +1,18 @@
 from django.core.mail import send_mail
-from .models import Answer, Quiz, Question, Attempt, User
-from .serializers import (
-    QuizSerializer,
-    QuestionSerializer,
-    AttemptSerializer,
+from ..models import User
+from ..serializers import (
     ChangePasswordSerializer,
     ResetPasswordSerializer,
     ResetPasswordConfirmSerializer,
     UserRegisterSerializer,
     UserSerializer,
-    AnswerSerializers,
 )
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework_simplejwt.views import TokenBlacklistView, TokenObtainPairView
 from django.contrib.auth.tokens import default_token_generator
-from rest_framework import permissions, status, views, viewsets
+from rest_framework import permissions, status, views
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from .calculate_score import calculate_score
-# Create your views here.
-
-
-class QuizViewSet(viewsets.ModelViewSet):
-    queryset = Quiz.objects.all()
-    serializer_class = QuizSerializer
-
-
-class QuestionViewSet(viewsets.ModelViewSet):
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
-
-
-class AttemptViewSet(viewsets.ModelViewSet):
-    queryset = Attempt.objects.all().prefetch_related("answers")
-    serializer_class = AttemptSerializer
-
-    @action(detail=True, methods=["post"], url_path="submit")
-    def submit(self, request, pk=None):
-        attempt = self.get_object()
-        attempt.score = calculate_score(attempt)
-        attempt.status = "completed"
-        attempt.save()
-        return Response({"score": attempt.score})
-
-
-class AnswerViewSet(viewsets.ModelViewSet):
-    queryset = Answer.objects.all()
-    serializer_class = AnswerSerializers
-
 
 class RegisterView(views.APIView):
     """POST /auth/register/ - Tạo tài khoản mới."""

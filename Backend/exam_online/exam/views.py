@@ -1,5 +1,5 @@
 from django.core.mail import send_mail
-from .models import Quiz, Question, Attempt
+from .models import Answer, Quiz, Question, Attempt
 from .serializers import (
     QuizSerializer,
     QuestionSerializer,
@@ -9,6 +9,7 @@ from .serializers import (
     ResetPasswordConfirmSerializer,
     UserRegisterSerializer,
     UserSerializer,
+    AnswerSerializers,
 )
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -21,18 +22,23 @@ from rest_framework.response import Response
 
 
 class QuizViewSet(viewsets.ModelViewSet):
-    queryset = Quiz.objects.prefetch_related("questions").all()
+    queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
 
 
 class QuestionViewSet(viewsets.ModelViewSet):
-    queryset = Question.objects.prefetch_related("choices").all()
+    queryset = Question.objects.all()
     serializer_class = QuestionSerializer
 
 
 class AttemptViewSet(viewsets.ModelViewSet):
-    queryset = Attempt.objects.prefetch_related("attempts").all()
+    queryset = Attempt.objects.all()
     serializer_class = AttemptSerializer
+
+
+class AnswerViewSet(viewsets.ModelViewSet):
+    queryset = Answer.objects.all()
+    serializer_class = AnswerSerializers
 
 
 class RegisterView(views.APIView):

@@ -14,13 +14,7 @@ class User(AbstractUser):
     role = models.CharField(
         max_length=20, choices=UserRole.choices, default=UserRole.Player
     )
-    groups = models.ManyToManyField(
-        "auth.Group",
-        related_name="exam_user_set",
-        blank=True,
-        help_text="The groups this user belongs to.",
-        verbose_name="groups",
-    )
+
     def __str__(self):
         return f"{self.username} - {self.role}"
 
@@ -67,6 +61,7 @@ class Attempt(models.Model):
     score = models.FloatField(default=0)
 
     class StatusChoices(models.TextChoices):
+        Ready = ("ready", "Ready")
         Ongoing = (
             "ongoing",
             "Ongoing",
@@ -74,7 +69,7 @@ class Attempt(models.Model):
         Completed = "completed", "Completed"
 
     status = models.CharField(
-        max_length=20, choices=StatusChoices.choices, default=StatusChoices.Ongoing
+        max_length=20, choices=StatusChoices.choices, default=StatusChoices.Ready
     )
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True)
@@ -87,7 +82,7 @@ class Answer(models.Model):
 
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
-    selected_choice = models.ManyToManyField(Choice)
+    selected_choices = models.ManyToManyField(Choice)
 
 
 class PasswordResetToken(models.Model):

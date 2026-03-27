@@ -53,14 +53,7 @@ class Choice(models.Model):
 
     is_correct = models.BooleanField(default=False)
 
-
-class Attempt(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attempts")
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-
-    score = models.FloatField(default=0)
-
-    class StatusChoices(models.TextChoices):
+class StatusChoices(models.TextChoices):
         Ready = ("ready", "Ready")
         Ongoing = (
             "ongoing",
@@ -68,6 +61,11 @@ class Attempt(models.Model):
         )
         Completed = "completed", "Completed"
 
+class Attempt(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attempts")
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+
+    score = models.FloatField(default=0)
     status = models.CharField(
         max_length=20, choices=StatusChoices.choices, default=StatusChoices.Ready
     )

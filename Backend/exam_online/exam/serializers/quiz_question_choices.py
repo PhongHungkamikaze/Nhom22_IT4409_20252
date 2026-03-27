@@ -3,7 +3,6 @@ from ..models import Question, Quiz, Choice
 
 
 class ChoiceSerializer(serializers.ModelSerializer):
-    question_name = serializers.CharField(source="question.content", read_only=True)
 
     class Meta:
         model = Choice
@@ -12,7 +11,6 @@ class ChoiceSerializer(serializers.ModelSerializer):
             "question",
             "content",
             "is_correct",
-            "question_name",
         ]
         extra_kwargs = {"is_correct": {"write_only": True}}
 

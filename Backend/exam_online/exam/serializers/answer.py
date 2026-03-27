@@ -25,10 +25,16 @@ class AnswerSerializers(serializers.ModelSerializer):
                     f"Lựa chọn {choice.id} không thuộc về câu hỏi này!"
                 )
         return data
-
     def create(self, validated_data):
-        choices = validated_data.pop('selected_choices')
-        answer = Answer.objects.create(**validated_data)
-        
-        answer.selected_choices.set(choices)
-        return answer
+        choices = validated_data.pop('selected_choices', None)
+        instance = super().create(validated_data)
+        if choices is not None:
+            instance.selected_choices.set(choices)
+        return instance
+
+    def update(self, instance, validated_data):
+        choices = validated_data.pop('selected_choices', None)
+        instance = super().update(instance, validated_data)
+        if choices is not None:
+            instance.selected_choices.set(choices)
+        return instance

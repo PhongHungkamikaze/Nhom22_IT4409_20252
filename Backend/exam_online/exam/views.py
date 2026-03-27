@@ -35,7 +35,6 @@ class AttemptViewSet(viewsets.ModelViewSet):
     queryset = Attempt.objects.prefetch_related("attempts").all()
     serializer_class = AttemptSerializer
 
-
 class RegisterView(APIView):
     """POST /auth/register/ - Tạo tài khoản mới."""
 

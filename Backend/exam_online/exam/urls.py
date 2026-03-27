@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     QuizViewSet,
     QuestionViewSet,
+    AttemptViewSet,
     RegisterView,
     LoginView,
     ChangePasswordView,
@@ -11,8 +12,9 @@ from .views import (
 )
 
 router = DefaultRouter()
-router.register(r"quizzes", QuizViewSet, basename="quizs")
-router.register(r"questions", QuestionViewSet, basename="questions")
+router.register(r"quizzes", QuizViewSet)
+router.register(r"questions", QuestionViewSet)
+router.register(r"attempts", AttemptViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),

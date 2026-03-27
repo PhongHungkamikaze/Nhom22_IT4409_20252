@@ -1,25 +1,24 @@
-from rest_framework import viewsets, response, status
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.authtoken.models import Token
 from django.core.mail import send_mail
-from django.conf import settings
-
-from .models import Choice, Quiz, Question, Attempt
+from .models import Quiz, Question, Attempt
 from .serializers import (
     QuizSerializer,
     QuestionSerializer,
     AttemptSerializer,
-    LoginSerializer,
+    ChangePasswordSerializer,
+    ResetPasswordSerializer,
+    ResetPasswordConfirmSerializer,
     UserRegisterSerializer,
     UserSerializer,
-    ChangePasswordSerializer,
-    ForgotPasswordSerializer,
-    ResetPasswordSerializer,
 )
-
-
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from rest_framework_simplejwt.views import TokenBlacklistView, TokenObtainPairView
+from .models import User
+from django.contrib.auth.tokens import default_token_generator
+from rest_framework import permissions, status, views, viewsets
+from rest_framework.response import Response
 # Create your views here.
+
 
 class QuizViewSet(viewsets.ModelViewSet):
     queryset = Quiz.objects.prefetch_related("questions").all()
@@ -35,108 +34,99 @@ class AttemptViewSet(viewsets.ModelViewSet):
     queryset = Attempt.objects.prefetch_related("attempts").all()
     serializer_class = AttemptSerializer
 
-class RegisterView(APIView):
+
+class RegisterView(views.APIView):
     """POST /auth/register/ - Tạo tài khoản mới."""
 
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            token, _ = Token.objects.get_or_create(user=user)
-            return response.Response(
+            return Response(
                 {
-                    "message": "Đăng ký thành công!",
-                    "token": token.key,
+                    "message": "Register success!",
                     "user": UserSerializer(user).data,
                 },
                 status=status.HTTP_201_CREATED,
             )
-        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LoginView(APIView):
-    """POST /auth/login/ - Đăng nhập, trả về token."""
-
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data["user"]
-            token, _ = Token.objects.get_or_create(user=user)
-            return response.Response(
-                {
-                    "message": "Đăng nhập thành công!",
-                    "token": token.key,
-                    "user": UserSerializer(user).data,
-                },
-                status=status.HTTP_200_OK,
-            )
-        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class LoginView(TokenObtainPairView):
+    pass
 
 
-class ChangePasswordView(APIView):
-    """POST /auth/change-password/ - Đổi mật khẩu (yêu cầu đăng nhập)."""
+class LogoutView(TokenBlacklistView):
+    pass
 
-    permission_classes = [IsAuthenticated]
+
+class ChangePasswordView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
+        serializer = ChangePasswordSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return response.Response(
-                {"message": "Đổi mật khẩu thành công!"},
-                status=status.HTTP_200_OK,
+            user = request.user
+            if not user.check_password(serializer.validated_data.get("old_password")):
+                return Response(
+                    {"old_password": ["Wrong password."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            user.set_password(serializer.validated_data.get("new_password"))
+            user.save()
+            return Response(
+                {"detail": "Password updated successfully."}, status=status.HTTP_200_OK
             )
-        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ForgotPasswordView(APIView):
-    """POST /auth/forgot-password/ - Bước 1: Yêu cầu reset mật khẩu, gửi email."""
-
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        serializer = ForgotPasswordSerializer(data=request.data)
-        if serializer.is_valid():
-            reset_token = serializer.save()
-            frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
-            reset_link = f"{frontend_url}/reset-password?token={reset_token.token}"
-
-            # Gửi email (Console backend sẽ in ra terminal khi dev)
-            send_mail(
-                subject="[Exam Online] Yêu cầu đặt lại mật khẩu",
-                message=(
-                    f"Xin chào {reset_token.user.username},\n\n"
-                    f"Chúng tôi nhận được yêu cầu đặt lại mật khẩu của bạn.\n"
-                    f"Click vào link bên dưới để đặt lại mật khẩu (hết hạn sau 30 phút):\n\n"
-                    f"{reset_link}\n\n"
-                    f"Nếu bạn không yêu cầu điều này, hãy bỏ qua email này."
-                ),
-                from_email="noreply@exam-online.com",
-                recipient_list=[reset_token.user.email],
-                fail_silently=False,
-            )
-            return response.Response(
-                {"message": "Email đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư."},
-                status=status.HTTP_200_OK,
-            )
-        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ResetPasswordView(APIView):
-    """POST /auth/reset-password/ - Bước 3+4: Xác thực token, đặt mật khẩu mới."""
-
-    permission_classes = [AllowAny]
+class ResetPasswordView(views.APIView):
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return response.Response(
-                {"message": "Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại."},
-                status=status.HTTP_200_OK,
+            username = serializer.validated_data.get("username")
+            user = User.objects.get(username=username)
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            # In a real app, send a link to the frontend. Here we just log/send email.
+            send_mail(
+                "Password Reset",
+                f"Use this UID: {uid} and Token: {token} to reset your password.",
+                "noreply@compliance.com",
+                [user.email],
+                fail_silently=False,
             )
-        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Password reset email sent."}, status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResetPasswordConfirmView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ResetPasswordConfirmSerializer(data=request.data)
+        if serializer.is_valid():
+            uid = serializer.validated_data.get("uid")
+            token = serializer.validated_data.get("token")
+            try:
+                uid_decoded = urlsafe_base64_decode(uid).decode()
+                user = User.objects.get(pk=uid_decoded)
+            except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+                user = None
+
+            if user is not None and default_token_generator.check_token(user, token):
+                user.set_password(serializer.validated_data.get("new_password"))
+                user.save()
+                return Response(
+                    {"detail": "Password has been reset."}, status=status.HTTP_200_OK
+                )
+            return Response(
+                {"detail": "Invalid token or UID."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

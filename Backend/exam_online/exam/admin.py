@@ -17,6 +17,7 @@ class UserAdmin(admin.ModelAdmin):
 class QuestionAdmin(admin.ModelAdmin):
     pass
 
+
 @admin.register(Choice)
 class ChoiceAdmin(admin.ModelAdmin):
     pass

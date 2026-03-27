@@ -7,8 +7,8 @@ from .views import (
     RegisterView,
     LoginView,
     ChangePasswordView,
-    ForgotPasswordView,
     ResetPasswordView,
+    ResetPasswordConfirmView,
 )
 
 router = DefaultRouter()
@@ -21,6 +21,10 @@ urlpatterns = [
     path("auth/register/", RegisterView.as_view(), name="register"),
     path("auth/login/", LoginView.as_view(), name="login"),
     path("auth/change-password/", ChangePasswordView.as_view(), name="change-password"),
-    path("auth/forgot-password/", ForgotPasswordView.as_view(), name="forgot-password"),
-    path("auth/reset-password/", ResetPasswordView.as_view(), name="reset-password"),
+    path("auth/forgot-password/", ResetPasswordView.as_view(), name="forgot-password"),
+    path(
+        "auth/reset-password/",
+        ResetPasswordConfirmView.as_view(),
+        name="reset-password",
+    ),
 ]

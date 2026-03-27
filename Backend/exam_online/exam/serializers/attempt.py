@@ -19,5 +19,3 @@ class AttemptSerializer(serializers.Serializer):
             "finished_at",
         ]
         extra_kwargs = {"score": {"read_only": True}, "status": {"read_only": True}}
-
-    

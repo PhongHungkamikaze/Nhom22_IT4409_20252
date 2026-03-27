@@ -42,15 +42,13 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "drf_yasg",
     "django_extensions",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "exam",
 ]
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
-    ],
 }
 
 MIDDLEWARE = [

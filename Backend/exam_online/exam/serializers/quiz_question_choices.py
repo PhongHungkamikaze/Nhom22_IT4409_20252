@@ -3,7 +3,6 @@ from ..models import Question, Quiz, Choice
 
 
 class ChoiceSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Choice
         fields = [

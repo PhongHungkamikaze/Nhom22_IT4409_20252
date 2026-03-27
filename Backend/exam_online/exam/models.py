@@ -21,14 +21,6 @@ class User(AbstractUser):
         help_text="The groups this user belongs to.",
         verbose_name="groups",
     )
-    user_permissions = models.ManyToManyField(
-        "auth.Permission",
-        related_name="exam_user_permissions_set",
-        blank=True,
-        help_text="Specific permissions for this user.",
-        verbose_name="user permissions",
-    )
-
     def __str__(self):
         return f"{self.username} - {self.role}"
 
@@ -115,4 +107,3 @@ class PasswordResetToken(models.Model):
 
     def __str__(self):
         return f"Reset token for {self.user.username} (used={self.is_used})"
-

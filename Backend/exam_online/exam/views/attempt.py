@@ -15,7 +15,7 @@ class AttemptViewSet(viewsets.ModelViewSet):
     def save_answer(self, request, pk=None):
         attempt = self.get_object()
         if attempt.status != StatusChoices.Ongoing:
-            response.Response({"error": "Invalid attempt"}, status=400)
+            return response.Response({"error": "Invalid attempt"}, status=400)
         serializer = AnswerSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -39,8 +39,10 @@ class AttemptViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="submit")
     def submit(self, request, pk=None):
         attempt = self.get_object()
+        if attempt.status != StatusChoices.Ongoing:
+            return response.Response({"error": "Already submitted"}, status=400)
         attempt.score = calculate_score(attempt)
-        attempt.status = "completed"
+        attempt.status = StatusChoices.Completed
         attempt.save()
         return response.Response({"score": attempt.score})
     

@@ -1,18 +1,27 @@
 from ..models import Quiz
 from ..serializers import (
-    QuizSerializer,
-)
-from ..serializers import (
-    AttemptSerializer
+    QuizSerializer,AttemptSerializer, QuestionSerializer
 )
 from rest_framework import viewsets, status, response
 from rest_framework.decorators import action
 from ..models import StatusChoices, Attempt
 from django.utils import timezone
 class QuizViewSet(viewsets.ModelViewSet):
-    queryset = Quiz.objects.all()
+    queryset = Quiz.objects.all().prefetch_related(
+        "questions__choices"
+    )
     serializer_class = QuizSerializer
 
+    @action(detail=True, methods=["get"], url_path="questions")
+    def questions(self, request, pk=None):
+        quiz = self.get_object()
+
+        questions = quiz.questions.all() 
+
+        serializer = QuestionSerializer(questions, many=True)
+
+        return response.Response(serializer.data)
+    
     @action(detail=True, methods=["post"], url_path="start")
     def start(self, request, pk=None):
         quiz = self.get_object()

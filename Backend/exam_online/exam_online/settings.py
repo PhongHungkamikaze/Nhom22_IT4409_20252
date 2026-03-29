@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+    "corsheaders",
     "exam",
 ]
 
@@ -56,6 +57,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -152,3 +154,28 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # URL frontend dùng trong link reset password (đổi khi deploy production)
 FRONTEND_URL = "http://localhost:3000"
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React dev server
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",  # Vite dev server default port
+    "http://127.0.0.1:5173",
+]
+
+CORS_ALLOWED_CREDENTIALS = True
+
+CORS_ALLOW_ALL_ORIGINS = False  # Set to True only for development if needed
+
+# Allowed headers for CORS
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]

@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)
     role = serializers.ChoiceField(
-        choices=User.UserRole.choices, default=User.UserRole.Player
+        choices=User.UserRole.choices, default=User.UserRole.Student
     )
 
     class Meta:

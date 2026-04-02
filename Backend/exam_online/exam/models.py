@@ -8,11 +8,12 @@ from django.utils import timezone
 # Create your models here.
 class User(AbstractUser):
     class UserRole(models.TextChoices):
-        Creator = "creator", "Creator"
-        Player = "player", "Player"
+        Student = "student", "Student"
+        Teacher = "teacher", "Teacher"
+        Admin = "admin", "Admin"
 
     role = models.CharField(
-        max_length=20, choices=UserRole.choices, default=UserRole.Player
+        max_length=20, choices=UserRole.choices, default=UserRole.Student
     )
 
     def __str__(self):

@@ -6,6 +6,7 @@ from ..serializers import (
     ResetPasswordConfirmSerializer,
     UserRegisterSerializer,
     UserSerializer,
+    CustomTokenObtainPairSerializer,
 )
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -35,7 +36,7 @@ class RegisterView(views.APIView):
 
 
 class LoginView(TokenObtainPairView):
-    pass
+    serializer_class = CustomTokenObtainPairSerializer
 
 
 class LogoutView(TokenBlacklistView):

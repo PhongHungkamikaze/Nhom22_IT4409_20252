@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from ..models import User, UserRole
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,3 +25,23 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Custom serializer để thêm thông tin user vào response khi login"""
+    
+    def validate(self, attrs):
+        # Gọi hàm validate của class cha để lấy tokens
+        data = super().validate(attrs)
+        
+        # Thêm thông tin user vào response
+        data['user'] = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'email': self.user.email,
+            'first_name': self.user.first_name,
+            'last_name': self.user.last_name,
+            'role': self.user.role,  # Thông tin role mới (student/teacher/admin)
+        }
+        
+        return data

@@ -9,6 +9,10 @@ class ApiService {
   // Helper method for making requests
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
+    
+    // Lấy access token từ localStorage
+    const accessToken = localStorage.getItem('accessToken');
+    
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -16,11 +20,21 @@ class ApiService {
       },
       ...options,
     };
+    
+    // Thêm Authorization header nếu có token
+    if (accessToken) {
+      config.headers['Authorization'] = `Bearer ${accessToken}`;
+    }
 
     try {
       const response = await fetch(url, config);
 
       if (!response.ok) {
+        // Nếu token hết hạn (401), có thể thử refresh token
+        if (response.status === 401) {
+          console.warn('Token hết hạn hoặc không hợp lệ');
+          // TODO: Implement refresh token logic
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -37,17 +51,9 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
-    
-    // Backend chỉ trả về tokens, tạo user data từ credentials
-    return {
-      ...response,
-      user: {
-        username: credentials.username,
-        first_name: credentials.username.charAt(0).toUpperCase() + credentials.username.slice(1),
-        last_name: '',
-        email: `${credentials.username}@example.com`
-      }
-    };
+
+    // Backend giờ đã trả về user data với role, không cần tạo fake data nữa
+    return response;
   }
 
   async register(userData) {
@@ -110,6 +116,47 @@ class ApiService {
         totalUsers: 2500,
         completedTests: 8750
       };
+    }
+  }
+
+  // Refresh token endpoint
+  async refreshToken() {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    try {
+      const response = await fetch(`${this.baseURL}/auth/token/refresh/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to refresh token');
+      }
+
+      const data = await response.json();
+      
+      // Lưu access token mới
+      localStorage.setItem('accessToken', data.access);
+      
+      // Nếu có refresh token mới (ROTATE_REFRESH_TOKENS = True)
+      if (data.refresh) {
+        localStorage.setItem('refreshToken', data.refresh);
+      }
+
+      return data.access;
+    } catch (error) {
+      // Nếu refresh token cũng hết hạn, logout user
+      localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      window.location.href = '/login';
+      throw error;
     }
   }
 }

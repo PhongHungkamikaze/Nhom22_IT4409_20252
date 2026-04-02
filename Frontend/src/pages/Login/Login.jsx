@@ -29,22 +29,17 @@ const Login = () => {
     try {
       const response = await apiService.login(formData);
       console.log('Login response:', response); // Debug log
-      
+
       // Check if response has access token
       if (response.access) {
-        // Create user data if not provided by backend
-        const userData = response.user || {
-          username: formData.username,
-          first_name: formData.username.charAt(0).toUpperCase() + formData.username.slice(1),
-          last_name: '',
-          email: `${formData.username}@example.com`
-        };
-        
+        // User data từ backend (đã có từ CustomTokenObtainPairSerializer)
+        const userData = response.user;
+
         console.log('User data for login:', userData); // Debug log
-        
-        // Use AuthContext to save login state
-        login(userData, response.access);
-        
+
+        // Use AuthContext to save login state (lưu cả access và refresh token)
+        login(userData, response.access, response.refresh);
+
         // Redirect to homepage
         navigate('/');
         alert('Đăng nhập thành công!');

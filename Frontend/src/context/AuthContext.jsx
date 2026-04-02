@@ -18,9 +18,9 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check if user is logged in from localStorage
     const savedUser = localStorage.getItem('user');
-    const savedToken = localStorage.getItem('token');
+    const savedAccessToken = localStorage.getItem('accessToken');
 
-    if (savedUser && savedToken) {
+    if (savedUser && savedAccessToken) {
       try {
         const userData = JSON.parse(savedUser);
         setUser(userData);
@@ -28,20 +28,22 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         // If there's an error parsing user data, clear storage
         localStorage.removeItem('user');
-        localStorage.removeItem('token');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
       }
     }
     setLoading(false);
   }, []);
 
-  const login = (userData, token) => {
-    console.log('AuthContext - Login called with:', userData, token); // Debug log
-    
+  const login = (userData, accessToken, refreshToken) => {
+    console.log('AuthContext - Login called with:', userData, accessToken); // Debug log
+
     setUser(userData);
     setIsAuthenticated(true);
     localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('token', token);
-    
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+
     console.log('AuthContext - User state updated:', userData); // Debug log
   };
 
@@ -49,7 +51,8 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
   };
 
   const value = {

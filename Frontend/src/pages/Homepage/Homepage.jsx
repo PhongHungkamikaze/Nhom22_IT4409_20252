@@ -38,9 +38,19 @@ const Homepage = () => {
   const fetchFeaturedQuizzes = async () => {
     try {
       const data = await apiService.getQuizzes(); // Gọi API thật
-      setFeaturedQuizzes(data); // Cập nhật state để React vẽ lại giao diện
+      // Kiểm tra nếu data là array, nếu không thì dùng empty array
+      if (Array.isArray(data)) {
+        setFeaturedQuizzes(data);
+      } else if (data && Array.isArray(data.results)) {
+        // Nếu API trả về object với key "results" (pagination)
+        setFeaturedQuizzes(data.results);
+      } else {
+        console.warn('API trả về dữ liệu không đúng format:', data);
+        setFeaturedQuizzes([]); // Set empty array để tránh crash
+      }
     } catch (error) {
       console.error('Lỗi khi lấy danh sách quiz:', error);
+      setFeaturedQuizzes([]); // Set empty array khi có lỗi
     }
   };
 
@@ -100,30 +110,40 @@ const Homepage = () => {
       <section className="featured-quizzes">
         <div className="container">
           <h2 className="section-title">Bài quiz nổi bật</h2>
-          <div className="quizzes-grid">
-            {featuredQuizzes.map(quiz => (
-              <div key={quiz.id} className="quiz-card">
-                <div className="quiz-header">
-                  <h3>{quiz.title}</h3>
-                  <span
-                    className="difficulty-badge"
-                    style={{ backgroundColor: getDifficultyColor(quiz.difficulty) }}
-                  >
-                    {quiz.difficulty}
-                  </span>
-                </div>
-                <p className="quiz-description">{quiz.description}</p>
-                <div className="quiz-details">
-                  <div className="quiz-info">
-                    <span>📝 {quiz.questions_count} câu hỏi</span>
-                    <span>⏱️ {quiz.time_limit} phút</span>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p>Đang tải dữ liệu...</p>
+            </div>
+          ) : featuredQuizzes.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p>Chưa có bài quiz nào. Hãy tạo bài quiz đầu tiên!</p>
+            </div>
+          ) : (
+            <div className="quizzes-grid">
+              {featuredQuizzes.map(quiz => (
+                <div key={quiz.id} className="quiz-card">
+                  <div className="quiz-header">
+                    <h3>{quiz.title}</h3>
+                    <span
+                      className="difficulty-badge"
+                      style={{ backgroundColor: getDifficultyColor(quiz.difficulty) }}
+                    >
+                      {quiz.difficulty}
+                    </span>
                   </div>
-                  <div className="quiz-author">Bởi: {quiz.author}</div>
+                  <p className="quiz-description">{quiz.description}</p>
+                  <div className="quiz-details">
+                    <div className="quiz-info">
+                      <span>📝 {quiz.questions_count} câu hỏi</span>
+                      <span>⏱️ {quiz.time_limit} phút</span>
+                    </div>
+                    <div className="quiz-author">Bởi: {quiz.author}</div>
+                  </div>
+                  <button className="quiz-start-btn">Bắt đầu làm bài</button>
                 </div>
-                <button className="quiz-start-btn">Bắt đầu làm bài</button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

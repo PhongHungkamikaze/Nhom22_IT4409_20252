@@ -1,3 +1,4 @@
+from exam.permissions import IsAdminUser, IsTeacherUser
 from ..models import Quiz
 from ..serializers import (
     QuizSerializer,AttemptSerializer, QuestionSerializer
@@ -10,6 +11,10 @@ class QuizViewSet(viewsets.ModelViewSet):
     queryset = Quiz.objects.all().prefetch_related(
         "questions__choices"
     )
+    permission_classes_by_action = {
+        "list": [IsAdminUser | IsTeacherUser],
+    }
+    permission_classes = [IsAdminUser]
     serializer_class = QuizSerializer
 
     @action(detail=True, methods=["get"], url_path="questions")

@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from ..models import User
-
+from ..models import User, UserRole
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)
     role = serializers.ChoiceField(
-        choices=User.UserRole.choices, default=User.UserRole.Student
+        choices=UserRole.choices, default=UserRole.Student
     )
 
     class Meta:

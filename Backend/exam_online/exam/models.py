@@ -6,12 +6,12 @@ from django.utils import timezone
 
 
 # Create your models here.
-class User(AbstractUser):
-    class UserRole(models.TextChoices):
-        Student = "student", "Student"
-        Teacher = "teacher", "Teacher"
-        Admin = "admin", "Admin"
+class UserRole(models.TextChoices):
+    Student = "student", "Student"
+    Teacher = "teacher", "Teacher"
+    Admin = "admin", "Admin"
 
+class User(AbstractUser):
     role = models.CharField(
         max_length=20, choices=UserRole.choices, default=UserRole.Student
     )

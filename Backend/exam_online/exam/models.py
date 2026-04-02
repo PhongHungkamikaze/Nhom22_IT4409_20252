@@ -1,7 +1,7 @@
 import uuid
 from datetime import timedelta
 from django.db import models
-from django.contrib.auth.models import User, AbstractUser
+from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 
 
@@ -10,6 +10,7 @@ class UserRole(models.TextChoices):
     Student = "student", "Student"
     Teacher = "teacher", "Teacher"
     Admin = "admin", "Admin"
+
 
 class User(AbstractUser):
     role = models.CharField(
@@ -54,13 +55,15 @@ class Choice(models.Model):
 
     is_correct = models.BooleanField(default=False)
 
+
 class StatusChoices(models.TextChoices):
-        Ready = ("ready", "Ready")
-        Ongoing = (
-            "ongoing",
-            "Ongoing",
-        )
-        Completed = "completed", "Completed"
+    Ready = ("ready", "Ready")
+    Ongoing = (
+        "ongoing",
+        "Ongoing",
+    )
+    Completed = "completed", "Completed"
+
 
 class Attempt(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attempts")

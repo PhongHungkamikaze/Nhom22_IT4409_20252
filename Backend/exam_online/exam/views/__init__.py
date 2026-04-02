@@ -1,4 +1,11 @@
-from .auth import LoginView, LogoutView, ChangePasswordView, ResetPasswordConfirmView, ResetPasswordView, RegisterView
+from .auth import (
+    LoginView,
+    LogoutView,
+    ChangePasswordView,
+    ResetPasswordConfirmView,
+    ResetPasswordView,
+    RegisterView,
+)
 from .quiz import QuizViewSet
 from .question import QuestionViewSet
 from .answer import AnswerViewSet
@@ -14,5 +21,5 @@ __all__ = [
     "QuestionViewSet",
     "AnswerViewSet",
     "AttemptViewSet",
-    "RegisterView"
+    "RegisterView",
 ]

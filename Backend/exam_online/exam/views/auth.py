@@ -14,6 +14,7 @@ from django.contrib.auth.tokens import default_token_generator
 from rest_framework import permissions, status, views
 from rest_framework.response import Response
 
+
 class RegisterView(views.APIView):
     """POST /auth/register/ - Tạo tài khoản mới."""
 

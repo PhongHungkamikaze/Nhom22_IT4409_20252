@@ -6,6 +6,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 
 from ..models import FileSet
 from ..serializers import FileSetSerializer
+from ..filters import FileSetFilter
 
 
 class FileSetViewSet(viewsets.ModelViewSet):
@@ -25,6 +26,10 @@ class FileSetViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     # Hỗ trợ nhận multipart/form-data (upload file)
     parser_classes = [MultiPartParser, FormParser]
+
+    @property
+    def filterset_class(self):
+        return FileSetFilter
 
     def get_queryset(self):
         """

@@ -6,6 +6,7 @@ from rest_framework import viewsets, status, response
 from rest_framework.decorators import action
 from ..models import StatusChoices, Attempt
 from django.utils import timezone
+from ..filters import QuizFilter
 
 
 class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
@@ -22,6 +23,10 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     }
     permission_classes = [IsAdminUser]
     serializer_class = QuizSerializer
+    
+    @property
+    def filterset_class(self):
+        return QuizFilter
 
     @action(detail=True, methods=["get"], url_path="questions")
     def questions(self, request, pk=None):

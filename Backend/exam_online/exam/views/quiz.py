@@ -1,36 +1,50 @@
+from exam.permissions import PermissionMixin
+from exam.permissions import IsAdminUser, IsTeacherUser, IsStudentUser, IsOwnerTeacher
 from ..models import Quiz
-from ..serializers import (
-    QuizSerializer,AttemptSerializer, QuestionSerializer
-)
+from ..serializers import QuizSerializer, AttemptSerializer, QuestionSerializer
 from rest_framework import viewsets, status, response
 from rest_framework.decorators import action
 from ..models import StatusChoices, Attempt
 from django.utils import timezone
-class QuizViewSet(viewsets.ModelViewSet):
-    queryset = Quiz.objects.all().prefetch_related(
-        "questions__choices"
-    )
+from ..filters import QuizFilter
+
+
+class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
+    queryset = Quiz.objects.all().prefetch_related("questions__choices")
+    permission_classes_by_action = {
+        "list": [IsTeacherUser | IsAdminUser],
+        "retrieve": [IsTeacherUser | IsAdminUser | IsStudentUser],
+        "create": [IsTeacherUser],
+        "start": [IsStudentUser],
+        "update": [IsTeacherUser, IsOwnerTeacher],
+        "partial_update": [IsTeacherUser, IsOwnerTeacher],
+        "destroy": [IsTeacherUser | IsAdminUser],
+        "questions": [IsTeacherUser | IsAdminUser | IsStudentUser],
+    }
+    permission_classes = [IsAdminUser]
     serializer_class = QuizSerializer
+    
+    @property
+    def filterset_class(self):
+        return QuizFilter
 
     @action(detail=True, methods=["get"], url_path="questions")
     def questions(self, request, pk=None):
         quiz = self.get_object()
 
-        questions = quiz.questions.all() 
+        questions = quiz.questions.all()
 
         serializer = QuestionSerializer(questions, many=True)
 
         return response.Response(serializer.data)
-    
+
     @action(detail=True, methods=["post"], url_path="start")
     def start(self, request, pk=None):
         quiz = self.get_object()
 
         # 1. Check attempt đang làm
         existing_attempt = Attempt.objects.filter(
-            user=request.user,
-            quiz=quiz,
-            status=StatusChoices.Ongoing
+            user=request.user, quiz=quiz, status=StatusChoices.Ongoing
         ).first()
 
         if existing_attempt:
@@ -38,9 +52,9 @@ class QuizViewSet(viewsets.ModelViewSet):
             return response.Response(
                 {
                     "message": "You already have an active attempt",
-                    "attempt": serializer.data
+                    "attempt": serializer.data,
                 },
-                status=status.HTTP_200_OK
+                status=status.HTTP_200_OK,
             )
 
         # 2. Tạo attempt mới
@@ -48,14 +62,11 @@ class QuizViewSet(viewsets.ModelViewSet):
             user=request.user,
             quiz=quiz,
             status=StatusChoices.Ongoing,
-            started_at=timezone.now()
+            started_at=timezone.now(),
         )
 
         serializer = AttemptSerializer(attempt)
         return response.Response(
-            {
-                "message": "Start quiz successfully",
-                "attempt": serializer.data
-            },
-            status=status.HTTP_201_CREATED
+            {"message": "Start quiz successfully", "attempt": serializer.data},
+            status=status.HTTP_201_CREATED,
         )

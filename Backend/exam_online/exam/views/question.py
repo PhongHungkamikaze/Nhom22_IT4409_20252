@@ -2,7 +2,8 @@ from exam.permissions import PermissionMixin, IsAdminUser, IsTeacherUser, IsOwne
 from ..models import Question
 from ..serializers import QuestionSerializer
 from ..filters import QuestionFilter
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class QuestionViewSet(PermissionMixin, viewsets.ModelViewSet):
@@ -17,6 +18,12 @@ class QuestionViewSet(PermissionMixin, viewsets.ModelViewSet):
         "destroy":        [IsTeacherUser | IsAdminUser],
     }
     permission_classes = [IsAdminUser]
+
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+    ]
+    search_fields = ['content', 'quiz__title']
 
     @property
     def filterset_class(self):

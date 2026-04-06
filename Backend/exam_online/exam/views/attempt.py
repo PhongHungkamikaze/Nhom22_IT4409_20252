@@ -1,14 +1,21 @@
 from ..models import Attempt, Answer, StatusChoices
 from ..serializers import AttemptSerializer, AnswerSerializers
 from ..filters import AttemptFilter
-from rest_framework import viewsets, response
+from rest_framework import viewsets, response, filters
 from rest_framework.decorators import action
+from django_filters.rest_framework import DjangoFilterBackend
 from ..calculate_score import calculate_score
 
 
 class AttemptViewSet(viewsets.ModelViewSet):
     queryset = Attempt.objects.all().select_related("user", "quiz").prefetch_related("answers")
     serializer_class = AttemptSerializer
+
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+    ]
+    search_fields = ['user__username', 'quiz__title', 'status']
 
     @property
     def filterset_class(self):

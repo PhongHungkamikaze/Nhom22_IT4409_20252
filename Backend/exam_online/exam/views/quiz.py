@@ -7,7 +7,8 @@ from rest_framework.decorators import action
 from ..models import StatusChoices, Attempt
 from django.utils import timezone
 from ..filters import QuizFilter
-
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     queryset = Quiz.objects.all().prefetch_related("questions__choices")
@@ -23,10 +24,13 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     }
     permission_classes = [IsAdminUser]
     serializer_class = QuizSerializer
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+    ]
+    search_fields = ['title', 'author__username']
     
-    @property
-    def filterset_class(self):
-        return QuizFilter
+    filterset_class = QuizFilter
 
     @action(detail=True, methods=["get"], url_path="questions")
     def questions(self, request, pk=None):

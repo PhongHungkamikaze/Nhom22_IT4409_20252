@@ -1,14 +1,18 @@
-from ..models import Attempt
+from ..models import Attempt, Answer, StatusChoices
 from ..serializers import AttemptSerializer, AnswerSerializers
-from ..models import Answer, StatusChoices
+from ..filters import AttemptFilter
 from rest_framework import viewsets, response
 from rest_framework.decorators import action
 from ..calculate_score import calculate_score
 
 
 class AttemptViewSet(viewsets.ModelViewSet):
-    queryset = Attempt.objects.all().prefetch_related("answers")
+    queryset = Attempt.objects.all().select_related("user", "quiz").prefetch_related("answers")
     serializer_class = AttemptSerializer
+
+    @property
+    def filterset_class(self):
+        return AttemptFilter
 
     @action(detail=True, methods=["post"], url_path="save-answer")
     def save_answer(self, request, pk=None):

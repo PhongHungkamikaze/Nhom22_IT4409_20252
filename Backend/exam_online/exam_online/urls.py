@@ -17,6 +17,8 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
+from django.conf import settings
+from django.conf.urls.static import static
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 
@@ -33,3 +35,7 @@ urlpatterns = [
     path("api/", include("exam.urls")),
     path("docs/", schema_view.with_ui("swagger", cache_timeout=0), name="api_docs"),
 ]
+
+# Serve media files in development (DEBUG=True only)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

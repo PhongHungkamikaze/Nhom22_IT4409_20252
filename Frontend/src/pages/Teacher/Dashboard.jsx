@@ -4,6 +4,7 @@ import apiService from '../../services/api';
 import './Teacher.css';
 import '../Admin/Admin.css'; // Reuse common layout styles
 import '../Admin/Dashboard.css'; // Reuse common dashboard styles
+import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 
 export default function Dashboard() {
     const [quizzes, setQuizzes] = useState([]);
@@ -56,23 +57,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="dashboard-main">
-                    <div className="admin-card quick-actions">
-                        <h2 className="card-title">Quản lý Model</h2>
-                        <div className="actions-grid">
-                            <Link to="/teacher/quizzes" className="action-btn" style={{ textDecoration: 'none' }}>
-                                <span className="action-icon">📋</span>
-                                Quản lý Quiz
-                            </Link>
-                            <Link to="/teacher/questions" className="action-btn" style={{ textDecoration: 'none' }}>
-                                <span className="action-icon">📝</span>
-                                Ngân hàng Câu hỏi
-                            </Link>
-                            <Link to="/teacher/attempts" className="action-btn" style={{ textDecoration: 'none', gridColumn: 'span 2' }}>
-                                <span className="action-icon">👀</span>
-                                Chấm điểm / Review Attempts
-                            </Link>
-                        </div>
-                    </div>
+                    <QuickSystem />
                 </div>
             </div>
         </div>

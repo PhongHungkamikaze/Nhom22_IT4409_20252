@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './Teacher.css';
 import '../Admin/Admin.css'; // Reuse common layout styles
 import '../Admin/Users.css'; // Reuse table styles
+import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 
 export default function QuestionBank() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -14,8 +15,8 @@ export default function QuestionBank() {
         { id: 5, point: 2, text: 'Write a Node.js script to read a file.', type: 'Essay', difficulty: 'Hard', topic: 'Node.js' },
     ]);
 
-    const filteredQuestions = questions.filter(q => 
-        q.text.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const filteredQuestions = questions.filter(q =>
+        q.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
         q.topic.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -31,13 +32,15 @@ export default function QuestionBank() {
                 </button>
             </header>
 
+            <QuickSystem />
+
             <div className="admin-card">
                 <div className="table-controls">
                     <div className="search-bar">
                         <span className="search-icon">🔍</span>
-                        <input 
-                            type="text" 
-                            placeholder="Search keywords or topics..." 
+                        <input
+                            type="text"
+                            placeholder="Search keywords or topics..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />

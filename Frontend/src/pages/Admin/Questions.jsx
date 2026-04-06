@@ -1,10 +1,13 @@
 import React from 'react';
 import './Questions.css';
 import './Admin.css';
+import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
 
 export default function Questions() {
     return (
         <div className="container admin-questions">
+            <QuickSystem />
+
             <div className="card">
                 <h2>Questions</h2>
                 <table className="table">

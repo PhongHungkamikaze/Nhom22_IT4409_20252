@@ -1,10 +1,13 @@
 import React from 'react';
 import './Attempts.css';
 import './Admin.css';
+import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
 
 export default function Attempts() {
     return (
         <div className="container admin-attempts">
+            <QuickSystem />
+
             <div className="card">
                 <h2>Attempts</h2>
                 <table className="table">

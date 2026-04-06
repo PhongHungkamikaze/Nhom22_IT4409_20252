@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Users.css';
 import './Admin.css';
-
+import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
 export default function Users() {
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -13,13 +13,14 @@ export default function Users() {
         { id: 5, name: 'Harvey Specter', email: 'harvey@example.com', role: 'Teacher', status: 'Active', joined: '2024-03-22' },
     ]);
 
-    const filteredUsers = users.filter(user => 
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const filteredUsers = users.filter(user =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
         <div className="admin-container">
+            <QuickSystem />
             <header className="admin-header">
                 <div>
                     <h1 className="admin-title">User Management</h1>
@@ -34,9 +35,9 @@ export default function Users() {
                 <div className="table-controls">
                     <div className="search-bar">
                         <span className="search-icon">🔍</span>
-                        <input 
-                            type="text" 
-                            placeholder="Search by name or email..." 
+                        <input
+                            type="text"
+                            placeholder="Search by name or email..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -107,7 +108,7 @@ export default function Users() {
                         </tbody>
                     </table>
                 </div>
-                
+
                 <div className="pagination">
                     <span className="pagination-info">Showing 1 to {filteredUsers.length} of {users.length} entries</span>
                     <div className="pagination-controls">

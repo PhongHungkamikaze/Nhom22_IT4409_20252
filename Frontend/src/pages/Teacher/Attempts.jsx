@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './Teacher.css';
 import '../Admin/Admin.css';
 import '../Admin/Users.css';
+import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 
 export default function Attempts() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -14,8 +15,8 @@ export default function Attempts() {
         { id: 105, student: 'Rachel Zane', quiz: 'Node.js Basics', date: 'Oct 24, 2025 09:00 AM', score: 'Needs Review', status: 'Pending Review' },
     ]);
 
-    const filteredAttempts = attempts.filter(a => 
-        a.student.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const filteredAttempts = attempts.filter(a =>
+        a.student.toLowerCase().includes(searchTerm.toLowerCase()) ||
         a.quiz.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -28,13 +29,15 @@ export default function Attempts() {
                 </div>
             </header>
 
+            <QuickSystem />
+
             <div className="admin-card">
                 <div className="table-controls">
                     <div className="search-bar">
                         <span className="search-icon">🔍</span>
-                        <input 
-                            type="text" 
-                            placeholder="Search student or quiz name..." 
+                        <input
+                            type="text"
+                            placeholder="Search student or quiz name..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />

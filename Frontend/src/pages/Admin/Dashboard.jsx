@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './Dashboard.css';
 import './Admin.css';
+import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
 
 export default function Dashboard() {
     // Mock data for dashboard
@@ -62,27 +63,7 @@ export default function Dashboard() {
                         <button className="btn-view-all">View All Activities</button>
                     </div>
 
-                    <div className="admin-card quick-actions">
-                        <h2 className="card-title">Quản lý Hệ thống</h2>
-                        <div className="actions-grid">
-                            <Link to="/admin/users" className="action-btn" style={{textDecoration: 'none'}}>
-                                <span className="action-icon">👥</span>
-                                User Management
-                            </Link>
-                            <Link to="/admin/quizzes" className="action-btn" style={{textDecoration: 'none'}}>
-                                <span className="action-icon">📚</span>
-                                Quiz Management
-                            </Link>
-                            <Link to="/admin/questions" className="action-btn" style={{textDecoration: 'none'}}>
-                                <span className="action-icon">📝</span>
-                                Question Bank
-                            </Link>
-                            <Link to="/admin/attempts" className="action-btn" style={{textDecoration: 'none'}}>
-                                <span className="action-icon">📊</span>
-                                View Attempts
-                            </Link>
-                        </div>
-                    </div>
+                    <QuickSystem />
                 </div>
             </div>
         </div>

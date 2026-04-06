@@ -4,6 +4,7 @@ import apiService from '../../services/api';
 import './Quizzes.css';
 import './Admin.css';
 import '../Teacher/Teacher.css';
+import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
 
 export default function MyQuizzes() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -42,6 +43,8 @@ export default function MyQuizzes() {
                     <span className="btn-icon">✨</span> Create New Quiz
                 </Link>
             </header>
+
+            <QuickSystem />
 
             <div className="admin-card">
                 <div className="table-controls">

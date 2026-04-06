@@ -1,0 +1,10 @@
+.notfound {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60vh
+}
+
+.card {
+    max-width: 640px
+}

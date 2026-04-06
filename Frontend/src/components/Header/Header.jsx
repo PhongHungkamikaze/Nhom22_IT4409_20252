@@ -74,7 +74,7 @@ const Header = () => {
         <div className="auth-section">
           {isAuthenticated ? (
             <div className="user-menu">
-              <button 
+              <button
                 className="user-button"
                 onClick={toggleUserMenu}
               >
@@ -82,7 +82,7 @@ const Header = () => {
                 <span className="user-name">Xin chào, {getUserDisplayName()}!</span>
                 <span className={`dropdown-arrow ${isUserMenuOpen ? 'open' : ''}`}>▼</span>
               </button>
-              
+
               {isUserMenuOpen && (
                 <div className="user-dropdown">
                   <div className="user-info">

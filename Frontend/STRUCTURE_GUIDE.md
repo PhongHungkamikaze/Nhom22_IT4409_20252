@@ -1,52 +1,128 @@
-# 📁 HƯỚNG DẪN TỔ CHỨC LẠI CẤU TRÚC FRONTEND
+# 📁 Frontend Structure - Online Quiz System
 
+```bash
 src/
-├── 📁 components/           # Component tái sử dụng
-│   ├── 📁 Header/
-│   │   ├── Header.jsx
-│   │   ├── Header.css
-│   │   └── index.js        # Export file
-│   ├── 📁 LoadingSpinner/
-│   ├── 📁 Button/
-│   └── 📁 Modal/
+├── 📁 assets/                 # Static files
+│   ├── images/
+│   ├── icons/
+│   └── fonts/
 │
-├── 📁 pages/               # Các trang chính 
+├── 📁 components/             # Reusable UI components
+│   ├── 📁 common/             # Generic (dumb components)
+│   │   ├── Button/
+│   │   ├── Modal/
+│   │   ├── LoadingSpinner/
+│   │   └── Input/
+│   │
+│   ├── 📁 layout/             # Layout components
+│   │   ├── Header/
+│   │   ├── Sidebar/
+│   │   ├── Layout.jsx
+│   │   └── index.js
+│   │
+│   ├── 📁 quiz/               # Quiz-related components
+│   │   ├── QuizCard.jsx
+│   │   ├── QuizForm.jsx
+│   │   ├── Timer.jsx
+│   │   └── index.js
+│   │
+│   ├── 📁 question/
+│   │   ├── QuestionItem.jsx
+│   │   ├── QuestionForm.jsx
+│   │   └── index.js
+│   │
+│   ├── 📁 attempt/
+│   │   ├── AttemptCard.jsx
+│   │   ├── AnswerSheet.jsx
+│   │   └── index.js
+│   │
+│   └── index.js
+│
+├── 📁 pages/                  # Route-level pages
 │   ├── 📁 Homepage/
 │   │   ├── Homepage.jsx
-│   │   ├── Homepage.css
 │   │   └── index.js
-│   ├── 📁 Login/
-│   ├── 📁 QuizDetail/
-│   └── 📁 Dashboard/
+│   │
+│   ├── 📁 Auth/
+│   │   ├── Login.jsx
+│   │   ├── Register.jsx
+│   │   └── index.js
+│   │
+│   ├── 📁 Admin/
+│   │   ├── Dashboard.jsx
+│   │   ├── Users.jsx
+│   │   ├── Quizzes.jsx
+│   │   ├── Questions.jsx
+│   │   ├── Attempts.jsx
+│   │   ├── Analytics.jsx
+│   │   └── index.js
+│   │
+│   ├── 📁 Teacher/
+│   │   ├── Dashboard.jsx
+│   │   ├── MyQuizzes.jsx
+│   │   ├── CreateQuiz.jsx
+│   │   ├── EditQuiz.jsx
+│   │   ├── QuestionBank.jsx
+│   │   ├── Attempts.jsx
+│   │   ├── ReviewAttempt.jsx
+│   │   └── index.js
+│   │
+│   ├── 📁 Student/
+│   │   ├── Dashboard.jsx
+│   │   ├── QuizList.jsx
+│   │   ├── QuizDetail.jsx
+│   │   ├── TakeQuiz.jsx
+│   │   ├── Result.jsx
+│   │   ├── History.jsx
+│   │   └── index.js
+│   │
+│   └── 📁 NotFound/
+│       └── NotFound.jsx
 │
-├── 📁 services/            # API & External calls
-│   ├── api.js             # Main API service
-│   ├── auth.js            # Auth related
-│   └── quiz.js            # Quiz related
+├── 📁 routes/                 # Routing + RBAC
+│   ├── AppRouter.jsx
+│   ├── ProtectedRoute.jsx
+│   ├── AdminRoute.jsx
+│   ├── TeacherRoute.jsx
+│   └── StudentRoute.jsx
 │
-├── 📁 styles/              # CSS toàn cục
-│   ├── globals.css        # Reset, variables
-│   ├── components.css     # Shared component styles
-│   └── variables.css      # CSS variables
+├── 📁 services/               # API calls
+│   ├── apiClient.js           # axios config
+│   ├── authService.js
+│   ├── userService.js
+│   ├── quizService.js
+│   ├── questionService.js
+│   ├── attemptService.js
+│   └── answerService.js
 │
-├── 📁 utils/               # Helper functions
+├── 📁 store/                  # (Optional - Redux/Zustand)
+│   ├── authSlice.js
+│   ├── quizSlice.js
+│   └── index.js
+│
+├── 📁 context/                # React Context
+│   ├── AuthContext.jsx
+│   ├── QuizContext.jsx
+│   └── index.js
+│
+├── 📁 hooks/                  # Custom hooks
+│   ├── useAuth.js
+│   ├── useQuiz.js
+│   └── useDebounce.js
+│
+├── 📁 utils/                  # Helper functions
+│   ├── constants.js           # ROLE, API URL...
 │   ├── formatDate.js
 │   ├── validation.js
-│   └── constants.js
+│   ├── permissions.js         # RBAC logic
+│   └── calculateScore.js
 │
-├── 📁 hooks/               # Custom React hooks
-│   ├── useAuth.js
-│   └── useQuiz.js
+├── 📁 styles/                 # Global styles
+│   ├── globals.css
+│   ├── variables.css
+│   └── components.css
 │
-├── 📁 context/             # React Context
-│   ├── AuthContext.js
-│   └── QuizContext.js
-│
-├── 📁 assets/              # Images, fonts, static
-│   ├── 📁 images/
-│   ├── 📁 icons/
-│   └── 📁 fonts/
-│
-├── App.jsx                 # Main app component
-├── main.jsx               # Entry point
-└── index.css              # Root styles
+├── App.jsx                    # Root component
+├── main.jsx                   # Entry point
+└── index.css
+```

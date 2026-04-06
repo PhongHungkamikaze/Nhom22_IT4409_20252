@@ -1,0 +1,130 @@
+/* Student specific styles */
+.student-dashboard .user-welcome {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    padding: 40px;
+    border-radius: 20px;
+    color: white;
+}
+
+.student-dashboard .user-welcome .admin-title,
+.student-dashboard .user-welcome .admin-subtitle {
+    color: white;
+}
+
+.student-dashboard .user-welcome .admin-subtitle {
+    opacity: 0.8;
+}
+
+.student-grid {
+    grid-template-columns: 2fr 1fr;
+}
+
+.student-quiz-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.student-quiz-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.student-quiz-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+    border-color: #cbd5e1;
+}
+
+.student-quiz-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    color: #0f172a;
+}
+
+.teacher-name {
+    color: #64748b;
+    font-size: 0.85rem;
+    margin: 0 0 16px 0;
+}
+
+.quiz-meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+.start-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: #3b82f6;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.start-btn:hover {
+    background: #2563eb;
+}
+
+.result-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-info h4 {
+    margin: 0 0 4px 0;
+    color: #1e293b;
+}
+
+.result-date {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.score-badge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.score-badge.pass {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.score-badge.fail {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+@media (max-width: 1024px) {
+    .student-grid {
+        grid-template-columns: 1fr;
+    }
+}

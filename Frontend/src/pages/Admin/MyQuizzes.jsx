@@ -33,7 +33,9 @@ export default function MyQuizzes() {
     });
 
     return (
+
         <div className="admin-container">
+            <QuickSystem />
             <header className="admin-header">
                 <div>
                     <h1 className="admin-title">My Quizzes</h1>
@@ -43,9 +45,6 @@ export default function MyQuizzes() {
                     <span className="btn-icon">✨</span> Create New Quiz
                 </Link>
             </header>
-
-            <QuickSystem />
-
             <div className="admin-card">
                 <div className="table-controls">
                     <div className="search-bar">

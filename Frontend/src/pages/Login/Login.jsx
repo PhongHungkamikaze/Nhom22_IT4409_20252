@@ -40,8 +40,14 @@ const Login = () => {
         // Use AuthContext to save login state (lưu cả access và refresh token)
         login(userData, response.access, response.refresh);
 
-        // Redirect to homepage
-        navigate('/');
+        // Redirect according to role
+        const role = (userData && userData.role) ? String(userData.role).toLowerCase() : '';
+        let redirectTo = '/';
+        if (role === 'admin') redirectTo = '/admin';
+        else if (role === 'teacher') redirectTo = '/teacher';
+        else if (role === 'student') redirectTo = '/student';
+
+        navigate(redirectTo);
         alert('Đăng nhập thành công!');
       } else {
         throw new Error('No access token in response');

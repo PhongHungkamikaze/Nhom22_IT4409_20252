@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
-import './Teacher.css';
-import '../Admin/Admin.css'; // Reuse common layout styles
-import '../Admin/Users.css'; // Reuse table styles
+import './Quizzes.css';
+import './Admin.css';
+import '../Teacher/Teacher.css';
 
 export default function MyQuizzes() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -38,7 +38,7 @@ export default function MyQuizzes() {
                     <h1 className="admin-title">My Quizzes</h1>
                     <p className="admin-subtitle">Create, manage, and monitor your quiz exams.</p>
                 </div>
-                <Link to="/teacher/quizzes/create" className="primary-btn">
+                <Link to="/admin/quizzes/create" className="primary-btn">
                     <span className="btn-icon">✨</span> Create New Quiz
                 </Link>
             </header>
@@ -90,7 +90,7 @@ export default function MyQuizzes() {
                                             <td>{quiz.created_at ? new Date(quiz.created_at).toLocaleString() : 'No date'}</td>
                                             <td>{quiz.time_limit ?? quiz.timeLimit ?? quiz.time_limit_in_minutes ?? '-'}</td>
                                             <td className="action-group">
-                                                <Link to={`/teacher/quizzes/edit/${quiz.id}`} className="text-btn">Edit</Link>
+                                                <Link to={`/admin/quizzes/edit/${quiz.id}`} className="text-btn">Edit</Link>
                                                 <button
                                                     className="text-btn danger"
                                                     onClick={async () => {

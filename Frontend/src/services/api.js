@@ -4,15 +4,19 @@ const API_BASE_URL = 'http://localhost:8000/api';
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL;
+    // Refresh control
+    this.isRefreshing = false;
+    this.refreshPromise = null;
+    this.subscribers = [];
   }
 
   // Helper method for making requests
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     // Lấy access token từ localStorage
     const accessToken = localStorage.getItem('accessToken');
-    
+
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -20,7 +24,7 @@ class ApiService {
       },
       ...options,
     };
-    
+
     // Thêm Authorization header nếu có token
     if (accessToken) {
       config.headers['Authorization'] = `Bearer ${accessToken}`;
@@ -33,7 +37,47 @@ class ApiService {
         // Nếu token hết hạn (401), có thể thử refresh token
         if (response.status === 401) {
           console.warn('Token hết hạn hoặc không hợp lệ');
-          // TODO: Implement refresh token logic
+          // Try to refresh token and retry the original request once
+          // If a refresh is already in progress, wait for it
+          const retryRequest = async () => {
+            // wait for refresh to complete (or start it)
+            if (!this.isRefreshing) {
+              this.isRefreshing = true;
+              this.refreshPromise = this.refreshToken()
+                .then((newAccess) => {
+                  this.isRefreshing = false;
+                  return newAccess;
+                })
+                .catch((err) => {
+                  this.isRefreshing = false;
+                  throw err;
+                });
+            }
+
+            try {
+              const newAccess = await this.refreshPromise;
+              if (!newAccess) throw new Error('No new access token');
+
+              // set new Authorization header and retry
+              const retryConfig = {
+                ...config,
+                headers: {
+                  ...config.headers,
+                  Authorization: `Bearer ${newAccess}`,
+                },
+              };
+
+              const retryResp = await fetch(url, retryConfig);
+              if (!retryResp.ok) {
+                throw new Error(`HTTP error! status: ${retryResp.status}`);
+              }
+              return await retryResp.json();
+            } catch (err) {
+              throw err;
+            }
+          };
+
+          return await retryRequest();
         }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -140,10 +184,10 @@ class ApiService {
       }
 
       const data = await response.json();
-      
+
       // Lưu access token mới
       localStorage.setItem('accessToken', data.access);
-      
+
       // Nếu có refresh token mới (ROTATE_REFRESH_TOKENS = True)
       if (data.refresh) {
         localStorage.setItem('refreshToken', data.refresh);

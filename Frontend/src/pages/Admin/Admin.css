@@ -48,3 +48,81 @@
     margin-bottom: 20px;
     color: #0f172a;
 }
+
+/* Table and button utilities shared across Admin/Teacher/Student pages */
+.table-responsive {
+    overflow-x: auto;
+    margin-top: 12px
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent
+}
+
+.table thead th {
+    background: linear-gradient(90deg, #f7f8fa, #eef3ff);
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e6e9ef
+}
+
+.table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f3f6
+}
+
+.table tr:hover td {
+    background: rgba(37, 117, 252, 0.02)
+}
+
+.text-btn {
+    background: none;
+    border: none;
+    color: #2575fc;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px
+}
+
+.text-btn:hover {
+    background: rgba(37, 117, 252, 0.06)
+}
+
+.primary-btn {
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer
+}
+
+.primary-btn:hover {
+    opacity: 0.95
+}
+
+.danger {
+    color: #d9534f
+}
+
+.action-group {
+    display: flex;
+    gap: 8px;
+    align-items: center
+}
+
+.badge-active {
+    background: #dff4e5;
+    color: #1b7a3a;
+    padding: 4px 8px;
+    border-radius: 6px
+}
+
+.badge-draft {
+    background: #fff4e6;
+    color: #b36b00;
+    padding: 4px 8px;
+    border-radius: 6px
+}

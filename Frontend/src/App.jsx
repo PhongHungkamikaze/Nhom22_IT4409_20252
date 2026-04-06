@@ -10,6 +10,7 @@ import './App_new.css';
 // Dashboards and admin pages
 import AdminDashboard from './pages/Admin/Dashboard';
 import AdminUsers from './pages/Admin/Users';
+import AdminQuizzes from './pages/Admin/MyQuizzes';
 import TeacherDashboard from './pages/Teacher/Dashboard';
 import TeacherMyQuizzes from './pages/Teacher/MyQuizzes';
 import TeacherQuestionBank from './pages/Teacher/QuestionBank';
@@ -31,6 +32,7 @@ function App() {
             {/* Test Routes for Dashboards */}
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/quizzes" element={< AdminQuizzes />} />
             <Route path="/teacher" element={<TeacherDashboard />} />
             <Route path="/teacher/quizzes" element={<TeacherMyQuizzes />} />
             <Route path="/teacher/questions" element={<TeacherQuestionBank />} />

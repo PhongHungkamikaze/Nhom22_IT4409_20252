@@ -7,7 +7,6 @@ from .change_reset_password import (
     ResetPasswordConfirmSerializer,
     ChangePasswordSerializer,
 )
-from .fileset import FileSetSerializer
 
 __all__ = [
     "ChoiceSerializer",
@@ -20,5 +19,4 @@ __all__ = [
     "ResetPasswordConfirmSerializer",
     "UserRegisterSerializer",
     "AnswerSerializers",
-    "FileSetSerializer",
 ]

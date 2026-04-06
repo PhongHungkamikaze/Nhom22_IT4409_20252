@@ -10,8 +10,6 @@ from .quiz import QuizViewSet
 from .question import QuestionViewSet
 from .answer import AnswerViewSet
 from .attempt import AttemptViewSet
-from .fileset import FileSetViewSet
-from .search import SearchView
 
 __all__ = [
     "LoginView",
@@ -24,6 +22,4 @@ __all__ = [
     "AnswerViewSet",
     "AttemptViewSet",
     "RegisterView",
-    "FileSetViewSet",
-    "SearchView",
 ]

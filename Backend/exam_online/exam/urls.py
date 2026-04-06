@@ -10,8 +10,6 @@ from .views import (
     ChangePasswordView,
     ResetPasswordView,
     ResetPasswordConfirmView,
-    FileSetViewSet,
-    SearchView,
 )
 
 router = DefaultRouter()
@@ -19,7 +17,6 @@ router.register(r"quizzes", QuizViewSet)
 router.register(r"questions", QuestionViewSet)
 router.register(r"attempts", AttemptViewSet)
 router.register(r"answers", AnswerViewSet)
-router.register(r"filesets", FileSetViewSet, basename="fileset")
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -32,5 +29,4 @@ urlpatterns = [
         ResetPasswordConfirmView.as_view(),
         name="reset-password",
     ),
-    path("search/", SearchView.as_view(), name="search"),
 ]

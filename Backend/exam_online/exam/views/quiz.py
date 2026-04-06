@@ -62,7 +62,8 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
             user=request.user,
             quiz=quiz,
             status=StatusChoices.Ongoing,
-            started_at=timezone.now(),
+            started_at = timezone.now(),
+            finished_at = timezone.now()+ timezone.timedelta(minutes=quiz.time_limit) if quiz.time_limit else None,
         )
 
         serializer = AttemptSerializer(attempt)

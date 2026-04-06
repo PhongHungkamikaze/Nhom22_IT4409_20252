@@ -65,4 +65,12 @@ class QuizSerializer(serializers.ModelSerializer):
             "author_name",
             "created_at",
         ]
-        extra_kwargs = {"created_at": {"read_only": True}}
+        extra_kwargs = {
+            "author": {"read_only": True},
+            "created_at": {"read_only": True},
+        }
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        validated_data["author"] = request.user
+        return super().create(validated_data)

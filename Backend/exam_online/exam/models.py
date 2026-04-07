@@ -62,6 +62,7 @@ class StatusChoices(models.TextChoices):
         "ongoing",
         "Ongoing",
     )
+    Processing = ("processing", "Processing")
     Completed = "completed", "Completed"
 
 

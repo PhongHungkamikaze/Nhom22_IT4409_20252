@@ -1,0 +1,9 @@
+Install redis if needed
+## Install redis
+sudo apt-get install redis-server
+## Start service
+sudo service redis-server
+
+
+Run celery
+celery -A exam_online.celery_tasks worker -l info

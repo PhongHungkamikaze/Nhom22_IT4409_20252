@@ -19,21 +19,13 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
-from drf_yasg import openapi
-from drf_yasg.views import get_schema_view
-
-schema_view = get_schema_view(
-    openapi.Info(
-        title="API Docs",
-        default_version="v1",
-    ),
-    public=True,
-)
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("exam.urls")),
-    path("docs/", schema_view.with_ui("swagger", cache_timeout=0), name="api_docs"),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="api_docs"),
 ]
 
 # Serve media files in development (DEBUG=True only)

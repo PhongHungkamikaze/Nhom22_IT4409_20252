@@ -1,5 +1,7 @@
 from exam.permissions import PermissionMixin
 from exam.permissions import IsAdminUser, IsTeacherUser, IsStudentUser, IsOwnerTeacher
+from drf_spectacular.utils import extend_schema
+
 from ..models import Quiz
 from ..serializers import QuizSerializer, AttemptSerializer, QuestionSerializer
 from rest_framework import viewsets, status, response
@@ -10,6 +12,8 @@ from ..filters import QuizFilter
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
+
+@extend_schema(tags=["Quiz"])
 class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     queryset = Quiz.objects.all().prefetch_related("questions__choices")
     permission_classes_by_action = {
@@ -28,8 +32,8 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
         DjangoFilterBackend,
         filters.SearchFilter,
     ]
-    search_fields = ['title', 'author__username']
-    
+    search_fields = ["title", "author__username"]
+
     filterset_class = QuizFilter
 
     @action(detail=True, methods=["get"], url_path="questions")
@@ -66,8 +70,10 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
             user=request.user,
             quiz=quiz,
             status=StatusChoices.Ongoing,
-            started_at = timezone.now(),
-            finished_at = timezone.now()+ timezone.timedelta(minutes=quiz.time_limit) if quiz.time_limit else None,
+            started_at=timezone.now(),
+            finished_at=timezone.now() + timezone.timedelta(minutes=quiz.time_limit)
+            if quiz.time_limit
+            else None,
         )
 
         serializer = AttemptSerializer(attempt)

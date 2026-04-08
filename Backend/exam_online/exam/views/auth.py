@@ -10,12 +10,15 @@ from ..serializers import (
 )
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from drf_spectacular.utils import extend_schema
+
 from rest_framework_simplejwt.views import TokenBlacklistView, TokenObtainPairView
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import permissions, status, views
 from rest_framework.response import Response
 
 
+@extend_schema(tags=["Question"])
 class RegisterView(views.APIView):
     """POST /auth/register/ - Tạo tài khoản mới."""
 

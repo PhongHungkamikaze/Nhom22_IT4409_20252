@@ -28,7 +28,8 @@ class Quiz(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
 
     time_limit = models.IntegerField(null=True, blank=True)
-
+    is_published = models.BooleanField(default=False)
+    max_attempts = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -106,27 +107,3 @@ class PasswordResetToken(models.Model):
     def __str__(self):
         return f"Reset token for {self.user.username} (used={self.is_used})"
 
-
-def fileset_upload_path(instance, filename):
-    """Lưu file theo cấu trúc: uploads/<username>/<filename>"""
-    return f"uploads/{instance.uploaded_by.username}/{filename}"
-
-
-class FileSet(models.Model):
-    """Model quản lý tập tin do người dùng tải lên."""
-
-    name = models.CharField(max_length=255, help_text="Tên hiển thị của file")
-    file = models.FileField(upload_to=fileset_upload_path, help_text="Đường dẫn lưu file")
-    uploaded_by = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="filesets",
-        help_text="Người tải lên",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["-created_at"]
-
-    def __str__(self):
-        return f"{self.name} (by {self.uploaded_by.username})"

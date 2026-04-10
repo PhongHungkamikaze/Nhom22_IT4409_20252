@@ -8,7 +8,7 @@ import io
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APIClient
-from exam.models import User, Quiz, FileSet
+from exam.models import User, Quiz
 
 
 # ---------------------------------------------------------------------------
@@ -90,30 +90,4 @@ def quiz(db, regular_user):
         description="A quiz for testing purposes",
         author=regular_user,
         time_limit=30,
-    )
-
-
-@pytest.fixture
-def sample_file():
-    """Tạo 1 InMemoryUploadedFile giả để test upload."""
-    content = b"fake file content for testing"
-    return SimpleUploadedFile(
-        name="test_document.txt",
-        content=content,
-        content_type="text/plain",
-    )
-
-
-@pytest.fixture
-def fileset(db, regular_user):
-    """Tạo 1 FileSet mẫu trong DB (không upload file thật)."""
-    fake_file = SimpleUploadedFile(
-        name="existing_doc.txt",
-        content=b"existing content",
-        content_type="text/plain",
-    )
-    return FileSet.objects.create(
-        name="Existing Document",
-        file=fake_file,
-        uploaded_by=regular_user,
     )

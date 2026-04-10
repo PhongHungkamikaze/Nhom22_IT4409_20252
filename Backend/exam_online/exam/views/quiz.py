@@ -51,6 +51,25 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
         quiz = self.get_object()
 
         # 1. Check attempt đang làm
+        if quiz.is_published == False:
+            return response.Response(
+                {
+                    "message": "Quiz finish",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        count_attempt = Attempt.objects.filter(
+            user=request.user, quiz=quiz
+        ).count()
+        
+        if count_attempt == quiz.max_attempts:
+            return response.Response(
+                {
+                    "message": "Max attempts",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        
         existing_attempt = Attempt.objects.filter(
             user=request.user, quiz=quiz, status=StatusChoices.Ongoing
         ).first()

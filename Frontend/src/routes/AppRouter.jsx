@@ -13,6 +13,11 @@ import TeacherMyQuizzes from '../pages/Teacher/MyQuizzes';
 import TeacherQuestionBank from '../pages/Teacher/QuestionBank';
 import TeacherAttempts from '../pages/Teacher/Attempts';
 import StudentDashboard from '../pages/Student/Dashboard';
+import StudentQuizList from '../pages/Student/QuizList';
+import StudentQuizDetail from '../pages/Student/QuizDetail';
+import StudentTakeQuiz from '../pages/Student/TakeQuiz';
+import StudentHistory from '../pages/Student/History';
+import StudentResult from '../pages/Student/Result';
 
 // Route guards
 import ProtectedRoute from './ProtectedRoute';
@@ -40,6 +45,11 @@ const AppRouter = () => {
 
             {/* Student routes */}
             <Route path="/student" element={<StudentRoute><StudentDashboard /></StudentRoute>} />
+            <Route path="/student/quizzes" element={<StudentRoute><StudentQuizList /></StudentRoute>} />
+            <Route path="/student/quizzes/:id" element={<StudentRoute><StudentQuizDetail /></StudentRoute>} />
+            <Route path="/student/quizzes/:id/take" element={<StudentRoute><StudentTakeQuiz /></StudentRoute>} />
+            <Route path="/student/history" element={<StudentRoute><StudentHistory /></StudentRoute>} />
+            <Route path="/student/result/:attemptId" element={<StudentRoute><StudentResult /></StudentRoute>} />
 
             {/* Example of protecting any route with generic auth check */}
             <Route path="/protected-example" element={<ProtectedRoute><div>Protected content</div></ProtectedRoute>} />

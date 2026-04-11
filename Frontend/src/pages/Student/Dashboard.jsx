@@ -1,89 +1,146 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import apiService from '../../services/api';
 import './Student.css';
-import '../Admin/Admin.css'; // Reuse common layout styles
-import '../Admin/Dashboard.css'; // Reuse common dashboard styles
 
 export default function Dashboard() {
-    const activeQuizzes = [
-        { id: 1, title: 'Introduction to React', teacher: 'Sarah Connor', duration: '45 mins', questions: 20 },
-        { id: 2, title: 'Advanced CSS Structures', teacher: 'Harvey Specter', duration: '30 mins', questions: 15 },
-    ];
+    const { getUserDisplayName } = useAuth();
+    const [quizzes, setQuizzes] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const recentResults = [
-        { id: 1, title: 'JavaScript Basics', score: '85%', date: 'Oct 20, 2025', pass: true },
-        { id: 2, title: 'HTML5 Semantic Web', score: '92%', date: 'Oct 18, 2025', pass: true },
-        { id: 3, title: 'Node.js intro', score: '55%', date: 'Oct 15, 2025', pass: false },
-    ];
+    const displayName = getUserDisplayName() || 'Bạn';
+
+    useEffect(() => {
+        const fetchQuizzes = async () => {
+            try {
+                const data = await apiService.getQuizzes();
+                const list = Array.isArray(data.results)
+                    ? data.results
+                    : Array.isArray(data) ? data : [];
+                setQuizzes(list);
+            } catch (error) {
+                console.error('Failed to fetch quizzes:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchQuizzes();
+    }, []);
 
     return (
-        <div className="admin-container student-dashboard">
-            <header className="admin-header user-welcome">
-                <div>
-                    <h1 className="admin-title">Hello, Alex! 👋</h1>
-                    <p className="admin-subtitle">Ready to learn something new today?</p>
-                </div>
-            </header>
-
-            <div className="dashboard-grid student-grid">
-                {/* Available Quizzes Area */}
-                <div className="admin-card available-quizzes">
-                    <div className="card-header-flex">
-                        <h2 className="card-title">Available Quizzes</h2>
-                        <button className="text-btn">View All</button>
+        <div className="student-page">
+            {/* ===== Hero Section ===== */}
+            <section className="stu-hero">
+                <div className="stu-hero-content">
+                    <div className="stu-hero-text">
+                        <h1>Xin chào, <span className="stu-highlight">{displayName}</span>! 👋</h1>
+                        <p>Sẵn sàng chinh phục kiến thức mới? Hãy chọn một bài quiz và bắt đầu ngay thôi!</p>
+                        <div className="stu-hero-buttons">
+                            <Link to="/student/quizzes" className="stu-btn-primary">🚀 Làm bài ngay</Link>
+                            <Link to="/student/history" className="stu-btn-secondary">📊 Xem lịch sử</Link>
+                        </div>
                     </div>
-                    <div className="student-quiz-grid">
-                        {activeQuizzes.map(quiz => (
-                            <div key={quiz.id} className="student-quiz-card">
-                                <div className="quiz-card-content">
-                                    <h3>{quiz.title}</h3>
-                                    <p className="teacher-name">By {quiz.teacher}</p>
-                                    <div className="quiz-meta">
-                                        <span>⏱️ {quiz.duration}</span>
-                                        <span>📝 {quiz.questions} Qs</span>
+                    <div className="stu-hero-visual">
+                        <div className="stu-floating-cards">
+                            <div className="stu-float-card stu-fc-1">📚 Quiz</div>
+                            <div className="stu-float-card stu-fc-2">🎯 Kết quả</div>
+                            <div className="stu-float-card stu-fc-3">⭐ Thành tích</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ===== Stats Section ===== */}
+            <section className="stu-stats">
+                <div className="stu-container">
+                    <div className="stu-stats-grid">
+                        <div className="stu-stat-item">
+                            <div className="stu-stat-number">{quizzes.length}</div>
+                            <div className="stu-stat-label">Bài quiz khả dụng</div>
+                        </div>
+                        <div className="stu-stat-item">
+                            <div className="stu-stat-number">0</div>
+                            <div className="stu-stat-label">Đã hoàn thành</div>
+                        </div>
+                        <div className="stu-stat-item">
+                            <div className="stu-stat-number">--</div>
+                            <div className="stu-stat-label">Điểm trung bình</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ===== Available Quizzes ===== */}
+            <section className="stu-quizzes-section">
+                <div className="stu-container">
+                    <div className="stu-section-header">
+                        <h2 className="stu-section-title">Bài quiz dành cho bạn</h2>
+                        <Link to="/student/quizzes" className="stu-view-all">Xem tất cả →</Link>
+                    </div>
+
+                    {loading ? (
+                        <div className="stu-loading">
+                            <div className="stu-spinner"></div>
+                            <p>Đang tải bài quiz...</p>
+                        </div>
+                    ) : quizzes.length === 0 ? (
+                        <div className="stu-empty">
+                            <span className="stu-empty-icon">📭</span>
+                            <p>Chưa có bài quiz nào. Hãy quay lại sau nhé!</p>
+                        </div>
+                    ) : (
+                        <div className="stu-quizzes-grid">
+                            {quizzes.slice(0, 6).map(quiz => (
+                                <div key={quiz.id} className="stu-quiz-card">
+                                    <div className="stu-quiz-header">
+                                        <h3>{quiz.title}</h3>
+                                        {quiz.difficulty && (
+                                            <span className={`stu-difficulty stu-diff-${(quiz.difficulty || '').toLowerCase()}`}>
+                                                {quiz.difficulty}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="stu-quiz-desc">
+                                        {quiz.description || 'Hãy thử sức với bài quiz này!'}
+                                    </p>
+                                    <div className="stu-quiz-info">
+                                        <span>📝 {quiz.questions_count || quiz.question_count || '?'} câu hỏi</span>
+                                        <span>⏱️ {quiz.time_limit || quiz.duration || '30'} phút</span>
+                                    </div>
+                                    <div className="stu-quiz-footer">
+                                        <span className="stu-quiz-author">
+                                            Bởi: {quiz.author || quiz.teacher_name || quiz.created_by || 'Giáo viên'}
+                                        </span>
+                                        <Link to={`/student/quizzes/${quiz.id}`} className="stu-quiz-start-btn">
+                                            Bắt đầu
+                                        </Link>
                                     </div>
                                 </div>
-                                <button className="start-btn">Start Quiz</button>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
+            </section>
 
-                {/* Recent Results Area */}
-                <div className="admin-card recent-results">
-                    <h2 className="card-title">Recent Results</h2>
-                    <ul className="result-list">
-                        {recentResults.map(result => (
-                            <li key={result.id} className="result-item">
-                                <div className="result-info">
-                                    <h4>{result.title}</h4>
-                                    <span className="result-date">{result.date}</span>
-                                </div>
-                                <div className="result-score">
-                                    <span className={`score-badge ${result.pass ? 'pass' : 'fail'}`}>
-                                        {result.score}
-                                    </span>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                
-                {/* Navigation Panel for Models */}
-                <div className="admin-card quick-actions" style={{gridColumn: '1 / -1'}}>
-                    <h2 className="card-title">Quản lý Học tập (Models)</h2>
-                    <div className="actions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                        <Link to="/student/quizzes" className="action-btn" style={{textDecoration: 'none'}}>
-                            <span className="action-icon">📚</span>
-                            Danh sách Bài Quiz
+            {/* ===== Quick Navigation ===== */}
+            <section className="stu-nav-section">
+                <div className="stu-container">
+                    <h2 className="stu-section-title">Truy cập nhanh</h2>
+                    <div className="stu-nav-grid">
+                        <Link to="/student/quizzes" className="stu-nav-card">
+                            <div className="stu-nav-icon">📚</div>
+                            <h3>Danh sách Quiz</h3>
+                            <p>Xem tất cả bài quiz có sẵn</p>
                         </Link>
-                        <Link to="/student/history" className="action-btn" style={{textDecoration: 'none'}}>
-                            <span className="action-icon">📊</span>
-                            Kết quả & Lịch sử
+                        <Link to="/student/history" className="stu-nav-card">
+                            <div className="stu-nav-icon">📊</div>
+                            <h3>Lịch sử làm bài</h3>
+                            <p>Xem kết quả các bài đã làm</p>
                         </Link>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
     );
 }

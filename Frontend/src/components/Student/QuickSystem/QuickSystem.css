@@ -1,0 +1,13 @@
+/* Student QuickSystem Navigation */
+.student-quick-actions {
+    padding: 16px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(20, 30, 60, 0.06);
+}
+
+.student-quick-actions .card-title {
+    margin: 0 0 10px 6px;
+    font-size: 18px;
+    color: #111827;
+}

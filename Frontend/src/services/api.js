@@ -149,6 +149,10 @@ class ApiService {
     });
   }
 
+  async getAttempts() {
+    return this.request('/attempts/');
+  }
+
   // Stats endpoint (if available)
   async getStats() {
     try {

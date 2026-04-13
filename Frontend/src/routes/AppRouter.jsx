@@ -8,6 +8,7 @@ import Register from '../pages/Register';
 import AdminDashboard from '../pages/Admin/Dashboard';
 import AdminUsers from '../pages/Admin/Users';
 import AdminQuizzes from '../pages/Admin/MyQuizzes';
+import AdminAttempts from '../pages/Admin/Attempts';
 import TeacherDashboard from '../pages/Teacher/Dashboard';
 import TeacherMyQuizzes from '../pages/Teacher/MyQuizzes';
 import TeacherQuestionBank from '../pages/Teacher/QuestionBank';
@@ -36,6 +37,7 @@ const AppRouter = () => {
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
             <Route path="/admin/quizzes" element={<AdminRoute><AdminQuizzes /></AdminRoute>} />
+            <Route path="/admin/attempts" element={<AdminRoute><AdminAttempts /></AdminRoute>} />
 
             {/* Teacher routes */}
             <Route path="/teacher" element={<TeacherRoute><TeacherDashboard /></TeacherRoute>} />

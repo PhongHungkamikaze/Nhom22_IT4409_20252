@@ -48,9 +48,17 @@ INSTALLED_APPS = [
     "django_filters",
     "corsheaders",
     "celery",
+    "channels",
     "exam",
+    "check",
 ]
+ASGI_APPLICATION = 'exam_online.asgi.application'
 
+CHANNEL_LAYERS = {
+    'default':{
+        'BACKEND':'channels.layers.InMemoryChannelLayer'
+    }
+}
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",

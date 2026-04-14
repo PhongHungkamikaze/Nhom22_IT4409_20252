@@ -18,7 +18,7 @@ from rest_framework import permissions, status, views
 from rest_framework.response import Response
 
 
-@extend_schema(tags=["Question"])
+@extend_schema(tags=["Auth"])
 class RegisterView(views.APIView):
     """POST /auth/register/ - Tạo tài khoản mới."""
 
@@ -37,15 +37,15 @@ class RegisterView(views.APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@extend_schema(tags=["Auth"])
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-
+@extend_schema(tags=["Auth"])
 class LogoutView(TokenBlacklistView):
     pass
 
-
+@extend_schema(tags=["Auth"])
 class ChangePasswordView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -65,7 +65,7 @@ class ChangePasswordView(views.APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@extend_schema(tags=["Auth"])
 class ResetPasswordView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -89,7 +89,7 @@ class ResetPasswordView(views.APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@extend_schema(tags=["Auth"])
 class ResetPasswordConfirmView(views.APIView):
     permission_classes = [permissions.AllowAny]
 

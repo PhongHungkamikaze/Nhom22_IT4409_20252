@@ -1,5 +1,5 @@
 import django_filters
-from ..models import Attempt, StatusChoices
+from ..models import Attempt
 
 
 class AttemptFilter(django_filters.FilterSet):
@@ -56,8 +56,8 @@ class AttemptFilter(django_filters.FilterSet):
     class Meta:
         model = Attempt
         fields = {
-            "id":     ["exact", "in"],
-            "user":   ["exact"],          # ?user=<id>
-            "quiz":   ["exact"],          # ?quiz=<id>
-            "status": ["exact"],          # ?status=ready | ongoing | completed
+            "id": ["exact", "in"],
+            "user": ["exact"],  # ?user=<id>
+            "quiz": ["exact"],  # ?quiz=<id>
+            "status": ["exact"],  # ?status=ready | ongoing | completed
         }

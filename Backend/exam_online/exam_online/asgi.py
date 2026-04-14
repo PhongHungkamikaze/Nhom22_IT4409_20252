@@ -16,11 +16,11 @@ import check.routing
 
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "exam_online.settings")
-application = ProtocolTypeRouter({
-    'http':get_asgi_application(),
-    'websocket':AuthMiddlewareStack(
-        URLRouter(
-            check.routing.websocket_urlpatterns
-        )
-    )
-})
+application = ProtocolTypeRouter(
+    {
+        "http": get_asgi_application(),
+        "websocket": AuthMiddlewareStack(
+            URLRouter(check.routing.websocket_urlpatterns)
+        ),
+    }
+)

@@ -15,7 +15,6 @@ Chạy: pytest exam/tests/quiz/ -v
 """
 
 import pytest
-from exam.models import Quiz
 
 
 BASE_URL = "/api/quizzes/"

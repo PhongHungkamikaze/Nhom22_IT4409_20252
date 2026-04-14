@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 from decouple import config
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -52,13 +53,9 @@ INSTALLED_APPS = [
     "exam",
     "check",
 ]
-ASGI_APPLICATION = 'exam_online.asgi.application'
+ASGI_APPLICATION = "exam_online.asgi.application"
 
-CHANNEL_LAYERS = {
-    'default':{
-        'BACKEND':'channels.layers.InMemoryChannelLayer'
-    }
-}
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -202,12 +199,13 @@ CORS_ALLOW_HEADERS = [
 ]
 
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://127.0.0.1:6379/0")
-CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = config(
+    "CELERY_RESULT_BACKEND", default="redis://127.0.0.1:6379/0"
+)
 
 SIMPLE_JWT = {
     # Kéo dài thời gian sống của Access Token (Ví dụ: 60 phút)
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     # Refresh Token thường để dài hơn (Ví dụ: 7 ngày)
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }

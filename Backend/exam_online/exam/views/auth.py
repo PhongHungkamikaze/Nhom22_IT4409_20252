@@ -37,13 +37,16 @@ class RegisterView(views.APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @extend_schema(tags=["Auth"])
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+
 @extend_schema(tags=["Auth"])
 class LogoutView(TokenBlacklistView):
     pass
+
 
 @extend_schema(tags=["Auth"])
 class ChangePasswordView(views.APIView):
@@ -64,6 +67,7 @@ class ChangePasswordView(views.APIView):
                 {"detail": "Password updated successfully."}, status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @extend_schema(tags=["Auth"])
 class ResetPasswordView(views.APIView):
@@ -88,6 +92,7 @@ class ResetPasswordView(views.APIView):
                 {"detail": "Password reset email sent."}, status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @extend_schema(tags=["Auth"])
 class ResetPasswordConfirmView(views.APIView):

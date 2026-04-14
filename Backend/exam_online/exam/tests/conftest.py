@@ -4,9 +4,7 @@ Fixtures dùng chung cho toàn bộ test suite.
 Chạy với: pytest (từ thư mục exam_online/)
 """
 
-import io
 import pytest
-from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APIClient
 from exam.models import User, Quiz
 

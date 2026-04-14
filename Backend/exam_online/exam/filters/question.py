@@ -30,7 +30,7 @@ class QuestionFilter(django_filters.FilterSet):
     class Meta:
         model = Question
         fields = {
-            "id":   ["exact", "in"],
-            "quiz": ["exact"],           # ?quiz=<id>
-            "type": ["exact"],           # ?type=single | ?type=multiple
+            "id": ["exact", "in"],
+            "quiz": ["exact"],  # ?quiz=<id>
+            "type": ["exact"],  # ?type=single | ?type=multiple
         }

@@ -36,7 +36,7 @@ class AnswerFilter(django_filters.FilterSet):
     class Meta:
         model = Answer
         fields = {
-            "id":       ["exact", "in"],
-            "attempt":  ["exact"],        # ?attempt=<id>
-            "question": ["exact"],        # ?question=<id>
+            "id": ["exact", "in"],
+            "attempt": ["exact"],  # ?attempt=<id>
+            "question": ["exact"],  # ?question=<id>
         }

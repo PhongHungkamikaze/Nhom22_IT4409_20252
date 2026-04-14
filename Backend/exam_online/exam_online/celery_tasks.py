@@ -7,11 +7,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "exam_online.settings")
 
 celery_app = Celery("exam")
 
-celery_app.conf.update(
-    include=[
-        "exam.tasks"
-    ]
-)
+celery_app.conf.update(include=["exam.tasks"])
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.

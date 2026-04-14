@@ -40,10 +40,14 @@ class TestFileSetList:
 
     def test_user_only_sees_own_files(self, auth_client, fileset, other_user):
         """User chỉ nhìn thấy file của chính họ, không thấy file người khác."""
-        other_file = SimpleUploadedFile("other.txt", b"other", content_type="text/plain")
+        other_file = SimpleUploadedFile(
+            "other.txt", b"other", content_type="text/plain"
+        )
         from exam.models import FileSet
 
-        FileSet.objects.create(name="Other File", file=other_file, uploaded_by=other_user)
+        FileSet.objects.create(
+            name="Other File", file=other_file, uploaded_by=other_user
+        )
 
         response = auth_client.get(BASE_URL)
         assert response.status_code == 200
@@ -53,10 +57,14 @@ class TestFileSetList:
 
     def test_admin_can_see_all_files(self, admin_client, fileset, other_user):
         """Admin dùng ?all=true xem được tất cả file."""
-        other_file = SimpleUploadedFile("admin_test.txt", b"x", content_type="text/plain")
+        other_file = SimpleUploadedFile(
+            "admin_test.txt", b"x", content_type="text/plain"
+        )
         from exam.models import FileSet
 
-        FileSet.objects.create(name="Another File", file=other_file, uploaded_by=other_user)
+        FileSet.objects.create(
+            name="Another File", file=other_file, uploaded_by=other_user
+        )
 
         response = admin_client.get(BASE_URL + "?all=true")
         assert response.status_code == 200
@@ -106,7 +114,9 @@ class TestFileSetCreate:
         response = api_client.post(BASE_URL, data=payload, format="multipart")
         assert response.status_code == 401
 
-    def test_uploaded_by_is_set_to_current_user(self, auth_client, sample_file, regular_user):
+    def test_uploaded_by_is_set_to_current_user(
+        self, auth_client, sample_file, regular_user
+    ):
         """Trường `uploaded_by` tự động gán thành username của user hiện tại."""
         payload = {"name": "Auto Owner Test", "file": sample_file}
         response = auth_client.post(BASE_URL, data=payload, format="multipart")
@@ -133,7 +143,9 @@ class TestFileSetRetrieve:
 
     def test_retrieve_other_user_file_returns_404(self, auth_client, other_user):
         """User không thể xem file của người khác (404 vì queryset đã scope)."""
-        other_file = SimpleUploadedFile("hidden.txt", b"hidden", content_type="text/plain")
+        other_file = SimpleUploadedFile(
+            "hidden.txt", b"hidden", content_type="text/plain"
+        )
         from exam.models import FileSet
 
         other_fileset = FileSet.objects.create(
@@ -166,7 +178,9 @@ class TestFileSetUpdate:
 
     def test_patch_other_user_file_returns_404(self, auth_client, other_user):
         """Không thể sửa file của người khác."""
-        other_file = SimpleUploadedFile("other_patch.txt", b"x", content_type="text/plain")
+        other_file = SimpleUploadedFile(
+            "other_patch.txt", b"x", content_type="text/plain"
+        )
         from exam.models import FileSet
 
         other_fileset = FileSet.objects.create(
@@ -201,7 +215,9 @@ class TestFileSetDestroy:
 
     def test_delete_other_user_file_returns_404(self, auth_client, other_user):
         """Không thể xóa file của người khác."""
-        other_file = SimpleUploadedFile("delete_test.txt", b"x", content_type="text/plain")
+        other_file = SimpleUploadedFile(
+            "delete_test.txt", b"x", content_type="text/plain"
+        )
         from exam.models import FileSet
 
         other_fileset = FileSet.objects.create(

@@ -13,7 +13,7 @@ Chạy: pytest exam/tests/search/ -v
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from exam.models import Quiz, FileSet
+from exam.models import FileSet
 
 
 BASE_URL = "/api/search/"
@@ -123,8 +123,12 @@ class TestSearchFileSet:
 
     def test_user_cannot_see_other_users_files(self, auth_client, other_user):
         """User thường chỉ tìm thấy file của chính họ."""
-        other_file = SimpleUploadedFile("secret.txt", b"secret", content_type="text/plain")
-        FileSet.objects.create(name="Secret Document", file=other_file, uploaded_by=other_user)
+        other_file = SimpleUploadedFile(
+            "secret.txt", b"secret", content_type="text/plain"
+        )
+        FileSet.objects.create(
+            name="Secret Document", file=other_file, uploaded_by=other_user
+        )
 
         response = auth_client.get(BASE_URL, {"q": "Secret"})
         assert response.status_code == 200
@@ -133,7 +137,9 @@ class TestSearchFileSet:
 
     def test_admin_can_see_all_files(self, admin_client, fileset, other_user):
         """Admin có thể tìm thấy file của tất cả người dùng."""
-        other_file = SimpleUploadedFile("admin_visible.txt", b"x", content_type="text/plain")
+        other_file = SimpleUploadedFile(
+            "admin_visible.txt", b"x", content_type="text/plain"
+        )
         FileSet.objects.create(
             name="Admin Visible File", file=other_file, uploaded_by=other_user
         )

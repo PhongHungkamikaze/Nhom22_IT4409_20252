@@ -1,4 +1,3 @@
-from datetime import timedelta, timezone
 from rest_framework import serializers
 from ..models import Attempt
 from .answer import AnswerSerializers
@@ -24,4 +23,8 @@ class AttemptSerializer(serializers.ModelSerializer):
             "finished_at",
             "answers",
         ]
-        extra_kwargs = {"score": {"read_only": True}, "status": {"read_only": True},"user": {"read_only": True}}
+        extra_kwargs = {
+            "score": {"read_only": True},
+            "status": {"read_only": True},
+            "user": {"read_only": True},
+        }

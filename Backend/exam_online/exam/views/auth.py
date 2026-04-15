@@ -18,7 +18,12 @@ from rest_framework import permissions, status, views
 from rest_framework.response import Response
 
 
-@extend_schema(tags=["Auth"])
+@extend_schema(
+    tags=["Auth"],
+    request=UserRegisterSerializer,
+    description="Nhập username và password để tạo tài khoản mới.",
+    parameters=[],
+)
 class RegisterView(views.APIView):
     """POST /auth/register/ - Tạo tài khoản mới."""
 

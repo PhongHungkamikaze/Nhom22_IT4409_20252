@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Quiz, User, Question, Choice, Attempt, Answer
+from .models import Quiz, User, Question, Choice, Attempt, Answer, Subject
 
 
 # Register your models here.
@@ -30,4 +30,8 @@ class AttemptAdmin(admin.ModelAdmin):
 
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
     pass

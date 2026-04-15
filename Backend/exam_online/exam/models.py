@@ -21,16 +21,23 @@ class User(AbstractUser):
         return f"{self.username} - {self.role}"
 
 
+class Subject(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
 class Quiz(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-
+    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
     time_limit = models.IntegerField(null=True, blank=True)
     is_published = models.BooleanField(default=False)
     max_attempts = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(null=True, blank=True)
 
 
 class Question(models.Model):
@@ -76,7 +83,6 @@ class Attempt(models.Model):
         max_length=20, choices=StatusChoices.choices, default=StatusChoices.Ready
     )
     started_at = models.DateTimeField(auto_now_add=True)
-    finished_at = models.DateTimeField(null=True)
 
 
 class Answer(models.Model):
@@ -87,7 +93,6 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
     selected_choices = models.ManyToManyField(Choice)
-
 
 class PasswordResetToken(models.Model):
     user = models.ForeignKey(

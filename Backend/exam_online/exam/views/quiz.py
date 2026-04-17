@@ -17,7 +17,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     queryset = Quiz.objects.all().prefetch_related("questions__choices")
     permission_classes_by_action = {
-        "list": [IsTeacherUser | IsAdminUser],
+        "list": [IsTeacherUser | IsAdminUser | IsStudentUser],  # ✓ Allow students to list
         "retrieve": [IsTeacherUser | IsAdminUser | IsStudentUser],
         "create": [IsTeacherUser],
         "start": [IsStudentUser],
@@ -35,6 +35,29 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     search_fields = ["title", "author__username"]
 
     filterset_class = QuizFilter
+
+    def get_queryset(self):
+        """
+        Filter quizzes based on user role:
+        - Students: only see published quizzes
+        - Teachers: see their own quizzes + all published quizzes
+        - Admins: see all quizzes
+        """
+        queryset = Quiz.objects.all().prefetch_related("questions__choices")
+        
+        # Check user role
+        if hasattr(self.request, 'user') and self.request.user.is_authenticated:
+            if self.request.user.role == 'student':
+                # Students only see published quizzes
+                queryset = queryset.filter(is_published=True)
+            elif self.request.user.role == 'teacher':
+                # Teachers see their own quizzes + published quizzes from others
+                from django.db.models import Q
+                queryset = queryset.filter(
+                    Q(author=self.request.user) | Q(is_published=True)
+                )
+        
+        return queryset
 
     @action(detail=True, methods=["get"], url_path="questions")
     def questions(self, request, pk=None):

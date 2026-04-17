@@ -19,6 +19,8 @@ import StudentQuizDetail from '../pages/Student/QuizDetail';
 import StudentTakeQuiz from '../pages/Student/TakeQuiz';
 import StudentHistory from '../pages/Student/History';
 import StudentResult from '../pages/Student/Result';
+import StudentPersonalInfo from '../pages/Student/PersonalInfo';
+import StudentSettings from '../pages/Student/Settings';
 
 // Route guards
 import ProtectedRoute from './ProtectedRoute';
@@ -50,8 +52,11 @@ const AppRouter = () => {
             <Route path="/student/quizzes" element={<StudentRoute><StudentQuizList /></StudentRoute>} />
             <Route path="/student/quizzes/:id" element={<StudentRoute><StudentQuizDetail /></StudentRoute>} />
             <Route path="/student/quizzes/:id/take" element={<StudentRoute><StudentTakeQuiz /></StudentRoute>} />
+            <Route path="/student/take-quiz/:attemptId" element={<StudentRoute><StudentTakeQuiz /></StudentRoute>} />
             <Route path="/student/history" element={<StudentRoute><StudentHistory /></StudentRoute>} />
             <Route path="/student/result/:attemptId" element={<StudentRoute><StudentResult /></StudentRoute>} />
+            <Route path="/student/profile" element={<StudentRoute><StudentPersonalInfo /></StudentRoute>} />
+            <Route path="/student/settings" element={<StudentRoute><StudentSettings /></StudentRoute>} />
 
             {/* Example of protecting any route with generic auth check */}
             <Route path="/protected-example" element={<ProtectedRoute><div>Protected content</div></ProtectedRoute>} />

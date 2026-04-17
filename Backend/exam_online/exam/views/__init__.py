@@ -5,6 +5,7 @@ from .auth import (
     ResetPasswordConfirmView,
     ResetPasswordView,
     RegisterView,
+    UserProfileView,
 )
 from .quiz import QuizViewSet
 from .question import QuestionViewSet
@@ -22,4 +23,5 @@ __all__ = [
     "AnswerViewSet",
     "AttemptViewSet",
     "RegisterView",
+    "UserProfileView",
 ]

@@ -167,6 +167,44 @@ class ApiService {
     }
   }
 
+  // User Profile endpoints
+  async getUserProfile() {
+    try {
+      console.log('Fetching user profile from /auth/profile/');
+      return await this.request('/auth/profile/');
+    } catch (err) {
+      console.warn('Failed to fetch profile:', err.message);
+      // Fallback: return user from localStorage
+      const user = localStorage.getItem('user');
+      return user ? JSON.parse(user) : null;
+    }
+  }
+
+  async updateUserProfile(userData) {
+    console.log('updateUserProfile called with:', userData);
+    try {
+      const response = await this.request('/auth/profile/', {
+        method: 'PUT',
+        body: JSON.stringify(userData),
+      });
+      console.log('Profile update successful:', response);
+      return response;
+    } catch (err) {
+      console.error('Failed to update profile:', err.message);
+      throw new Error(err.message || 'Không thể cập nhật thông tin cá nhân');
+    }
+  }
+
+  async changePassword(oldPassword, newPassword) {
+    return this.request('/auth/change-password/', {
+      method: 'POST',
+      body: JSON.stringify({
+        old_password: oldPassword,
+        new_password: newPassword,
+      }),
+    });
+  }
+
   // Refresh token endpoint
   async refreshToken() {
     const refreshToken = localStorage.getItem('refreshToken');

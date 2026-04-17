@@ -92,15 +92,15 @@ const Header = () => {
                     </div>
                   </div>
                   <hr className="dropdown-divider" />
-                  <a href="#profile" className="dropdown-item">
+                  <a href="/student/profile" className="dropdown-item">
                     <span className="item-icon">👤</span>
                     Thông tin cá nhân
                   </a>
-                  <a href="#history" className="dropdown-item">
+                  <a href="/student/history" className="dropdown-item">
                     <span className="item-icon">📊</span>
                     Lịch sử làm bài
                   </a>
-                  <a href="#settings" className="dropdown-item">
+                  <a href="/student/settings" className="dropdown-item">
                     <span className="item-icon">⚙️</span>
                     Cài đặt
                   </a>

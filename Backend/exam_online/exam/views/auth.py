@@ -75,6 +75,42 @@ class ChangePasswordView(views.APIView):
 
 
 @extend_schema(tags=["Auth"])
+class UserProfileView(views.APIView):
+    """GET/PUT /auth/profile/ - Lấy/cập nhật thông tin người dùng"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        """Lấy thông tin cá nhân"""
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request):
+        """Cập nhật thông tin cá nhân (PUT)"""
+        user = request.user
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"detail": "Profile updated successfully.", "user": serializer.data},
+                status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request):
+        """Cập nhật thông tin cá nhân (PATCH)"""
+        user = request.user
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"detail": "Profile updated successfully.", "user": serializer.data},
+                status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(tags=["Auth"])
 class ResetPasswordView(views.APIView):
     permission_classes = [permissions.AllowAny]
 

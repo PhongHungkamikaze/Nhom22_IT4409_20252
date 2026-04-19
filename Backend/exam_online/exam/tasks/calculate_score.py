@@ -1,46 +1,38 @@
-import logging
-from celery import shared_task
+from django.utils import timezone
 from ..models import Attempt, StatusChoices
+from celery import shared_task
 
-logger = logging.getLogger(__name__)
+def calculate_attempt_score(attempt):
+    total_questions = attempt.quiz.questions.count()
+    answers = attempt.answers.all()
+    correct_count = 0
 
+    for answer in answers:
+        correct_choices = {
+            c.id for c in answer.question.choices.all() if c.is_correct
+        }
+        selected_choices = {c.id for c in answer.selected_choices.all()}
 
-@shared_task()
-def calculate_score(id):
-    try:
-        logger.info(f"Start scoring attempt {id}")
+        if correct_choices == selected_choices:
+            correct_count += 1
 
-        attempt = (
-            Attempt.objects.select_related("user", "quiz")
-            .prefetch_related("answers__question__choices", "answers__selected_choices")
-            .get(id=id)
+    return (
+        0
+        if total_questions == 0
+        else round((correct_count / total_questions) * 100, 2)
+    )
+
+@shared_task
+def calculate_score(attempt_id):
+    attempt = (
+        Attempt.objects.select_related("quiz")
+        .prefetch_related(
+            "answers__question__choices",
+            "answers__selected_choices",
         )
+        .get(id=attempt_id)
+    )
 
-        total_questions = attempt.quiz.questions.count()
-        answers = attempt.answers.all()
-        correct_count = 0
-
-        for answer in answers:
-            correct_choices = {
-                c.id for c in answer.question.choices.all() if c.is_correct
-            }
-            selected_choices = {c.id for c in answer.selected_choices.all()}
-
-            if correct_choices == selected_choices:
-                correct_count += 1
-
-        score = (
-            0
-            if total_questions == 0
-            else round((correct_count / total_questions) * 100, 2)
-        )
-
-        attempt.score = score
-        attempt.status = StatusChoices.Completed
-        attempt.save()
-
-        logger.info(f"Finished scoring attempt {id} with score {score}")
-
-    except Exception as e:
-        logger.error(f"Error in calculate_score: {str(e)}")
-        raise
+    attempt.score = calculate_attempt_score(attempt)
+    attempt.status = StatusChoices.Completed
+    attempt.save(update_fields=["score", "status"])

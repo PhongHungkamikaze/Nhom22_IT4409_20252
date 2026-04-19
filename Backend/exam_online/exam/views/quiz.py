@@ -81,7 +81,7 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
-        count_attempt = Attempt.objects.filter(user=request.user, quiz=quiz).count()
+        count_attempt = Attempt.objects.filter(user=request.user, quiz=quiz, status = StatusChoices.Processing).count() + Attempt.objects.filter(user=request.user, quiz=quiz, status = StatusChoices.Completed).count()
 
         if count_attempt == quiz.max_attempts:
             return response.Response(
@@ -110,10 +110,6 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
             user=request.user,
             quiz=quiz,
             status=StatusChoices.Ongoing,
-            started_at=timezone.now(),
-            finished_at=timezone.now() + timezone.timedelta(minutes=quiz.time_limit)
-            if quiz.time_limit
-            else None,
         )
 
         serializer = AttemptSerializer(attempt)
@@ -121,3 +117,8 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
             {"message": "Start quiz successfully", "attempt": serializer.data},
             status=status.HTTP_201_CREATED,
         )
+    @action(detail=True, methods=["post"], url_path="published")
+    def published(self, request, pk=None):
+        quiz = self.get_object()
+        quiz.is_published = True
+        

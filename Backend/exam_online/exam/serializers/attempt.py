@@ -8,7 +8,6 @@ class AttemptSerializer(serializers.ModelSerializer):
     quiz_title = serializers.CharField(source="quiz.title", read_only=True)
     answers = AnswerSerializers(many=True, read_only=True)
     started_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
-    finished_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 
     class Meta:
         model = Attempt
@@ -20,7 +19,6 @@ class AttemptSerializer(serializers.ModelSerializer):
             "score",
             "status",
             "started_at",
-            "finished_at",
             "answers",
         ]
         extra_kwargs = {

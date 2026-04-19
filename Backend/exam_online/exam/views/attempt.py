@@ -59,7 +59,7 @@ class AttemptViewSet(viewsets.ModelViewSet):
                 {"error": "Already submitted"}, status=status.HTTP_400_BAD_REQUEST
             )
         attempt.status = StatusChoices.Processing
-        attempt.save()
+        attempt.save(update_fields=["status"])
         calculate_score.delay(attempt.id)
         return response.Response(
             {"message": "Calculate in progress..."}, status=status.HTTP_200_OK

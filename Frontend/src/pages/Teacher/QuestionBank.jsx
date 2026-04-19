@@ -1,24 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Teacher.css';
+import apiService from '../../services/api';
 import '../Admin/Admin.css'; // Reuse common layout styles
 import '../Admin/Users.css'; // Reuse table styles
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 
 export default function QuestionBank() {
     const [searchTerm, setSearchTerm] = useState('');
+    const [questions, setQuestions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const [questions] = useState([
-        { id: 1, point: 1, text: 'What is the Virtual DOM in React?', type: 'Multiple Choice', difficulty: 'Medium', topic: 'React.js' },
-        { id: 2, point: 2, text: 'Explain the CSS Box Model.', type: 'Essay', difficulty: 'Hard', topic: 'CSS' },
-        { id: 3, point: 1, text: 'Which tag is used for hyperlinking in HTML?', type: 'Multiple Choice', difficulty: 'Easy', topic: 'HTML' },
-        { id: 4, point: 1, text: 'What does "use strict" do in Javascript?', type: 'Multiple Choice', difficulty: 'Medium', topic: 'JavaScript' },
-        { id: 5, point: 2, text: 'Write a Node.js script to read a file.', type: 'Essay', difficulty: 'Hard', topic: 'Node.js' },
-    ]);
+    useEffect(() => {
+        let mounted = true;
+        const load = async () => {
+            try {
+                const data = await apiService.getQuestions();
+                if (mounted) setQuestions(data.results || []);
+            } catch (err) {
+                console.error('Failed to fetch questions', err);
+                if (mounted) setError(err.message || 'Fetch failed');
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+        load();
+        return () => { mounted = false; };
+    }, []);
 
-    const filteredQuestions = questions.filter(q =>
-        q.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.topic.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredQuestions = questions.filter(q => {
+        const ct = (q.content || '').toString().toLowerCase();
+        const qt = (q.quiz_title || '').toString().toLowerCase();
+        const s = searchTerm.toLowerCase();
+        return ct.includes(s) || qt.includes(s);
+    });
 
     return (
         <div className="admin-container">
@@ -63,44 +78,49 @@ export default function QuestionBank() {
                 </div>
 
                 <div className="table-responsive">
-                    <table className="admin-table">
-                        <thead>
-                            <tr>
-                                <th style={{ width: '40%' }}>Question Prompt</th>
-                                <th>Topic</th>
-                                <th>Type</th>
-                                <th>Level & Points</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredQuestions.map(q => (
-                                <tr key={q.id}>
-                                    <td>
-                                        <div className="question-text">
-                                            {q.text}
-                                        </div>
-                                    </td>
-                                    <td><span className="topic-badge">{q.topic}</span></td>
-                                    <td>{q.type}</td>
-                                    <td>
-                                        <div className="diff-cell">
-                                            <span className={`diff-badge diff-${q.difficulty.toLowerCase()}`}>
-                                                {q.difficulty}
-                                            </span>
-                                            <span className="point-badge">{q.point} pt</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="action-buttons">
-                                            <button className="btn-icon-only edit-btn" title="Edit Question">✏️</button>
-                                            <button className="btn-icon-only delete-btn" title="Delete">🗑️</button>
-                                        </div>
-                                    </td>
+                    {loading ? (
+                        <div style={{ padding: 24 }}>Loading questions...</div>
+                    ) : error ? (
+                        <div style={{ padding: 24, color: 'red' }}>Error: {error}</div>
+                    ) : filteredQuestions.length === 0 ? (
+                        <div style={{ padding: 24 }}>No questions found.</div>
+                    ) : (
+                        <table className="admin-table">
+                            <thead>
+                                <tr>
+                                    <th style={{ width: '40%' }}>Question Prompt</th>
+                                    <th>Quiz</th>
+                                    <th>Type</th>
+                                    <th>Choices</th>
+                                    <th>Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredQuestions.map(q => (
+                                    <tr key={q.id}>
+                                        <td>
+                                            <div className="question-text">{q.content}</div>
+                                        </td>
+                                        <td>{q.quiz_title || (q.quiz ? `#${q.quiz}` : '-')}</td>
+                                        <td>{q.type}</td>
+                                        <td>
+                                            <ul className="choice-list">
+                                                {(q.choices || []).map(c => (
+                                                    <li key={c.id} className="choice-item">{c.content}</li>
+                                                ))}
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <div className="action-buttons">
+                                                <button className="btn-icon-only edit-btn" title="Edit Question">✏️</button>
+                                                <button className="btn-icon-only delete-btn" title="Delete">🗑️</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </div>
         </div>

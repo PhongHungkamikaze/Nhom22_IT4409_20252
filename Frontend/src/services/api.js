@@ -5,6 +5,7 @@ import * as attempts from './attempts';
 import * as answers from './answers';
 import * as profile from './profile';
 import * as stats from './stats';
+import * as questions from './questions'
 
 // Keep single default object for compatibility with existing imports
 const apiService = {
@@ -14,6 +15,7 @@ const apiService = {
   ...answers,
   ...profile,
   ...stats,
+  ...questions,
 };
 
 export default apiService;

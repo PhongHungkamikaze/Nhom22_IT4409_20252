@@ -1,24 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Teacher.css';
 import '../Admin/Admin.css';
 import '../Admin/Users.css';
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
+import apiService from '../../services/api';
 
 export default function Attempts() {
     const [searchTerm, setSearchTerm] = useState('');
+    const [attempts, setAttempts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [expanded, setExpanded] = useState(null);
 
-    const [attempts] = useState([
-        { id: 101, student: 'Alex Johnson', quiz: 'React Fundamentals', date: 'Oct 26, 2025 10:00 AM', score: '85/100', status: 'Graded' },
-        { id: 102, student: 'Mike Ross', quiz: 'React Fundamentals', date: 'Oct 26, 2025 10:15 AM', score: 'Needs Review', status: 'Pending Review' },
-        { id: 103, student: 'Jane Smith', quiz: 'CSS Layouts', date: 'Oct 25, 2025 14:00 PM', score: '95/100', status: 'Graded' },
-        { id: 104, student: 'Chris Evans', quiz: 'CSS Layouts', date: 'Oct 25, 2025 14:30 PM', score: '42/100', status: 'Graded' },
-        { id: 105, student: 'Rachel Zane', quiz: 'Node.js Basics', date: 'Oct 24, 2025 09:00 AM', score: 'Needs Review', status: 'Pending Review' },
-    ]);
+    useEffect(() => {
+        let mounted = true;
+        const load = async () => {
+            try {
+                const data = await apiService.getAttempts();
+                if (mounted) setAttempts(data.results || []);
+            } catch (err) {
+                console.error('Failed to fetch attempts', err);
+                if (mounted) setError(err.message || 'Fetch failed');
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+        load();
+        return () => { mounted = false; };
+    }, []);
 
-    const filteredAttempts = attempts.filter(a =>
-        a.student.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        a.quiz.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredAttempts = attempts.filter(a => {
+        const username = (a.username || '').toString().toLowerCase();
+        const quizTitle = (a.quiz_title || '').toString().toLowerCase();
+        const s = searchTerm.toLowerCase();
+        return username.includes(s) || quizTitle.includes(s);
+    });
 
     return (
         <div className="admin-container">
@@ -57,49 +73,84 @@ export default function Attempts() {
                 </div>
 
                 <div className="table-responsive">
-                    <table className="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>Quiz Name</th>
-                                <th>Date Submitted</th>
-                                <th>Score</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredAttempts.map(attempt => (
-                                <tr key={attempt.id}>
-                                    <td>
-                                        <div className="user-name-cell">
-                                            <div className="avatar" style={{ background: attempt.status === 'Graded' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
-                                                {attempt.student.charAt(0)}
-                                            </div>
-                                            <span>{attempt.student}</span>
-                                        </div>
-                                    </td>
-                                    <td><strong>{attempt.quiz}</strong></td>
-                                    <td>{attempt.date}</td>
-                                    <td>
-                                        <span className={attempt.status === 'Pending Review' ? 'text-warning' : 'text-bold'}>
-                                            {attempt.score}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={`status-badge status-${attempt.status === 'Graded' ? 'active' : 'upcoming'}`}>
-                                            {attempt.status}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button className={attempt.status === 'Pending Review' ? 'primary-btn' : 'btn-view-all'}>
-                                            {attempt.status === 'Pending Review' ? 'Grade Now' : 'View Details'}
-                                        </button>
-                                    </td>
+                    {loading ? (
+                        <div style={{ padding: 24 }}>Loading attempts...</div>
+                    ) : error ? (
+                        <div style={{ padding: 24, color: 'red' }}>Error: {error}</div>
+                    ) : filteredAttempts.length === 0 ? (
+                        <div style={{ padding: 24 }}>No attempts found.</div>
+                    ) : (
+                        <table className="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Quiz Name</th>
+                                    <th>Date Submitted</th>
+                                    <th>Score</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredAttempts.map((attempt, idx) => (
+                                    <React.Fragment key={`${attempt.user}-${attempt.quiz}-${idx}`}>
+                                        <tr>
+                                            <td>
+                                                <div className="user-name-cell">
+                                                    <div className="avatar" style={{ background: attempt.status === 'graded' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+                                                        {(attempt.username || 'U').charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <span>{attempt.username || `user${attempt.user}`}</span>
+                                                </div>
+                                            </td>
+                                            <td><strong>{attempt.quiz_title || `#${attempt.quiz}`}</strong></td>
+                                            <td>{attempt.started_at}</td>
+                                            <td>
+                                                <span className={attempt.status && attempt.status.toLowerCase() === 'ready' ? 'text-warning' : 'text-bold'}>
+                                                    {attempt.score}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span className={`status-badge status-${attempt.status && attempt.status.toLowerCase() === 'graded' ? 'active' : 'upcoming'}`}>
+                                                    {attempt.status}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div style={{ display: 'flex', gap: 8 }}>
+                                                    <button className={attempt.status && attempt.status.toLowerCase() === 'ready' ? 'primary-btn' : 'btn-view-all'}
+                                                        onClick={() => { /* navigate to grading page */ }}>
+                                                        {attempt.status && attempt.status.toLowerCase() === 'ready' ? 'Grade Now' : 'View Details'}
+                                                    </button>
+                                                    <button className="btn-icon-only" onClick={() => setExpanded(expanded === idx ? null : idx)} title="Toggle answers">🔽</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {expanded === idx && (
+                                            <tr>
+                                                <td colSpan={6} style={{ background: '#fafafa' }}>
+                                                    <div style={{ padding: 12 }}>
+                                                        <h4>Answers</h4>
+                                                        {attempt.answers && attempt.answers.length > 0 ? (
+                                                            <ul className="answer-list">
+                                                                {attempt.answers.map((ans, i) => (
+                                                                    <li key={i} className="answer-item">
+                                                                        <div><strong>Q:</strong> {ans.question_content}</div>
+                                                                        <div><strong>Selected:</strong> {(ans.selected_choices || []).join(', ') || '—'}</div>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        ) : (
+                                                            <div>No answers submitted.</div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </div>
         </div>

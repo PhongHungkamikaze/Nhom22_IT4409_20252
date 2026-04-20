@@ -11,6 +11,7 @@ from .quiz import QuizViewSet
 from .question import QuestionViewSet
 from .answer import AnswerViewSet
 from .attempt import AttemptViewSet
+from .user import UserViewSet
 
 __all__ = [
     "LoginView",
@@ -24,4 +25,5 @@ __all__ = [
     "AttemptViewSet",
     "RegisterView",
     "UserProfileView",
+    "UserViewSet",
 ]

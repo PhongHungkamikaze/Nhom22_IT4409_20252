@@ -1,7 +1,7 @@
 from .quiz_question_choices import ChoiceSerializer, QuestionSerializer, QuizSerializer
 from .attempt import AttemptSerializer
 from .answer import AnswerSerializers
-from .user_name import (
+from .user import (
     UserSerializer,
     UserRegisterSerializer,
     CustomTokenObtainPairSerializer,

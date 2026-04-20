@@ -11,9 +11,11 @@ from .views import (
     ResetPasswordView,
     ResetPasswordConfirmView,
     UserProfileView,
+    UserViewSet,
 )
 
 router = DefaultRouter()
+router.register(r"users", UserViewSet)
 router.register(r"quizzes", QuizViewSet)
 router.register(r"questions", QuestionViewSet)
 router.register(r"attempts", AttemptViewSet)

@@ -7,7 +7,6 @@ from ..serializers import QuizSerializer, AttemptSerializer, QuestionSerializer
 from rest_framework import viewsets, status, response
 from rest_framework.decorators import action
 from ..models import StatusChoices, Attempt
-from django.utils import timezone
 from ..filters import QuizFilter
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend

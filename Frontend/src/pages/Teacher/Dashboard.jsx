@@ -42,7 +42,7 @@ export default function Dashboard() {
                     <p className="admin-subtitle">Manage your quizzes and track student progress.</p>
                 </div>
             </header>
-
+            <QuickSystem />
             <div className="dashboard-grid">
                 <div className="stats-container">
                     {stats.map((stat, idx) => (
@@ -57,7 +57,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="dashboard-main">
-                    <QuickSystem />
+
                 </div>
             </div>
         </div>

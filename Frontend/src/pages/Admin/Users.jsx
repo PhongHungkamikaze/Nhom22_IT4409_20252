@@ -58,7 +58,7 @@ export default function Users() {
                 </div>
 
                 <div className="table-responsive">
-                    <table className="admin-table">
+                    <table className="table">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -90,11 +90,9 @@ export default function Users() {
                                         </span>
                                     </td>
                                     <td>{user.joined}</td>
-                                    <td>
-                                        <div className="action-buttons">
-                                            <button className="btn-icon-only edit-btn" title="Edit">✏️</button>
-                                            <button className="btn-icon-only delete-btn" title="Delete">🗑️</button>
-                                        </div>
+                                    <td className="action-group">
+                                        <button className="text-btn">Edit</button>
+                                        <button className="text-btn danger">Delete</button>
                                     </td>
                                 </tr>
                             ))}
@@ -110,11 +108,9 @@ export default function Users() {
                 </div>
 
                 <div className="pagination">
-                    <span className="pagination-info">Showing 1 to {filteredUsers.length} of {users.length} entries</span>
+                    <span className="pagination-info">Showing {filteredUsers.length} of {users.length} users</span>
                     <div className="pagination-controls">
-                        <button className="page-btn disabled">Previous</button>
                         <button className="page-btn active">1</button>
-                        <button className="page-btn disabled">Next</button>
                     </div>
                 </div>
             </div>

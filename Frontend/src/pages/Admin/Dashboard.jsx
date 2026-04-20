@@ -28,7 +28,7 @@ export default function Dashboard() {
                     <p className="admin-subtitle">Welcome back! Here's an overview of your platform.</p>
                 </div>
             </header>
-
+            <QuickSystem />
             <div className="dashboard-grid">
                 {/* Stats Section */}
                 <div className="stats-container">
@@ -62,8 +62,6 @@ export default function Dashboard() {
                         </ul>
                         <button className="btn-view-all">View All Activities</button>
                     </div>
-
-                    <QuickSystem />
                 </div>
             </div>
         </div>

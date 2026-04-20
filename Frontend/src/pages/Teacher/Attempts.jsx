@@ -38,14 +38,13 @@ export default function Attempts() {
 
     return (
         <div className="admin-container">
+            <QuickSystem />
             <header className="admin-header">
                 <div>
                     <h1 className="admin-title">Student Attempts</h1>
                     <p className="admin-subtitle">Review and grade submissions from your students.</p>
                 </div>
             </header>
-
-            <QuickSystem />
 
             <div className="admin-card">
                 <div className="table-controls">
@@ -73,26 +72,24 @@ export default function Attempts() {
                 </div>
 
                 <div className="table-responsive">
-                    {loading ? (
-                        <div style={{ padding: 24 }}>Loading attempts...</div>
-                    ) : error ? (
-                        <div style={{ padding: 24, color: 'red' }}>Error: {error}</div>
-                    ) : filteredAttempts.length === 0 ? (
-                        <div style={{ padding: 24 }}>No attempts found.</div>
-                    ) : (
-                        <table className="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Student</th>
-                                    <th>Quiz Name</th>
-                                    <th>Date Submitted</th>
-                                    <th>Score</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredAttempts.map((attempt, idx) => (
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Quiz Name</th>
+                                <th>Date Submitted</th>
+                                <th>Score</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr><td colSpan="6">Loading attempts...</td></tr>
+                            ) : error ? (
+                                <tr><td colSpan="6" style={{ color: 'red' }}>Error: {error}</td></tr>
+                            ) : filteredAttempts.length > 0 ? (
+                                filteredAttempts.map((attempt, idx) => (
                                     <React.Fragment key={`${attempt.user}-${attempt.quiz}-${idx}`}>
                                         <tr>
                                             <td>
@@ -115,14 +112,12 @@ export default function Attempts() {
                                                     {attempt.status}
                                                 </span>
                                             </td>
-                                            <td>
-                                                <div style={{ display: 'flex', gap: 8 }}>
-                                                    <button className={attempt.status && attempt.status.toLowerCase() === 'ready' ? 'primary-btn' : 'btn-view-all'}
-                                                        onClick={() => { /* navigate to grading page */ }}>
-                                                        {attempt.status && attempt.status.toLowerCase() === 'ready' ? 'Grade Now' : 'View Details'}
-                                                    </button>
-                                                    <button className="btn-icon-only" onClick={() => setExpanded(expanded === idx ? null : idx)} title="Toggle answers">🔽</button>
-                                                </div>
+                                            <td className="action-group">
+                                                <button className={attempt.status && attempt.status.toLowerCase() === 'ready' ? 'text-btn' : 'text-btn'}
+                                                    onClick={() => { /* navigate to grading page */ }}>
+                                                    {attempt.status && attempt.status.toLowerCase() === 'ready' ? 'Grade Now' : 'View Details'}
+                                                </button>
+                                                <button className="text-btn" onClick={() => setExpanded(expanded === idx ? null : idx)} title="Toggle answers">Details</button>
                                             </td>
                                         </tr>
                                         {expanded === idx && (
@@ -147,10 +142,19 @@ export default function Attempts() {
                                             </tr>
                                         )}
                                     </React.Fragment>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
+                                ))
+                            ) : (
+                                <tr><td colSpan="6">No attempts found.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="pagination">
+                    <span className="pagination-info">Showing {filteredAttempts.length} attempts</span>
+                    <div className="pagination-controls">
+                        <button className="page-btn active">1</button>
+                    </div>
                 </div>
             </div>
         </div>

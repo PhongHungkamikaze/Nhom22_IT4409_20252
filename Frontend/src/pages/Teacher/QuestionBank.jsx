@@ -37,6 +37,7 @@ export default function QuestionBank() {
 
     return (
         <div className="admin-container">
+            <QuickSystem />
             <header className="admin-header">
                 <div>
                     <h1 className="admin-title">Question Bank</h1>
@@ -47,7 +48,6 @@ export default function QuestionBank() {
                 </button>
             </header>
 
-            <QuickSystem />
 
             <div className="admin-card">
                 <div className="table-controls">
@@ -78,25 +78,23 @@ export default function QuestionBank() {
                 </div>
 
                 <div className="table-responsive">
-                    {loading ? (
-                        <div style={{ padding: 24 }}>Loading questions...</div>
-                    ) : error ? (
-                        <div style={{ padding: 24, color: 'red' }}>Error: {error}</div>
-                    ) : filteredQuestions.length === 0 ? (
-                        <div style={{ padding: 24 }}>No questions found.</div>
-                    ) : (
-                        <table className="admin-table">
-                            <thead>
-                                <tr>
-                                    <th style={{ width: '40%' }}>Question Prompt</th>
-                                    <th>Quiz</th>
-                                    <th>Type</th>
-                                    <th>Choices</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredQuestions.map(q => (
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th style={{ width: '40%' }}>Question Prompt</th>
+                                <th>Quiz</th>
+                                <th>Type</th>
+                                <th>Choices</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr><td colSpan="5">Loading questions...</td></tr>
+                            ) : error ? (
+                                <tr><td colSpan="5" style={{ color: 'red' }}>Error: {error}</td></tr>
+                            ) : filteredQuestions.length > 0 ? (
+                                filteredQuestions.map(q => (
                                     <tr key={q.id}>
                                         <td>
                                             <div className="question-text">{q.content}</div>
@@ -110,17 +108,24 @@ export default function QuestionBank() {
                                                 ))}
                                             </ul>
                                         </td>
-                                        <td>
-                                            <div className="action-buttons">
-                                                <button className="btn-icon-only edit-btn" title="Edit Question">✏️</button>
-                                                <button className="btn-icon-only delete-btn" title="Delete">🗑️</button>
-                                            </div>
+                                        <td className="action-group">
+                                            <button className="text-btn">Edit</button>
+                                            <button className="text-btn danger">Delete</button>
                                         </td>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
+                                ))
+                            ) : (
+                                <tr><td colSpan="5">No questions found.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="pagination">
+                    <span className="pagination-info">Showing {filteredQuestions.length} questions</span>
+                    <div className="pagination-controls">
+                        <button className="page-btn active">1</button>
+                    </div>
                 </div>
             </div>
         </div>

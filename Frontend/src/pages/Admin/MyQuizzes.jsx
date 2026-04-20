@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
-import './Quizzes.css';
 import './Admin.css';
-import '../Teacher/Teacher.css';
 import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
 
 export default function MyQuizzes() {

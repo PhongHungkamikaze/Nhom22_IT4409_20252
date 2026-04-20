@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './Users.css';
 import './Admin.css';
 import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
 export default function Users() {

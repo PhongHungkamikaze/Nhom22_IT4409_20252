@@ -1,5 +1,4 @@
 import React from 'react';
-import './Analytics.css';
 import './Admin.css';
 
 export default function Analytics() {

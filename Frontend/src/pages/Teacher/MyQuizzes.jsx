@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
 import './Teacher.css';
-import '../Admin/Admin.css'; // Reuse common layout styles
-import '../Admin/Users.css'; // Reuse table styles
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 
 export default function MyQuizzes() {

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './Teacher.css';
-import '../Admin/Admin.css';
-import '../Admin/Users.css';
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 import apiService from '../../services/api';
 

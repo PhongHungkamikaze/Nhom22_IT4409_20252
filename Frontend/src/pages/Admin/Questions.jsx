@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import apiService from '../../services/api';
-import './Questions.css';
 import './Admin.css';
-import './Users.css';
-import './Quizzes.css';
 import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
 
 export default function Questions() {

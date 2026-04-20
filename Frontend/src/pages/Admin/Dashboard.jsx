@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './Dashboard.css';
 import './Admin.css';
 import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
 

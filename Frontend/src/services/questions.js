@@ -15,8 +15,15 @@ export async function createQuestion(questionData) {
     });
 }
 
+export async function deleteQuestion(id) {
+    return apiClient.request(`/questions/${id}/`, {
+        method: 'DELETE',
+    });
+}
+
 export default {
     getQuestions,
     getQuestion,
     createQuestion
+    , deleteQuestion
 };

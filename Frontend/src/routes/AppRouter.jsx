@@ -19,6 +19,8 @@ import TeacherMyQuizzes from '../pages/Teacher/MyQuizzes';
 import TeacherQuestionBank from '../pages/Teacher/QuestionBank';
 import TeacherQuestionCreate from '../pages/Teacher/CreateQuiz'
 import TeacherAttempts from '../pages/Teacher/Attempts';
+import TeacherQuizDetail from '../pages/Teacher/TeacherQuizDetail';
+import TeacherQuizEdit from '../pages/Teacher/TeacherQuizEdit';
 
 // Student
 import StudentDashboard from '../pages/Student/Dashboard';
@@ -55,6 +57,8 @@ const AppRouter = () => {
             <Route path="/teacher/quizzes" element={<TeacherRoute><TeacherMyQuizzes /></TeacherRoute>} />
             <Route path="/teacher/questions" element={<TeacherRoute><TeacherQuestionBank /></TeacherRoute>} />
             <Route path="teacher/quizzes/create" element={<TeacherRoute><TeacherQuestionCreate /></TeacherRoute>} />
+            <Route path="/teacher/quizzes/:id" element={<TeacherRoute><TeacherQuizDetail /></TeacherRoute>} />
+            <Route path="/teacher/quizzes/edit/:id" element={<TeacherRoute><TeacherQuizEdit /></TeacherRoute>} />
             <Route path="/teacher/attempts" element={<TeacherRoute><TeacherAttempts /></TeacherRoute>} />
 
             {/* Student routes */}

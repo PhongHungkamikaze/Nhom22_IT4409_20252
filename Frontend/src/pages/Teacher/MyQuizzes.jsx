@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import './Teacher.css';
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 
@@ -8,6 +9,8 @@ export default function MyQuizzes() {
     const [searchTerm, setSearchTerm] = useState('');
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const { user } = useAuth();
 
     useEffect(() => {
         const load = async () => {
@@ -83,8 +86,18 @@ export default function MyQuizzes() {
                                 <tr><td colSpan="6">Loading quizzes...</td></tr>
                             ) : filteredQuizzes.length > 0 ? (
                                 filteredQuizzes.map(quiz => {
-                                    const authorName = quiz.author_name;
-                                    console.log(quiz)
+                                    const authorName = quiz.author_name || quiz.author || quiz.teacher_name || '';
+                                    // determine if current user is the author
+                                    const isAuthor = (() => {
+                                        if (!user) return false;
+                                        const uid = user.id || user.user_id || user.pk;
+                                        // check common fields on quiz
+                                        if (quiz.author === uid || quiz.author_id === uid || String(quiz.author) === String(uid)) return true;
+                                        if (quiz.author_username && user.username && quiz.author_username === user.username) return true;
+                                        if (quiz.author_name && (quiz.author_name === `${user.first_name} ${user.last_name}` || quiz.author_name === user.username)) return true;
+                                        return false;
+                                    })();
+
                                     return (
                                         <tr key={quiz.id}>
                                             <td>{quiz.id}</td>
@@ -96,24 +109,31 @@ export default function MyQuizzes() {
                                                 {quiz.is_published ? "Đã xuất bản" : "Chưa xuất bản"}
                                             </td>
                                             <td className="action-group">
-                                                <Link to={`/teacher/quizzes/edit/${quiz.id}`} className="text-btn">Edit</Link>
-                                                <button
-                                                    className="text-btn danger"
-                                                    onClick={async () => {
-                                                        if (!window.confirm('Xác nhận xóa quiz này?')) return;
-                                                        try {
-                                                            if (apiService && typeof apiService.deleteQuiz === 'function') {
-                                                                await apiService.deleteQuiz(quiz.id);
-                                                                setQuizzes(prev => prev.filter(q => q.id !== quiz.id));
-                                                            } else {
-                                                                console.warn('apiService.deleteQuiz not available');
-                                                            }
-                                                        } catch (err) {
-                                                            console.error('Failed to delete quiz', err);
-                                                            alert('Không thể xóa quiz. Xem console để biết chi tiết.');
-                                                        }
-                                                    }}
-                                                >Delete</button>
+                                                {isAuthor ? (
+                                                    <>
+                                                        <Link to={`/teacher/quizzes/${quiz.id}`} className="text-btn">Detail</Link>
+                                                        <Link to={`/teacher/quizzes/edit/${quiz.id}`} className="text-btn">Edit</Link>
+                                                        <button
+                                                            className="text-btn danger"
+                                                            onClick={async () => {
+                                                                if (!window.confirm('Xác nhận xóa quiz này?')) return;
+                                                                try {
+                                                                    if (apiService && typeof apiService.deleteQuiz === 'function') {
+                                                                        await apiService.deleteQuiz(quiz.id);
+                                                                        setQuizzes(prev => prev.filter(q => q.id !== quiz.id));
+                                                                    } else {
+                                                                        console.warn('apiService.deleteQuiz not available');
+                                                                    }
+                                                                } catch (err) {
+                                                                    console.error('Failed to delete quiz', err);
+                                                                    alert('Không thể xóa quiz. Xem console để biết chi tiết.');
+                                                                }
+                                                            }}
+                                                        >Delete</button>
+                                                    </>
+                                                ) : (
+                                                    <Link to={`/teacher/quizzes/${quiz.id}`} className="text-btn">Detail</Link>
+                                                )}
                                             </td>
                                         </tr>
                                     );

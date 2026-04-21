@@ -430,6 +430,109 @@
     gap: 4px;
 }
 
+.error-message {
+    color: #b91c1c;
+    margin-top: 8px;
+}
+
+/* Edit table styles */
+.edit-table input,
+.edit-table textarea {
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    width: 100%;
+    font-size: 0.95rem;
+}
+
+.edit-table td {
+    padding: 12px;
+    vertical-align: middle;
+}
+
+.edit-table tr td:first-child {
+    color: #0f172a;
+    font-weight: 600;
+    width: 220px;
+}
+
+.edit-table .form-actions {
+    margin-top: 16px;
+}
+
+/* ======= Teacher quiz detail & edit desktop layout ======= */
+.teacher-quiz-detail .quiz-title {
+    font-size: 1.5rem;
+    margin: 0 0 8px 0;
+}
+
+.teacher-quiz-detail .quiz-desc {
+    color: #475569;
+    margin-bottom: 12px;
+}
+
+.teacher-quiz-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.meta-card {
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #eef2ff;
+    border-radius: 8px;
+}
+
+.meta-value {
+    margin-top: 6px;
+}
+
+.teacher-quiz-detail .teacher-quiz-main {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.teacher-quiz-detail .teacher-quiz-content {
+    flex: 1 1 0;
+}
+
+.teacher-quiz-actions {
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.teacher-quiz-actions .action-block {
+    text-align: right;
+}
+
+.teacher-quiz-edit {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+    .teacher-quiz-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .teacher-quiz-detail .teacher-quiz-main {
+        flex-direction: column;
+    }
+
+    .teacher-quiz-actions {
+        width: 100%;
+    }
+
+    .teacher-quiz-edit {
+        padding: 0 12px;
+    }
+}
+
 /* ========== CREATE QUIZ FORM (basic teacher styles) ========== */
 .teacher-createquiz .admin-card h2 {
     margin: 0 0 12px 0;

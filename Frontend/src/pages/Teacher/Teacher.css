@@ -430,6 +430,68 @@
     gap: 4px;
 }
 
+/* ========== CREATE QUIZ FORM (basic teacher styles) ========== */
+.teacher-createquiz .admin-card h2 {
+    margin: 0 0 12px 0;
+    font-size: 1.5rem;
+}
+
+.create-quiz-form {
+    display: block;
+}
+
+.create-quiz-form .form-group {
+    margin-bottom: 14px;
+}
+
+.create-quiz-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #0f172a;
+}
+
+.create-quiz-form input[type="text"],
+.create-quiz-form input[type="number"],
+.create-quiz-form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.create-quiz-form input:focus,
+.create-quiz-form textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.06);
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.secondary-btn {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    color: #374151;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.secondary-btn:hover {
+    background: #f8fafc;
+}
+
+.error-message {
+    color: #b91c1c;
+    margin-top: 8px;
+}
+
 .quiz-code-badge {
     font-size: 0.75rem;
     color: #4f46e5;

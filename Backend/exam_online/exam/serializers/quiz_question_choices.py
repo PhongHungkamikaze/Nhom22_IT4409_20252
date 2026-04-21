@@ -64,6 +64,8 @@ class QuizSerializer(serializers.ModelSerializer):
             "time_limit",
             "author_name",
             "created_at",
+            "is_published",
+            "max_attempts",
         ]
         extra_kwargs = {
             "author": {"read_only": True},

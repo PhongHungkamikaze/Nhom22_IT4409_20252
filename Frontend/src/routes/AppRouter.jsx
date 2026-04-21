@@ -5,15 +5,22 @@ import { Routes, Route } from 'react-router-dom';
 import Homepage from '../pages/Homepage';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
+
+// Admin 
 import AdminDashboard from '../pages/Admin/Dashboard';
 import AdminUsers from '../pages/Admin/Users';
 import AdminQuizzes from '../pages/Admin/MyQuizzes';
 import AdminQuestions from "../pages/Admin/Questions"
 import AdminAttempts from '../pages/Admin/Attempts';
+
+// Teacher
 import TeacherDashboard from '../pages/Teacher/Dashboard';
 import TeacherMyQuizzes from '../pages/Teacher/MyQuizzes';
 import TeacherQuestionBank from '../pages/Teacher/QuestionBank';
+import TeacherQuestionCreate from '../pages/Teacher/CreateQuiz'
 import TeacherAttempts from '../pages/Teacher/Attempts';
+
+// Student
 import StudentDashboard from '../pages/Student/Dashboard';
 import StudentQuizList from '../pages/Student/QuizList';
 import StudentQuizDetail from '../pages/Student/QuizDetail';
@@ -47,6 +54,7 @@ const AppRouter = () => {
             <Route path="/teacher" element={<TeacherRoute><TeacherDashboard /></TeacherRoute>} />
             <Route path="/teacher/quizzes" element={<TeacherRoute><TeacherMyQuizzes /></TeacherRoute>} />
             <Route path="/teacher/questions" element={<TeacherRoute><TeacherQuestionBank /></TeacherRoute>} />
+            <Route path="teacher/quizzes/create" element={<TeacherRoute><TeacherQuestionCreate /></TeacherRoute>} />
             <Route path="/teacher/attempts" element={<TeacherRoute><TeacherAttempts /></TeacherRoute>} />
 
             {/* Student routes */}

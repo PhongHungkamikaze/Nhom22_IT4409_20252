@@ -13,7 +13,7 @@ export default function MyQuizzes() {
         const load = async () => {
             try {
                 const data = await apiService.getQuizzes();
-                setQuizzes(Array.isArray(data.results) ? data.results : []);
+                setQuizzes(data.results);
             } catch (err) {
                 console.error('Failed to fetch quizzes', err);
             } finally {
@@ -74,6 +74,7 @@ export default function MyQuizzes() {
                                 <th>Author</th>
                                 <th>Created At</th>
                                 <th>Time Limit (min)</th>
+                                <th>Published</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -82,14 +83,18 @@ export default function MyQuizzes() {
                                 <tr><td colSpan="6">Loading quizzes...</td></tr>
                             ) : filteredQuizzes.length > 0 ? (
                                 filteredQuizzes.map(quiz => {
-                                    const authorName = quiz.author_name || (quiz.author && quiz.author.username) || String(quiz.author || '');
+                                    const authorName = quiz.author_name;
+                                    console.log(quiz)
                                     return (
                                         <tr key={quiz.id}>
                                             <td>{quiz.id}</td>
                                             <td>{quiz.title}</td>
                                             <td>{authorName}</td>
-                                            <td>{quiz.created_at ? new Date(quiz.created_at).toLocaleString() : 'No date'}</td>
-                                            <td>{quiz.time_limit ?? quiz.timeLimit ?? quiz.time_limit_in_minutes ?? '-'}</td>
+                                            <td>{quiz.created_at}</td>
+                                            <td>{quiz.time_limit}</td>
+                                            <td>
+                                                {quiz.is_published ? "Đã xuất bản" : "Chưa xuất bản"}
+                                            </td>
                                             <td className="action-group">
                                                 <Link to={`/teacher/quizzes/edit/${quiz.id}`} className="text-btn">Edit</Link>
                                                 <button

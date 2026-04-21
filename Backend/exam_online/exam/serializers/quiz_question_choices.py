@@ -15,17 +15,14 @@ class ChoiceSerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    quiz_title = serializers.CharField(source="quiz.title", read_only=True)
     choices = ChoiceSerializer(many=True)
 
     class Meta:
         model = Question
         fields = [
             "id",
-            "quiz",
             "type",
             "content",
-            "quiz_title",
             "choices",
         ]
 
@@ -54,6 +51,15 @@ class QuestionSerializer(serializers.ModelSerializer):
 class QuizSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source="author.username", read_only=True)
 
+    questions = QuestionSerializer(many=True, read_only=True)
+
+    question_ids = serializers.PrimaryKeyRelatedField(
+        source="questions",
+        many=True,
+        queryset=Question.objects.all(),
+        write_only=True,
+    )
+
     class Meta:
         model = Quiz
         fields = [
@@ -66,6 +72,8 @@ class QuizSerializer(serializers.ModelSerializer):
             "created_at",
             "is_published",
             "max_attempts",
+            "questions",
+            "question_ids",
         ]
         extra_kwargs = {
             "author": {"read_only": True},

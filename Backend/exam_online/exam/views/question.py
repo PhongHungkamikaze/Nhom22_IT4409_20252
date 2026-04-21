@@ -10,7 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 @extend_schema(tags=["Question"])
 class QuestionViewSet(PermissionMixin, viewsets.ModelViewSet):
-    queryset = Question.objects.all().select_related("quiz").prefetch_related("choices")
+    queryset = Question.objects.all().prefetch_related("quizzes", "choices")
     serializer_class = QuestionSerializer
     permission_classes_by_action = {
         "list": [IsTeacherUser | IsAdminUser],

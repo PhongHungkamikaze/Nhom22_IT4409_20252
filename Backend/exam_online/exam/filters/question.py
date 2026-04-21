@@ -31,6 +31,5 @@ class QuestionFilter(django_filters.FilterSet):
         model = Question
         fields = {
             "id": ["exact", "in"],
-            "quiz": ["exact"],  # ?quiz=<id>
             "type": ["exact"],  # ?type=single | ?type=multiple
         }

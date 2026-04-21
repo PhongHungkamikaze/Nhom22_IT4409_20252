@@ -27,6 +27,7 @@ class Subject(models.Model):
     def __str__(self):
         return self.name
 
+
 class Quiz(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -35,14 +36,17 @@ class Quiz(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
     time_limit = models.IntegerField(null=True, blank=True)
     is_published = models.BooleanField(default=False)
+    questions = models.ManyToManyField(
+        "Question",
+        related_name="quizzes",
+        blank=True,
+    )
     max_attempts = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
 
 
 class Question(models.Model):
-    quiz = models.ForeignKey(Quiz, related_name="questions", on_delete=models.CASCADE)
-
     class TypeQuestion(models.TextChoices):
         Multiple = "multiple", "Multiple choice"
         Single = "single", "Single choice"
@@ -93,6 +97,7 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
     selected_choices = models.ManyToManyField(Choice)
+
 
 class PasswordResetToken(models.Model):
     user = models.ForeignKey(

@@ -1,21 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Admin.css';
 import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
+import apiService from '../../services/api';
+
 export default function Users() {
     const [searchTerm, setSearchTerm] = useState('');
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [roleFilter, setRoleFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
 
-    const [users] = useState([
-        { id: 1, name: 'Alex Johnson', email: 'alex@example.com', role: 'Student', status: 'Active', joined: '2025-01-12' },
-        { id: 2, name: 'Sarah Connor', email: 'sarah@example.com', role: 'Teacher', status: 'Active', joined: '2024-11-05' },
-        { id: 3, name: 'Mike Ross', email: 'mike@example.com', role: 'Student', status: 'Inactive', joined: '2025-02-28' },
-        { id: 4, name: 'Rachel Zane', email: 'rachel@example.com', role: 'Admin', status: 'Active', joined: '2023-09-15' },
-        { id: 5, name: 'Harvey Specter', email: 'harvey@example.com', role: 'Teacher', status: 'Active', joined: '2024-03-22' },
-    ]);
+    useEffect(() => {
+        let mounted = true;
+        const load = async () => {
+            setLoading(true);
+            try {
+                const data = await apiService.getUsers();
+                // support both paginated ({results: []}) and plain list
+                const list = Array.isArray(data) ? data : (data.results || []);
+                const transformed = list.map(u => ({
+                    id: u.id,
+                    username: u.username,
+                    email: u.email || '',
+                    role: u.role,
+                }));
+                if (mounted) setUsers(transformed);
+            } catch (err) {
+                console.error('Failed to load users', err);
+                if (mounted) setError(err.message || 'Failed to fetch users');
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+        load();
+        return () => { mounted = false; };
+    }, []);
 
-    const filteredUsers = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredUsers = users.filter(user => {
+        const q = searchTerm.toLowerCase();
+        const matchesSearch = user.username.toLowerCase().includes(q);
+        const matchesRole = roleFilter === 'all' || user.role.toLowerCase() === roleFilter.toLowerCase();
+        const matchesStatus = statusFilter === 'all' || user.status.toLowerCase() === statusFilter.toLowerCase();
+        return matchesSearch && matchesRole && matchesStatus;
+    });
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this user?')) return;
+        try {
+            await apiService.deleteUser(id);
+            setUsers(prev => prev.filter(u => u.id !== id));
+        } catch (err) {
+            console.error('Delete failed', err);
+            alert('Failed to delete user');
+        }
+    };
 
     return (
         <div className="admin-container">
@@ -31,87 +70,85 @@ export default function Users() {
             </header>
 
             <div className="admin-card">
-                <div className="table-controls">
-                    <div className="search-bar">
-                        <span className="search-icon">🔍</span>
-                        <input
-                            type="text"
-                            placeholder="Search by name or email..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="filter-group">
-                        <select className="filter-select">
-                            <option value="all">All Roles</option>
-                            <option value="student">Student</option>
-                            <option value="teacher">Teacher</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                        <select className="filter-select">
-                            <option value="all">All Status</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
-                </div>
+                {loading && <p>Loading users...</p>}
+                {error && <p className="error-message">Error: {error}</p>}
+                {!loading && !error && (
+                    <>
+                        <div className="table-controls">
+                            <div className="search-bar">
+                                <span className="search-icon">🔍</span>
+                                <input
+                                    type="text"
+                                    placeholder="Search by name or email..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <div className="filter-group">
+                                <select className="filter-select" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+                                    <option value="all">All Roles</option>
+                                    <option value="student">Student</option>
+                                    <option value="teacher">Teacher</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                                <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                                    <option value="all">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
 
-                <div className="table-responsive">
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Joined Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredUsers.map(user => (
-                                <tr key={user.id}>
-                                    <td>
-                                        <div className="user-name-cell">
-                                            <div className="avatar">{user.name.charAt(0)}</div>
-                                            <span>{user.name}</span>
-                                        </div>
-                                    </td>
-                                    <td>{user.email}</td>
-                                    <td>
-                                        <span className={`role-badge role-${user.role.toLowerCase()}`}>
-                                            {user.role}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={`status-badge status-${user.status.toLowerCase()}`}>
-                                            {user.status}
-                                        </span>
-                                    </td>
-                                    <td>{user.joined}</td>
-                                    <td className="action-group">
-                                        <button className="text-btn">Edit</button>
-                                        <button className="text-btn danger">Delete</button>
-                                    </td>
-                                </tr>
-                            ))}
-                            {filteredUsers.length === 0 && (
-                                <tr>
-                                    <td colSpan="6" className="empty-state">
-                                        No users found matching your search.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                        <div className="table-responsive">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredUsers.map(user => (
+                                        <tr key={user.id}>
+                                            <td>
+                                                <div className="user-name-cell">
+                                                    <div className="avatar">{user.username.charAt(0)}</div>
+                                                    <span>{user.username}</span>
+                                                </div>
+                                            </td>
+                                            <td>{user.email}</td>
+                                            <td>
+                                                <span className={`role-badge role-${user.role.toLowerCase()}`}>
+                                                    {user.role}
+                                                </span>
+                                            </td>
+                                            <td className="action-group">
+                                                <button className="text-btn">Edit</button>
+                                                <button className="text-btn danger" onClick={() => handleDelete(user.id)}>Delete</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {filteredUsers.length === 0 && (
+                                        <tr>
+                                            <td colSpan="6" className="empty-state">
+                                                No users found matching your search.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
 
-                <div className="pagination">
-                    <span className="pagination-info">Showing {filteredUsers.length} of {users.length} users</span>
-                    <div className="pagination-controls">
-                        <button className="page-btn active">1</button>
-                    </div>
-                </div>
+                        <div className="pagination">
+                            <span className="pagination-info">Showing {filteredUsers.length} of {users.length} users</span>
+                            <div className="pagination-controls">
+                                <button className="page-btn active">1</button>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

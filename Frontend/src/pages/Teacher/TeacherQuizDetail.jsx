@@ -55,12 +55,8 @@ export default function TeacherQuizDetail() {
                                 <div className="meta-value">{quiz.time_limit ?? quiz.duration ?? '—'}</div>
                             </div>
                             <div className="meta-card">
-                                <strong>Questions</strong>
-                                <div className="meta-value">{quiz.questions_count ?? quiz.question_count ?? '—'}</div>
-                            </div>
-                            <div className="meta-card">
                                 <strong>Author</strong>
-                                <div className="meta-value">{quiz.author_name ?? quiz.author ?? quiz.teacher_name ?? '—'}</div>
+                                <div className="meta-value">{quiz.author_name}</div>
                             </div>
                         </div>
                         {/* Questions list (if available) */}
@@ -99,7 +95,7 @@ export default function TeacherQuizDetail() {
 
                     <aside className="teacher-quiz-actions">
                         <div className="action-block">
-                            <button className="secondary-btn" onClick={() => navigate(-1)}>Back</button>
+                            <button className="secondary-btn" onClick={() => navigate("/teacher/quizzes")}>Back</button>
                         </div>
                         <div className="action-block">
                             {isAuthor ? (

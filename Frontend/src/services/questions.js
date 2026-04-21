@@ -21,9 +21,17 @@ export async function deleteQuestion(id) {
     });
 }
 
+export async function partialUpdateQuestion(id, data) {
+    return apiClient.request(`/questions/${id}/`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    });
+}
+
 export default {
     getQuestions,
     getQuestion,
     createQuestion
-    , deleteQuestion
+    , deleteQuestion,
+    partialUpdateQuestion
 };

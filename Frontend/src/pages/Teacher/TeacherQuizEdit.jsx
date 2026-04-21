@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
+import apiClient from '../../services/apiClient';
 import './Teacher.css';
 import { useAuth } from '../../context/AuthContext';
 
@@ -21,6 +22,9 @@ export default function TeacherQuizEdit() {
     const [newQContent, setNewQContent] = useState('');
     const [newQChoices, setNewQChoices] = useState('');
     const [addingQuestion, setAddingQuestion] = useState(false);
+    const [availableQuestions, setAvailableQuestions] = useState([]);
+    const [loadingAvailable, setLoadingAvailable] = useState(false);
+    const [addingExisting, setAddingExisting] = useState(false);
 
     useEffect(() => {
         const load = async () => {
@@ -48,6 +52,17 @@ export default function TeacherQuizEdit() {
                 setDescription(data.description || '');
                 setTimeLimit(data.time_limit ? String(data.time_limit) : (data.duration ? String(data.duration) : ''));
                 setIsPublished(Boolean(data.is_published));
+                // load question bank (all questions) to allow selecting from bank
+                try {
+                    const allQs = await apiService.getQuestions();
+                    const list = Array.isArray(allQs) ? allQs : (allQs.results || allQs);
+                    const existingIds = (data.questions || []).map(x => x.id || x.pk).filter(Boolean);
+                    const available = (list || []).filter(q => !existingIds.includes(q.id || q.pk));
+                    // attach is_ready flag used by the UI
+                    setAvailableQuestions((available || []).map(q => ({ ...q, is_ready: false })));
+                } catch (e) {
+                    console.debug('Could not load question bank', e);
+                }
             } catch (err) {
                 console.error('Failed to load quiz', err);
                 setError(err.message || 'Failed to load');
@@ -58,18 +73,68 @@ export default function TeacherQuizEdit() {
         load();
     }, [id]);
 
+    const reloadAvailable = async () => {
+        setLoadingAvailable(true);
+        try {
+            const allQs = await apiService.getQuestions();
+            const list = Array.isArray(allQs) ? allQs : (allQs.results || allQs);
+            const existingIds = (questions || []).map(x => x.id || x.pk).filter(Boolean);
+            const available = (list || []).filter(q => !existingIds.includes(q.id || q.pk));
+            setAvailableQuestions((available || []).map(q => ({ ...q, is_ready: false })));
+        } catch (err) {
+            console.error('Failed to load available questions', err);
+        } finally { setLoadingAvailable(false); }
+    };
+
+    const toggleAvailableReady = (qId) => {
+        setAvailableQuestions(prev => prev.map(q => {
+            const id = q.id || q.pk || q.question_id;
+            if (String(id) === String(qId)) return { ...q, is_ready: !q.is_ready };
+            return q;
+        }));
+    };
+
+    const handleAddSelected = async () => {
+        const selected = availableQuestions.filter(q => q.is_ready);
+        if (!selected || selected.length === 0) return alert('Vui lòng chọn ít nhất một câu hỏi để thêm.');
+        setAddingExisting(true);
+        try {
+            const existingIds = questions.map(q => q.id || q.pk || q.question_id).filter(Boolean);
+            const selectedIds = selected.map(q => q.id || q.pk || q.question_id).filter(Boolean);
+            const newQuestionIds = [...existingIds, ...selectedIds];
+
+            await apiClient.request(`/quizzes/${id}/`, {
+                method: 'PATCH',
+                body: JSON.stringify({ question_ids: newQuestionIds }),
+            });
+
+            setQuestions(prev => [...prev, ...selected.map(q => ({ ...q }))]);
+            setAvailableQuestions(prev => prev.filter(q => !q.is_ready));
+        } catch (err) {
+            console.error('Failed to add selected questions', err);
+            alert('Không thể thêm câu hỏi đã chọn. Xem console để biết chi tiết.');
+        } finally {
+            setAddingExisting(false);
+        }
+    };
+
     const handleSave = async (e) => {
-        e.preventDefault();
+        e?.preventDefault();
         if (!title.trim()) { setError('Title required'); return; }
         setSaving(true); setError(null);
         try {
+            const questionIds = questions.map(q => q.id || q.pk || q.question_id).filter(Boolean);
             const payload = {
                 title: title.trim(),
                 description: description.trim(),
                 time_limit: Number(timeLimit) || 0,
                 is_published: Boolean(isPublished),
+                question_ids: questionIds,
             };
-            await apiService.updateQuiz(id, payload);
+            await apiClient.request(`/quizzes/${id}/`, {
+                method: 'PATCH',
+                body: JSON.stringify(payload),
+            });
             navigate(`/teacher/quizzes/${id}`);
         } catch (err) {
             console.error('Save failed', err);
@@ -134,11 +199,6 @@ export default function TeacherQuizEdit() {
                     </table>
 
                     {error && <p className="error-message">{error}</p>}
-
-                    <div className="form-actions" style={{ justifyContent: 'flex-end' }}>
-                        <button className="primary-btn" type="submit" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
-                        <button type="button" className="secondary-btn" onClick={() => navigate(-1)} disabled={saving}>Cancel</button>
-                    </div>
                 </form>
 
                 <section style={{ marginTop: 20 }}>
@@ -169,26 +229,26 @@ export default function TeacherQuizEdit() {
                                             </td>
                                             <td className="action-group">
                                                 <button className="text-btn danger" onClick={async () => {
-                                                    if (!window.confirm('Xác nhận xóa câu hỏi này?')) return;
+                                                    if (!window.confirm('Xác nhận xóa câu hỏi này khỏi quiz?')) return;
                                                     try {
-                                                        if (apiService && typeof apiService.deleteQuestion === 'function') {
-                                                            await apiService.deleteQuestion(qId);
-                                                            // refresh list after delete to keep consistent with backend
-                                                            try {
-                                                                const refreshed = await (async () => {
-                                                                    const maybe = await apiService.request(`/quizzes/${id}/questions/`);
-                                                                    return Array.isArray(maybe) ? maybe : (maybe.results || maybe);
-                                                                })();
-                                                                setQuestions(refreshed || []);
-                                                            } catch (rerr) {
-                                                                // fallback to optimistic removal
-                                                                setQuestions(prev => prev.filter(x => (x.id || x.pk || x.question_id) !== qId));
-                                                            }
-                                                        } else {
-                                                            console.warn('apiService.deleteQuestion not available');
+                                                        const newQuestionIds = questions
+                                                            .filter(x => (x.id || x.pk || x.question_id) !== qId)
+                                                            .map(x => x.id || x.pk || x.question_id)
+                                                            .filter(Boolean)
+                                                            .map(x => Number(x));
+
+                                                        await apiClient.request(`/quizzes/${id}/`, {
+                                                            method: 'PATCH',
+                                                            body: JSON.stringify({ question_ids: newQuestionIds }),
+                                                        });
+
+                                                        setQuestions(prev => prev.filter(x => (x.id || x.pk || x.question_id) !== qId));
+                                                        const removedQ = questions.find(x => (x.id || x.pk || x.question_id) === qId);
+                                                        if (removedQ) {
+                                                            setAvailableQuestions(prev => [...prev, { ...removedQ, is_ready: false }]);
                                                         }
                                                     } catch (err) {
-                                                        console.error('Failed to delete question', err);
+                                                        console.error('Failed to delete question from quiz', err);
                                                         alert('Không thể xóa câu hỏi. Xem console để biết chi tiết.');
                                                     }
                                                 }}>Delete</button>
@@ -203,54 +263,70 @@ export default function TeacherQuizEdit() {
                         </table>
                     </div>
 
-                    <div style={{ marginTop: 12 }}>
-                        <h4>Add new question</h4>
-                        <div className="form-group">
-                            <label>Question content</label>
-                            <input type="text" value={newQContent} onChange={(e) => setNewQContent(e.target.value)} />
-                        </div>
-                        <div className="form-group">
-                            <label>Choices (one per line)</label>
-                            <textarea value={newQChoices} onChange={(e) => setNewQChoices(e.target.value)} rows={4} />
-                        </div>
-                        <div className="form-actions">
-                            <button type="button" className="primary-btn" disabled={addingQuestion} onClick={async () => {
-                                if (!newQContent.trim()) { alert('Question content required'); return; }
-                                setAddingQuestion(true);
-                                const choices = newQChoices.split('\n').map(s => s.trim()).filter(Boolean).map(c => ({ content: c }));
-                                const payload = {
-                                    quiz: quiz.id,
-                                    type: 'single',
-                                    content: newQContent.trim(),
-                                    choices,
-                                };
-                                try {
-                                    const created = await apiService.createQuestion(payload);
-                                    // Try to refresh authoritative list from backend if possible
-                                    try {
-                                        const maybe = await apiService.request(`/quizzes/${id}/questions/`);
-                                        const refreshed = Array.isArray(maybe) ? maybe : (maybe.results || maybe);
-                                        if (refreshed && refreshed.length >= 0) {
-                                            setQuestions(refreshed || []);
-                                        } else if (created && (created.id || created.pk)) {
-                                            setQuestions(prev => [...prev, created]);
-                                        }
-                                    } catch (rfErr) {
-                                        // fallback: append created or a minimal object
-                                        const q = created && (created.id || created.pk) ? created : { id: created && (created.id || created.pk) || Math.random(), content: payload.content, choices: choices.map((c, idx) => ({ id: idx + 1, content: c.content })) };
-                                        setQuestions(prev => [...prev, q]);
-                                    }
-                                    setNewQContent(''); setNewQChoices('');
-                                } catch (err) {
-                                    console.error('Failed to create question', err);
-                                    alert('Không thể thêm câu hỏi. Xem console để biết chi tiết.');
-                                } finally {
-                                    setAddingQuestion(false);
-                                }
-                            }}>{addingQuestion ? 'Adding...' : 'Add question'}</button>
-                        </div>
+
+                </section>
+
+                <section style={{ marginTop: 20 }}>
+                    <h3>Available questions (Question bank)</h3>
+                    <div style={{ marginBottom: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <button className="secondary-btn" type="button" onClick={reloadAvailable} disabled={loadingAvailable}>Reload</button>
+                        <button className="primary-btn" type="button" onClick={handleAddSelected} disabled={addingExisting || availableQuestions.filter(q => q.is_ready).length === 0}>{addingExisting ? 'Adding...' : 'Add selected'}</button>
+                        {loadingAvailable && <span style={{ marginLeft: 8 }}>Loading available questions...</span>}
+                    </div>
+
+                    <div>
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th style={{ width: 60 }}>Select</th>
+                                    <th>Question</th>
+                                    <th>Choices</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {availableQuestions.map(q => {
+                                    const qId = q.id || q.pk || q.question_id;
+                                    const qContent = q.content || q.question || q.title || '';
+                                    const qChoices = q.choices || q.choice_set || q.answers || [];
+                                    return (
+                                        <tr key={qId || Math.random()}>
+                                            <td>
+                                                <input type="checkbox" checked={Boolean(q.is_ready)} onChange={() => toggleAvailableReady(qId)} />
+                                            </td>
+                                            <td>{qContent}</td>
+                                            <td>
+                                                <ul>
+                                                    {(Array.isArray(qChoices) ? qChoices : []).map((c, idx) => (
+                                                        <li key={c.id || c.pk || idx}>{c.content || c.text || c.choice || String(c)}</li>
+                                                    ))}
+                                                </ul>
+                                            </td>
+                                            <td className="action-group">
+                                                <button className="text-btn" onClick={() => {
+                                                    setAvailableQuestions(prev => prev.map(item => {
+                                                        const id = item.id || item.pk || item.question_id;
+                                                        if (String(id) === String(qId)) return { ...item, is_ready: true };
+                                                        return item;
+                                                    }));
+                                                    setTimeout(() => handleAddSelected(), 50);
+                                                }}>Add</button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                                {availableQuestions.length === 0 && (
+                                    <tr><td colSpan="4">No available questions found.</td></tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </section>
+
+                <div className="form-actions" style={{ justifyContent: 'flex-end', marginTop: 20 }}>
+                    <button className="primary-btn" type="button" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save all'}</button>
+                    <button type="button" className="secondary-btn" onClick={() => navigate(-1)} disabled={saving}>Cancel</button>
+                </div>
             </div>
         </div>
     );

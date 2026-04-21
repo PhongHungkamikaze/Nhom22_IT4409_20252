@@ -58,6 +58,7 @@ class QuizSerializer(serializers.ModelSerializer):
         many=True,
         queryset=Question.objects.all(),
         write_only=True,
+        required=False,
     )
 
     class Meta:
@@ -84,3 +85,11 @@ class QuizSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         validated_data["author"] = request.user
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        questions = validated_data.pop("questions", None)
+        instance = super().update(instance, validated_data)
+        if questions is not None:
+            instance.questions.set(questions)
+
+        return instance

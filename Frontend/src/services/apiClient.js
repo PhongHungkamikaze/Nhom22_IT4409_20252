@@ -73,7 +73,10 @@ class ApiClient {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            return await response.json();
+            // Some endpoints may return no content (204). Parse safely.
+            const text = await response.text();
+            if (!text) return null;
+            return JSON.parse(text);
         } catch (error) {
             console.error('API request failed:', error);
             throw error;

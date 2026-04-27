@@ -7,7 +7,6 @@ class ChoiceSerializer(serializers.ModelSerializer):
         model = Choice
         fields = [
             "id",
-            "question",
             "content",
             "is_correct",
         ]

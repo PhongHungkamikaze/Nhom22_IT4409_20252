@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
-import apiClient from '../../services/apiClient';
 import './Teacher.css';
 import { useAuth } from '../../context/AuthContext';
 
@@ -103,7 +102,7 @@ export default function TeacherQuizEdit() {
             const selectedIds = selected.map(q => q.id || q.pk || q.question_id).filter(Boolean);
             const newQuestionIds = [...existingIds, ...selectedIds];
 
-            await apiClient.request(`/quizzes/${id}/`, {
+            await apiService.request(`/quizzes/${id}/`, {
                 method: 'PATCH',
                 body: JSON.stringify({ question_ids: newQuestionIds }),
             });
@@ -131,7 +130,7 @@ export default function TeacherQuizEdit() {
                 is_published: Boolean(isPublished),
                 question_ids: questionIds,
             };
-            await apiClient.request(`/quizzes/${id}/`, {
+            await apiService.request(`/quizzes/${id}/`, {
                 method: 'PATCH',
                 body: JSON.stringify(payload),
             });
@@ -237,7 +236,7 @@ export default function TeacherQuizEdit() {
                                                             .filter(Boolean)
                                                             .map(x => Number(x));
 
-                                                        await apiClient.request(`/quizzes/${id}/`, {
+                                                        await apiService.request(`/quizzes/${id}/`, {
                                                             method: 'PATCH',
                                                             body: JSON.stringify({ question_ids: newQuestionIds }),
                                                         });

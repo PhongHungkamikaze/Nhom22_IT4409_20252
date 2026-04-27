@@ -1,4 +1,5 @@
 // API base configuration
+import apiClient from './apiClient';
 import * as auth from './auth';
 import * as quizzes from './quizzes';
 import * as attempts from './attempts';
@@ -10,6 +11,7 @@ import * as users from './users';
 
 // Keep single default object for compatibility with existing imports
 const apiService = {
+  request: (...args) => apiClient.request(...args),
   ...auth,
   ...quizzes,
   ...attempts,
@@ -23,4 +25,4 @@ const apiService = {
 export default apiService;
 
 // Also export modules individually if someone wants to import granularly
-export { auth, quizzes, attempts, answers, profile, stats, users };
+export { auth, quizzes, attempts, answers, profile, stats, questions, users };

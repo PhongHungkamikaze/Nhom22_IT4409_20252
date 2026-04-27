@@ -118,12 +118,8 @@ export default function MyQuizzes() {
                                                             onClick={async () => {
                                                                 if (!window.confirm('Xác nhận xóa quiz này?')) return;
                                                                 try {
-                                                                    if (apiService && typeof apiService.deleteQuiz === 'function') {
-                                                                        await apiService.deleteQuiz(quiz.id);
-                                                                        setQuizzes(prev => prev.filter(q => q.id !== quiz.id));
-                                                                    } else {
-                                                                        console.warn('apiService.deleteQuiz not available');
-                                                                    }
+                                                                    await apiService.deleteQuiz(quiz.id);
+                                                                    setQuizzes(prev => prev.filter(q => q.id !== quiz.id));
                                                                 } catch (err) {
                                                                     console.error('Failed to delete quiz', err);
                                                                     alert('Không thể xóa quiz. Xem console để biết chi tiết.');

@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 *.vite
 
+# Local planning notes (do not commit)
+API_INTEGRATION_NOTES.md
+MODEL_RELATIONSHIP_GUIDE.md

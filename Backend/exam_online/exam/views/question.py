@@ -16,8 +16,8 @@ class QuestionViewSet(PermissionMixin, viewsets.ModelViewSet):
         "list": [IsTeacherUser | IsAdminUser],
         "retrieve": [IsTeacherUser | IsAdminUser],
         "create": [IsTeacherUser],
-        "update": [IsTeacherUser, IsOwnerTeacher],
-        "partial_update": [IsTeacherUser, IsOwnerTeacher],
+        "update": [IsTeacherUser],
+        "partial_update": [IsTeacherUser],
         "destroy": [IsTeacherUser | IsAdminUser],
     }
     permission_classes = [IsAdminUser]

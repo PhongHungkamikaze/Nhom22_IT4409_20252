@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from ..models import Question, Quiz, Choice
+from ..models import UserRole
 
 
 class ChoiceSerializer(serializers.ModelSerializer):
@@ -10,7 +11,14 @@ class ChoiceSerializer(serializers.ModelSerializer):
             "content",
             "is_correct",
         ]
-        extra_kwargs = {"is_correct": {"write_only": True}}
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get("request")
+
+        if request and request.user.role == UserRole.Student:
+            fields.pop("is_correct", None)
+        return fields
 
 
 class QuestionSerializer(serializers.ModelSerializer):

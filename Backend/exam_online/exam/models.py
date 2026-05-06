@@ -54,7 +54,6 @@ class Question(models.Model):
     type = models.CharField(
         max_length=20, choices=TypeQuestion.choices, default=TypeQuestion.Single
     )
-
     content = models.TextField()
 
 

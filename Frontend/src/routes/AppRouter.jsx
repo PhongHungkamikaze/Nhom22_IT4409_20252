@@ -17,6 +17,8 @@ import AdminAttempts from '../pages/Admin/Attempts';
 import TeacherDashboard from '../pages/Teacher/Dashboard';
 import TeacherMyQuizzes from '../pages/Teacher/MyQuizzes';
 import TeacherQuestionBank from '../pages/Teacher/QuestionBank';
+import TeacherAddQuestion from '../pages/Teacher/AddQuestion';
+import TeacherEditQuestion from '../pages/Teacher/EditQuestion';
 import TeacherQuestionCreate from '../pages/Teacher/CreateQuiz'
 import TeacherAttempts from '../pages/Teacher/Attempts';
 import TeacherQuizDetail from '../pages/Teacher/TeacherQuizDetail';
@@ -56,6 +58,8 @@ const AppRouter = () => {
             <Route path="/teacher" element={<TeacherRoute><TeacherDashboard /></TeacherRoute>} />
             <Route path="/teacher/quizzes" element={<TeacherRoute><TeacherMyQuizzes /></TeacherRoute>} />
             <Route path="/teacher/questions" element={<TeacherRoute><TeacherQuestionBank /></TeacherRoute>} />
+            <Route path="/teacher/questions/add" element={<TeacherRoute><TeacherAddQuestion /></TeacherRoute>} />
+            <Route path="/teacher/questions/edit/:id" element={<TeacherRoute><TeacherEditQuestion /></TeacherRoute>} />
             <Route path="teacher/quizzes/create" element={<TeacherRoute><TeacherQuestionCreate /></TeacherRoute>} />
             <Route path="/teacher/quizzes/:id" element={<TeacherRoute><TeacherQuizDetail /></TeacherRoute>} />
             <Route path="/teacher/quizzes/edit/:id" element={<TeacherRoute><TeacherQuizEdit /></TeacherRoute>} />

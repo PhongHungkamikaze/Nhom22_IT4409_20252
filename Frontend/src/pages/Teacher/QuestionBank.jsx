@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './Teacher.css';
 import apiService from '../../services/api';
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
@@ -41,9 +42,11 @@ export default function QuestionBank() {
                     <h1 className="admin-title">Question Bank</h1>
                     <p className="admin-subtitle">Organize and manage the repository of your exam questions.</p>
                 </div>
-                <button className="primary-btn">
-                    <span className="btn-icon">📝</span> Add Question
-                </button>
+                <Link to="/teacher/questions/add" style={{textDecoration: 'none'}}>
+                    <button className="primary-btn">
+                        <span className="btn-icon">📝</span> Add Question
+                    </button>
+                </Link>
             </header>
 
 
@@ -107,7 +110,9 @@ export default function QuestionBank() {
                                             </ul>
                                         </td>
                                         <td className="action-group">
-                                            <button className="text-btn">Edit</button>
+                                            <Link to={`/teacher/questions/edit/${q.id}`} style={{textDecoration: 'none'}}>
+                                                <button className="text-btn">Edit</button>
+                                            </Link>
                                             <button className="text-btn danger">Delete</button>
                                         </td>
                                     </tr>

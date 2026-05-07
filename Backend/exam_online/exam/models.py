@@ -4,6 +4,16 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 
+from django.db.models import DateTimeField, Model
+
+
+class BaseModel(Model):
+    created_at = DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        abstract = True
+
 
 # Create your models here.
 class UserRole(models.TextChoices):
@@ -21,14 +31,14 @@ class User(AbstractUser):
         return f"{self.username} - {self.role}"
 
 
-class Subject(models.Model):
+class Subject(BaseModel):
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
 
 
-class Quiz(models.Model):
+class Quiz(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
@@ -46,7 +56,7 @@ class Quiz(models.Model):
     end_time = models.DateTimeField(null=True, blank=True)
 
 
-class Question(models.Model):
+class Question(BaseModel):
     class TypeQuestion(models.TextChoices):
         Multiple = "multiple", "Multiple choice"
         Single = "single", "Single choice"
@@ -55,9 +65,10 @@ class Question(models.Model):
         max_length=20, choices=TypeQuestion.choices, default=TypeQuestion.Single
     )
     content = models.TextField()
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
-class Choice(models.Model):
+class Choice(BaseModel):
     question = models.ForeignKey(
         Question, related_name="choices", on_delete=models.CASCADE
     )
@@ -77,7 +88,7 @@ class StatusChoices(models.TextChoices):
     Completed = "completed", "Completed"
 
 
-class Attempt(models.Model):
+class Attempt(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attempts")
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
 
@@ -88,7 +99,7 @@ class Attempt(models.Model):
     started_at = models.DateTimeField(auto_now_add=True)
 
 
-class Answer(models.Model):
+class Answer(BaseModel):
     attempt = models.ForeignKey(
         Attempt, related_name="answers", on_delete=models.CASCADE
     )

@@ -16,7 +16,11 @@ class ChoiceSerializer(serializers.ModelSerializer):
         fields = super().get_fields()
         request = self.context.get("request")
 
-        if request and request.user.role == UserRole.Student:
+        if (
+            request
+            and request.user.is_authenticated
+            and request.user.role == UserRole.Student
+        ):
             fields.pop("is_correct", None)
         return fields
 
@@ -30,6 +34,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             "id",
             "type",
             "content",
+            "author",
             "choices",
         ]
 
@@ -77,6 +82,7 @@ class QuizSerializer(serializers.ModelSerializer):
             "author",
             "time_limit",
             "author_name",
+            "subject",
             "created_at",
             "is_published",
             "max_attempts",

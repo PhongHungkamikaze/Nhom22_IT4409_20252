@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Teacher.css';
 import apiService from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 
 export default function QuestionBank() {
@@ -9,6 +10,7 @@ export default function QuestionBank() {
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { user } = useAuth();
 
     useEffect(() => {
         let mounted = true;
@@ -33,6 +35,26 @@ export default function QuestionBank() {
         const s = searchTerm.toLowerCase();
         return ct.includes(s) || qt.includes(s);
     });
+
+    const isAuthor = (question) => {
+        if (!user) return false;
+        const uid = user.id || user.user_id || user.pk;
+        if (question.author === uid || question.author_id === uid || String(question.author) === String(uid)) return true;
+        if (question.author_username && user.username && question.author_username === user.username) return true;
+        if (question.author_name && (question.author_name === user.username || question.author_name === `${user.first_name} ${user.last_name}`)) return true;
+        return false;
+    };
+
+    const handleDelete = async (questionId) => {
+        if (!window.confirm('Xác nhận xóa câu hỏi này?')) return;
+        try {
+            await apiService.deleteQuestion(questionId);
+            setQuestions(prev => prev.filter(q => q.id !== questionId));
+        } catch (err) {
+            console.error('Failed to delete question', err);
+            alert('Không thể xóa câu hỏi. Xem console để biết chi tiết.');
+        }
+    };
 
     return (
         <div className="admin-container">
@@ -82,7 +104,8 @@ export default function QuestionBank() {
                     <table className="table">
                         <thead>
                             <tr>
-                                <th style={{ width: '40%' }}>Question Prompt</th>
+                                <th style={{ width: '35%' }}>Question Prompt</th>
+                                <th>Author</th>
                                 <th>Quiz</th>
                                 <th>Type</th>
                                 <th>Choices</th>
@@ -91,34 +114,44 @@ export default function QuestionBank() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="5">Loading questions...</td></tr>
+                                <tr><td colSpan="6">Loading questions...</td></tr>
                             ) : error ? (
-                                <tr><td colSpan="5" style={{ color: 'red' }}>Error: {error}</td></tr>
+                                <tr><td colSpan="6" style={{ color: 'red' }}>Error: {error}</td></tr>
                             ) : filteredQuestions.length > 0 ? (
-                                filteredQuestions.map(q => (
-                                    <tr key={q.id}>
-                                        <td>
-                                            <div className="question-text">{q.content}</div>
-                                        </td>
-                                        <td>{q.quiz_title || (q.quiz ? `#${q.quiz}` : '-')}</td>
-                                        <td>{q.type}</td>
-                                        <td>
-                                            <ul className="choice-list">
-                                                {(q.choices || []).map(c => (
-                                                    <li key={c.id} className="choice-item">{c.content}</li>
-                                                ))}
-                                            </ul>
-                                        </td>
-                                        <td className="action-group">
-                                            <Link to={`/teacher/questions/edit/${q.id}`} style={{textDecoration: 'none'}}>
-                                                <button className="text-btn">Edit</button>
-                                            </Link>
-                                            <button className="text-btn danger">Delete</button>
-                                        </td>
-                                    </tr>
-                                ))
+                                filteredQuestions.map(q => {
+                                    const questionIsAuthor = isAuthor(q);
+                                    const authorDisplay = q.author_name || q.author || '-';
+                                    return (
+                                        <tr key={q.id}>
+                                            <td>
+                                                <div className="question-text">{q.content}</div>
+                                            </td>
+                                            <td>{authorDisplay}</td>
+                                            <td>{q.quiz_title || (q.quiz ? `#${q.quiz}` : '-')}</td>
+                                            <td>{q.type}</td>
+                                            <td>
+                                                <ul className="choice-list">
+                                                    {(q.choices || []).map(c => (
+                                                        <li key={c.id} className="choice-item">{c.content}</li>
+                                                    ))}
+                                                </ul>
+                                            </td>
+                                            <td className="action-group">
+                                                <Link to={`/teacher/questions/${q.id}`} className="text-btn">Detail</Link>
+                                                {questionIsAuthor && (
+                                                    <>
+                                                        <Link to={`/teacher/questions/edit/${q.id}`} style={{textDecoration: 'none'}}>
+                                                            <button className="text-btn">Edit</button>
+                                                        </Link>
+                                                        <button className="text-btn danger" onClick={() => handleDelete(q.id)}>Delete</button>
+                                                    </>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             ) : (
-                                <tr><td colSpan="5">No questions found.</td></tr>
+                                <tr><td colSpan="6">No questions found.</td></tr>
                             )}
                         </tbody>
                     </table>

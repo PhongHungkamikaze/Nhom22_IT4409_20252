@@ -12,6 +12,8 @@ import AdminUsers from '../pages/Admin/Users';
 import AdminQuizzes from '../pages/Admin/MyQuizzes';
 import AdminQuestions from "../pages/Admin/Questions"
 import AdminAttempts from '../pages/Admin/Attempts';
+import AdminQuizDetail from '../pages/Admin/AdminQuizDetail';
+import AdminQuestionDetail from '../pages/Admin/AdminQuestionDetail';
 
 // Teacher
 import TeacherDashboard from '../pages/Teacher/Dashboard';
@@ -23,6 +25,7 @@ import TeacherQuestionCreate from '../pages/Teacher/CreateQuiz'
 import TeacherAttempts from '../pages/Teacher/Attempts';
 import TeacherQuizDetail from '../pages/Teacher/TeacherQuizDetail';
 import TeacherQuizEdit from '../pages/Teacher/TeacherQuizEdit';
+import TeacherQuestionDetail from '../pages/Teacher/TeacherQuestionDetail';
 
 // Student
 import StudentDashboard from '../pages/Student/Dashboard';
@@ -51,7 +54,9 @@ const AppRouter = () => {
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
             <Route path="/admin/quizzes" element={<AdminRoute><AdminQuizzes /></AdminRoute>} />
+            <Route path="/admin/quizzes/:id" element={<AdminRoute><AdminQuizDetail /></AdminRoute>} />
             <Route path="/admin/questions" element={<AdminRoute><AdminQuestions /></AdminRoute>} />
+            <Route path="/admin/questions/:id" element={<AdminRoute><AdminQuestionDetail /></AdminRoute>} />
             <Route path="/admin/attempts" element={<AdminRoute><AdminAttempts /></AdminRoute>} />
 
             {/* Teacher routes */}
@@ -60,6 +65,7 @@ const AppRouter = () => {
             <Route path="/teacher/questions" element={<TeacherRoute><TeacherQuestionBank /></TeacherRoute>} />
             <Route path="/teacher/questions/add" element={<TeacherRoute><TeacherAddQuestion /></TeacherRoute>} />
             <Route path="/teacher/questions/edit/:id" element={<TeacherRoute><TeacherEditQuestion /></TeacherRoute>} />
+            <Route path="/teacher/questions/:id" element={<TeacherRoute><TeacherQuestionDetail /></TeacherRoute>} />
             <Route path="teacher/quizzes/create" element={<TeacherRoute><TeacherQuestionCreate /></TeacherRoute>} />
             <Route path="/teacher/quizzes/:id" element={<TeacherRoute><TeacherQuizDetail /></TeacherRoute>} />
             <Route path="/teacher/quizzes/edit/:id" element={<TeacherRoute><TeacherQuizEdit /></TeacherRoute>} />

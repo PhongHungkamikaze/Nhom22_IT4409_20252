@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
 import './Admin.css';
 import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
@@ -39,11 +40,8 @@ export default function Questions() {
             <header className="admin-header">
                 <div>
                     <h1 className="admin-title">Question Management</h1>
-                    <p className="admin-subtitle">Manage all questions across the platform.</p>
+                    <p className="admin-subtitle">View all questions across the platform.</p>
                 </div>
-                <button className="primary-btn">
-                    <span className="btn-icon">📝</span> Add Question
-                </button>
             </header>
 
             <div className="admin-card">
@@ -77,7 +75,8 @@ export default function Questions() {
                     <table className="table">
                         <thead>
                             <tr>
-                                <th style={{ width: '40%' }}>Question</th>
+                                <th style={{ width: '35%' }}>Question</th>
+                                <th>Author</th>
                                 <th>Quiz</th>
                                 <th>Type</th>
                                 <th>Choices</th>
@@ -86,15 +85,16 @@ export default function Questions() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="5">Loading questions...</td></tr>
+                                <tr><td colSpan="6">Loading questions...</td></tr>
                             ) : error ? (
-                                <tr><td colSpan="5" style={{ color: 'red' }}>Error: {error}</td></tr>
+                                <tr><td colSpan="6" style={{ color: 'red' }}>Error: {error}</td></tr>
                             ) : filteredQuestions.length > 0 ? (
                                 filteredQuestions.map(q => (
                                     <tr key={q.id}>
                                         <td>
                                             <div className="question-text">{q.content}</div>
                                         </td>
+                                        <td>{q.author_name || q.author || '-'}</td>
                                         <td>{q.quiz_title || (q.quiz ? `#${q.quiz}` : '-')}</td>
                                         <td>{q.type}</td>
                                         <td>
@@ -105,13 +105,12 @@ export default function Questions() {
                                             </ul>
                                         </td>
                                         <td className="action-group">
-                                            <button className="text-btn">Edit</button>
-                                            <button className="text-btn danger">Delete</button>
+                                            <Link to={`/admin/questions/${q.id}`} className="text-btn">Detail</Link>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
-                                <tr><td colSpan="5">No questions found.</td></tr>
+                                <tr><td colSpan="6">No questions found.</td></tr>
                             )}
                         </tbody>
                     </table>

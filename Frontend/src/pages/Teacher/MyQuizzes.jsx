@@ -74,6 +74,7 @@ export default function MyQuizzes() {
                             <tr>
                                 <th>ID</th>
                                 <th>Title</th>
+                                <th>Subject</th>
                                 <th>Author</th>
                                 <th>Created At</th>
                                 <th>Time Limit (min)</th>
@@ -83,7 +84,7 @@ export default function MyQuizzes() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="6">Loading quizzes...</td></tr>
+                                <tr><td colSpan="8">Loading quizzes...</td></tr>
                             ) : filteredQuizzes.length > 0 ? (
                                 filteredQuizzes.map(quiz => {
                                     const authorName = quiz.author_name || quiz.author || quiz.teacher_name || '';
@@ -102,6 +103,7 @@ export default function MyQuizzes() {
                                         <tr key={quiz.id}>
                                             <td>{quiz.id}</td>
                                             <td>{quiz.title}</td>
+                                            <td>{quiz.subject_name || '-'}</td>
                                             <td>{authorName}</td>
                                             <td>{quiz.created_at}</td>
                                             <td>{quiz.time_limit}</td>
@@ -135,7 +137,7 @@ export default function MyQuizzes() {
                                     );
                                 })
                             ) : (
-                                <tr><td colSpan="6">No quizzes found.</td></tr>
+                                <tr><td colSpan="8">No quizzes found.</td></tr>
                             )}
                         </tbody>
                     </table>

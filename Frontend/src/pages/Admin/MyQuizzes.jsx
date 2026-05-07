@@ -36,12 +36,9 @@ export default function MyQuizzes() {
             <QuickSystem />
             <header className="admin-header">
                 <div>
-                    <h1 className="admin-title">My Quizzes</h1>
-                    <p className="admin-subtitle">Create, manage, and monitor your quiz exams.</p>
+                    <h1 className="admin-title">Quiz Management</h1>
+                    <p className="admin-subtitle">View and manage all quizzes across the platform.</p>
                 </div>
-                <Link to="/admin/quizzes/create" className="primary-btn">
-                    <span className="btn-icon">✨</span> Create New Quiz
-                </Link>
             </header>
             <div className="admin-card">
                 <div className="table-controls">
@@ -70,15 +67,17 @@ export default function MyQuizzes() {
                             <tr>
                                 <th>ID</th>
                                 <th>Title</th>
+                                <th>Subject</th>
                                 <th>Author</th>
                                 <th>Created At</th>
                                 <th>Time Limit (min)</th>
+                                <th>Published</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="6">Loading quizzes...</td></tr>
+                                <tr><td colSpan="8">Loading quizzes...</td></tr>
                             ) : filteredQuizzes.length > 0 ? (
                                 filteredQuizzes.map(quiz => {
                                     const authorName = quiz.author_name || (quiz.author && quiz.author.username) || String(quiz.author || '');
@@ -86,30 +85,21 @@ export default function MyQuizzes() {
                                         <tr key={quiz.id}>
                                             <td>{quiz.id}</td>
                                             <td>{quiz.title}</td>
+                                            <td>{quiz.subject_name || '-'}</td>
                                             <td>{authorName}</td>
                                             <td>{quiz.created_at ? new Date(quiz.created_at).toLocaleString() : 'No date'}</td>
                                             <td>{quiz.time_limit ?? quiz.timeLimit ?? quiz.time_limit_in_minutes ?? '-'}</td>
+                                            <td>
+                                                {quiz.is_published ? "Đã xuất bản" : "Chưa xuất bản"}
+                                            </td>
                                             <td className="action-group">
-                                                <Link to={`/admin/quizzes/edit/${quiz.id}`} className="text-btn">Edit</Link>
-                                                <button
-                                                    className="text-btn danger"
-                                                    onClick={async () => {
-                                                        if (!window.confirm('Xác nhận xóa quiz này?')) return;
-                                                        try {
-                                                            await apiService.deleteQuiz(quiz.id);
-                                                            setQuizzes(prev => prev.filter(q => q.id !== quiz.id));
-                                                        } catch (err) {
-                                                            console.error('Failed to delete quiz', err);
-                                                            alert('Không thể xóa quiz. Xem console để biết chi tiết.');
-                                                        }
-                                                    }}
-                                                >Delete</button>
+                                                <Link to={`/admin/quizzes/${quiz.id}`} className="text-btn">Detail</Link>
                                             </td>
                                         </tr>
                                     );
                                 })
                             ) : (
-                                <tr><td colSpan="6">No quizzes found.</td></tr>
+                                <tr><td colSpan="8">No quizzes found.</td></tr>
                             )}
                         </tbody>
                     </table>

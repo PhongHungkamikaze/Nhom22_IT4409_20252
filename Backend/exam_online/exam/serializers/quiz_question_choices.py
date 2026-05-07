@@ -27,6 +27,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(serializers.ModelSerializer):
     choices = ChoiceSerializer(many=True)
+    author_name = serializers.CharField(source="author.username", read_only=True)
 
     class Meta:
         model = Question
@@ -35,6 +36,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             "type",
             "content",
             "author",
+            "author_name",
             "choices",
         ]
 
@@ -62,6 +64,9 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 class QuizSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source="author.username", read_only=True)
+    subject_name = serializers.CharField(
+        source="subject.name", read_only=True, default=None
+    )
 
     questions = QuestionSerializer(many=True, read_only=True)
 
@@ -83,6 +88,7 @@ class QuizSerializer(serializers.ModelSerializer):
             "time_limit",
             "author_name",
             "subject",
+            "subject_name",
             "created_at",
             "is_published",
             "max_attempts",
@@ -92,6 +98,7 @@ class QuizSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "author": {"read_only": True},
             "created_at": {"read_only": True},
+            "subject": {"read_only": True},
         }
 
     def create(self, validated_data):

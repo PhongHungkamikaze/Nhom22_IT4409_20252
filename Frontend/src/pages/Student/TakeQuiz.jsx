@@ -26,8 +26,8 @@ export default function TakeQuiz() {
                 setAttempt(attemptData);
 
                 // Fetch questions for this quiz
-                const questionsData = await apiService.request(`/quizzes/${attemptData.quiz}/questions/`);
-                const questionList = Array.isArray(questionsData) ? questionsData : [];
+                const questionsData = await apiService.request(`/quizzes/${attemptData.quiz}/`);
+                const questionList = Array.isArray(questionsData.questions) ? questionsData.questions : [];
                 setQuestions(questionList);
 
                 // Initialize answers from existing attempt
@@ -317,7 +317,7 @@ export default function TakeQuiz() {
                                                     disabled={saving[currentQuestion.id]}
                                                     style={{ marginRight: '12px', width: '18px', height: '18px', cursor: 'pointer' }}
                                                 />
-                                                <span>{choice.text}</span>
+                                                <span>{choice.content}</span>
                                                 {saving[currentQuestion.id] && (
                                                     <span style={{ marginLeft: 'auto', fontSize: '0.9rem', color: '#007bff' }}>💾...</span>
                                                 )}

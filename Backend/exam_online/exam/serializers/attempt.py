@@ -12,6 +12,7 @@ class AttemptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attempt
         fields = [
+            "id",
             "user",
             "username",
             "quiz",

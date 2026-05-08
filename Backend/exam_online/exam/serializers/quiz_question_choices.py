@@ -35,13 +35,14 @@ class QuestionSerializer(serializers.ModelSerializer):
             "id",
             "type",
             "content",
-            "author",
             "author_name",
             "choices",
         ]
 
     def create(self, validated_data):
         choices_data = validated_data.pop("choices", None)
+        request = self.context.get("request")
+        validated_data["author"] = request.user
         question = super().create(validated_data)
         self._create_choice(question, choices_data)
         return question

@@ -67,10 +67,8 @@ class AttemptViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="current")
     def current(self, request):
-        quiz = request.query_params.get("quiz_id")
-
         attempt = Attempt.objects.filter(
-            user=request.user, quiz=quiz, status=StatusChoices.Ongoing
+            user=request.user, status=StatusChoices.Ongoing
         ).first()
 
         if not attempt:

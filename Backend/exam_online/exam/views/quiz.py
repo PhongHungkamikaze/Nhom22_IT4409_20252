@@ -35,6 +35,12 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
 
     filterset_class = QuizFilter
 
+    def get_serializer_class(self):
+        if self.action == "start":
+            return None
+
+        return super().get_serializer_class()
+
     def get_queryset(self):
         """
         Filter quizzes based on user role:

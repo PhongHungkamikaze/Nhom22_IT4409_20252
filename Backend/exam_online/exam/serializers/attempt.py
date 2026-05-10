@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from ..models import Attempt
-from .answer import AnswerSerializers
+from .answer import AnswerSerializer
 
 
 class AttemptSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
     quiz_title = serializers.CharField(source="quiz.title", read_only=True)
-    answers = AnswerSerializers(many=True, read_only=True)
+    answers = AnswerSerializer(many=True, read_only=True)
     started_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 
     class Meta:

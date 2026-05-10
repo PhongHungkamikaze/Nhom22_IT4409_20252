@@ -42,7 +42,10 @@ class Quiz(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+    )
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
     time_limit = models.IntegerField(null=True, blank=True)
     is_published = models.BooleanField(default=False)
@@ -65,7 +68,10 @@ class Question(BaseModel):
         max_length=20, choices=TypeQuestion.choices, default=TypeQuestion.Single
     )
     content = models.TextField()
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+    )
 
 
 class Choice(BaseModel):
@@ -91,7 +97,10 @@ class StatusChoices(models.TextChoices):
 class Attempt(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attempts")
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-
+    author = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+    )
     score = models.FloatField(default=0)
     status = models.CharField(
         max_length=20, choices=StatusChoices.choices, default=StatusChoices.Ready

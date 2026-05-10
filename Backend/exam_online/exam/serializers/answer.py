@@ -2,11 +2,8 @@ from rest_framework import serializers
 from ..models import Answer, Choice
 
 
-class AnswerSerializers(serializers.ModelSerializer):
+class AnswerSerializer(serializers.ModelSerializer):
     question_content = serializers.CharField(source="question.content", read_only=True)
-    selected_choices = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Choice.objects.all()
-    )
 
     class Meta:
         model = Answer

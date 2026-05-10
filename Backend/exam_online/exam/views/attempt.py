@@ -1,10 +1,18 @@
 from drf_spectacular.utils import extend_schema
+
 from ..models import Attempt, Answer, StatusChoices
-from ..serializers import AttemptSerializer, AnswerSerializers
+from ..serializers import AttemptSerializer, AnswerSerializer
 from ..filters import AttemptFilter
 from rest_framework import viewsets, response, filters, status
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
+from exam.permissions import (
+    PermissionMixin,
+    IsAdminUser,
+    IsTeacherUser,
+    IsOwnerTeacher,
+    IsStudentUser,
+)
 from ..tasks import calculate_score
 
 
@@ -14,7 +22,17 @@ class AttemptViewSet(viewsets.ModelViewSet):
         Attempt.objects.all().select_related("user", "quiz").prefetch_related("answers")
     )
     serializer_class = AttemptSerializer
-
+    permission_classes_by_action = {
+        "list": [IsTeacherUser | IsAdminUser],
+        "retrieve": [IsTeacherUser | IsAdminUser | IsStudentUser],
+        "create": [IsTeacherUser | IsStudentUser],
+        "update": [IsStudentUser],
+        "partial_update": [IsStudentUser],
+        "destroy": [IsTeacherUser | IsAdminUser],
+        "save_answer": [IsStudentUser],
+        "submit": [IsStudentUser],
+        "current": [IsStudentUser],
+    }
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -25,29 +43,38 @@ class AttemptViewSet(viewsets.ModelViewSet):
     def filterset_class(self):
         return AttemptFilter
 
+    @extend_schema(
+        request=AnswerSerializer,
+        responses={200: None},
+        description="Save answer for an attempt",
+    )
     @action(detail=True, methods=["post"], url_path="save-answer")
     def save_answer(self, request, pk=None):
         attempt = self.get_object()
+
         if attempt.status != StatusChoices.Ongoing:
             return response.Response(
-                {"error": "Invalid attempt"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Invalid attempt"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        serializer = AnswerSerializers(data=request.data)
+
+        # Đảm bảo dữ liệu có thông tin attempt và tìm instance cũ để update nếu có
+        data = request.data.copy()
+        if "attempt" not in data:
+            data["attempt"] = attempt.id
+
+        question_id = data.get("question")
+        instance = Answer.objects.filter(
+            attempt=attempt, question_id=question_id
+        ).first()
+
+        serializer = AnswerSerializer(
+            instance=instance,
+            data=data,
+        )
+
         serializer.is_valid(raise_exception=True)
-
-        question = serializer.validated_data["question"]
-        choices = serializer.validated_data["selected_choices"]
-
-        if question.quiz.id != attempt.quiz.id:
-            return response.Response(
-                {"error": "Invalid question"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # get or create
-        answer, _ = Answer.objects.get_or_create(attempt=attempt, question=question)
-
-        # update choices
-        answer.selected_choices.set(choices)
+        serializer.save()
 
         return response.Response({"message": "Saved"})
 

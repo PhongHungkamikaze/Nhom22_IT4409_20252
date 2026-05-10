@@ -7,10 +7,8 @@ from rest_framework import viewsets, response, filters, status
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from exam.permissions import (
-    PermissionMixin,
     IsAdminUser,
     IsTeacherUser,
-    IsOwnerTeacher,
     IsStudentUser,
 )
 from ..tasks import calculate_score

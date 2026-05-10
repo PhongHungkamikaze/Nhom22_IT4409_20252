@@ -1,4 +1,3 @@
-from django.utils import timezone
 from ..models import Attempt, StatusChoices
 from celery import shared_task
 

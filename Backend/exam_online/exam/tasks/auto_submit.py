@@ -1,6 +1,5 @@
-from django.utils import timezone
 from ..models import Attempt, StatusChoices
-from .calculate_score import calculate_score, calculate_attempt_score
+from .calculate_score import calculate_attempt_score
 from celery import shared_task
 
 @shared_task

@@ -39,9 +39,7 @@ export default function QuizDetail() {
         try {
             setStarting(true);
             // Call the start endpoint
-            const response = await apiService.request(`/quizzes/${id}/start/`, {
-                method: 'POST',
-            });
+            const response = await apiService.startQuiz(id);
             
             const attemptId = response.attempt?.id;
             if (attemptId) {

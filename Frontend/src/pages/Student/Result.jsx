@@ -17,7 +17,7 @@ export default function Result() {
         const fetchResult = async () => {
             try {
                 setLoading(true);
-                const data = await apiService.request(`/attempts/${attemptId}/`);
+                const data = await apiService.getAttempt(attemptId);
                 setAttempt(data);
 
                 // Extract answers

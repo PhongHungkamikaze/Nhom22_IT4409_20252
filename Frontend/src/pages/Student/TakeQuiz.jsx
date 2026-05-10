@@ -10,11 +10,14 @@ export default function TakeQuiz() {
     const [attempt, setAttempt] = useState(null);
     const [questions, setQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [answers, setAnswers] = useState({});
+    const [answers, setAnswers] = useState({});       // local selections (not yet saved)
+    const [savedAnswers, setSavedAnswers] = useState({}); // answers confirmed saved to server
+    const [dirty, setDirty] = useState({});            // tracks which questions have unsaved changes
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [saving, setSaving] = useState({});
     const [error, setError] = useState(null);
+    const [saveSuccess, setSaveSuccess] = useState({});
     const [timeLeft, setTimeLeft] = useState(null);
 
     // READ: Fetch attempt and questions data
@@ -22,11 +25,11 @@ export default function TakeQuiz() {
         const fetchAttemptData = async () => {
             try {
                 setLoading(true);
-                const attemptData = await apiService.request(`/attempts/${attemptId}/`);
+                const attemptData = await apiService.getAttempt(attemptId);
                 setAttempt(attemptData);
 
                 // Fetch questions for this quiz
-                const questionsData = await apiService.request(`/quizzes/${attemptData.quiz}/`);
+                const questionsData = await apiService.getQuiz(attemptData.quiz);
                 const questionList = Array.isArray(questionsData.questions) ? questionsData.questions : [];
                 setQuestions(questionList);
 
@@ -37,6 +40,7 @@ export default function TakeQuiz() {
                         answerMap[ans.question] = ans.selected_choices || [];
                     });
                     setAnswers(answerMap);
+                    setSavedAnswers(JSON.parse(JSON.stringify(answerMap)));
                 }
 
                 setError(null);
@@ -97,20 +101,49 @@ export default function TakeQuiz() {
                 selectedChoices = [choiceId];
             }
 
-            // Save answer to server
-            await apiService.request(`/attempts/${attemptId}/save-answer/`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    question: questionId,
-                    selected_choices: selectedChoices,
-                }),
-            });
-
-            // Update local state
             setAnswers(prev => ({
                 ...prev,
                 [questionId]: selectedChoices,
             }));
+
+            // Mark as dirty (unsaved)
+            setDirty(prev => ({ ...prev, [questionId]: true }));
+            // Clear any previous success indicator
+            setSaveSuccess(prev => ({ ...prev, [questionId]: false }));
+        } catch (err) {
+            console.error('Failed to select choice:', err);
+            setError('Không thể chọn câu trả lời');
+        } finally {
+            setSaving(prev => ({ ...prev, [questionId]: false }));
+        }
+    };
+
+    // SAVE: Persist answer to server (POST /attempts/{id}/save-answer)
+    const handleSaveAnswer = async (questionId) => {
+        try {
+            setSaving(prev => ({ ...prev, [questionId]: true }));
+            setError(null);
+
+            const selectedChoices = answers[questionId] || [];
+
+            await apiService.saveAnswer(attemptId, {
+                attempt: attemptId,
+                question: questionId,
+                selected_choices: selectedChoices,
+            });
+
+            // Mark as saved
+            setSavedAnswers(prev => ({
+                ...prev,
+                [questionId]: [...selectedChoices],
+            }));
+            setDirty(prev => ({ ...prev, [questionId]: false }));
+            setSaveSuccess(prev => ({ ...prev, [questionId]: true }));
+
+            // Auto-hide success after 2s
+            setTimeout(() => {
+                setSaveSuccess(prev => ({ ...prev, [questionId]: false }));
+            }, 2000);
         } catch (err) {
             console.error('Failed to save answer:', err);
             setError('Không thể lưu câu trả lời');
@@ -121,15 +154,19 @@ export default function TakeQuiz() {
 
     // UPDATE: Submit quiz (POST /attempts/{id}/submit)
     const handleSubmitQuiz = async () => {
-        if (!window.confirm('Bạn có chắc chắn muốn nộp bài? Không thể quay lại!')) {
+        // Check for unsaved answers
+        const unsavedQuestions = Object.keys(dirty).filter(qId => dirty[qId]);
+        let confirmMsg = 'Bạn có chắc chắn muốn nộp bài? Không thể quay lại!';
+        if (unsavedQuestions.length > 0) {
+            confirmMsg = `Bạn có ${unsavedQuestions.length} câu chưa lưu. Bạn có chắc chắn muốn nộp bài? Các câu chưa lưu sẽ không được tính!`;
+        }
+        if (!window.confirm(confirmMsg)) {
             return;
         }
 
         try {
             setSubmitting(true);
-            await apiService.request(`/attempts/${attemptId}/submit/`, {
-                method: 'POST',
-            });
+            await apiService.submitQuiz(attemptId);
 
             // Navigate to results page
             navigate(`/student/result/${attemptId}`);
@@ -189,7 +226,11 @@ export default function TakeQuiz() {
     }
 
     const currentQuestion = questions[currentQuestionIndex];
+    const isMultiple = currentQuestion.type === 'multiple';
     const questionAnswered = answers[currentQuestion.id] && answers[currentQuestion.id].length > 0;
+    const isCurrentDirty = dirty[currentQuestion.id] || false;
+    const isCurrentSaving = saving[currentQuestion.id] || false;
+    const isCurrentSaveSuccess = saveSuccess[currentQuestion.id] || false;
 
     return (
         <div className="student-page" style={{ backgroundColor: '#f5f5f5' }}>
@@ -251,23 +292,45 @@ export default function TakeQuiz() {
                             maxHeight: '600px',
                             overflowY: 'auto'
                         }}>
-                            {questions.map((q, idx) => (
-                                <button
-                                    key={q.id}
-                                    onClick={() => setCurrentQuestionIndex(idx)}
-                                    style={{
-                                        padding: '8px 12px',
-                                        borderRadius: '6px',
-                                        border: currentQuestionIndex === idx ? '2px solid #007bff' : '1px solid #ccc',
-                                        backgroundColor: currentQuestionIndex === idx ? '#e7f1ff' : (answers[q.id]?.length > 0 ? '#e8f5e9' : 'white'),
-                                        cursor: 'pointer',
-                                        fontWeight: currentQuestionIndex === idx ? 'bold' : 'normal',
-                                        fontSize: '0.9rem'
-                                    }}
-                                >
-                                    {answers[q.id]?.length > 0 ? '✓' : ''} Q{idx + 1}
-                                </button>
-                            ))}
+                            {questions.map((q, idx) => {
+                                const isSaved = savedAnswers[q.id]?.length > 0;
+                                const isDirtyQ = dirty[q.id] || false;
+                                let bgColor = 'white';
+                                if (currentQuestionIndex === idx) bgColor = '#e7f1ff';
+                                else if (isDirtyQ) bgColor = '#fff8e1';
+                                else if (isSaved) bgColor = '#e8f5e9';
+
+                                return (
+                                    <button
+                                        key={q.id}
+                                        onClick={() => setCurrentQuestionIndex(idx)}
+                                        style={{
+                                            padding: '8px 12px',
+                                            borderRadius: '6px',
+                                            border: currentQuestionIndex === idx ? '2px solid #007bff' : '1px solid #ccc',
+                                            backgroundColor: bgColor,
+                                            cursor: 'pointer',
+                                            fontWeight: currentQuestionIndex === idx ? 'bold' : 'normal',
+                                            fontSize: '0.9rem',
+                                            position: 'relative'
+                                        }}
+                                    >
+                                        {isDirtyQ ? '●' : (isSaved ? '✓' : '')} Q{idx + 1}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Legend */}
+                        <div style={{ marginTop: '1rem', fontSize: '0.75rem', color: '#666' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#e8f5e9', border: '1px solid #ccc', borderRadius: '3px' }}></span>
+                                <span>Đã lưu</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#fff8e1', border: '1px solid #ccc', borderRadius: '3px' }}></span>
+                                <span>Chưa lưu</span>
+                            </div>
                         </div>
                     </div>
 
@@ -279,51 +342,63 @@ export default function TakeQuiz() {
                         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                     }}>
                         {/* QUESTION TEXT */}
-                        <div style={{ marginBottom: '2rem' }}>
-                            <h3 style={{
-                                fontSize: '1.3rem',
-                                marginBottom: '1rem',
-                                color: '#333'
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                <h3 style={{
+                                    fontSize: '1.3rem',
+                                    margin: 0,
+                                    color: '#333'
+                                }}>
+                                    Câu {currentQuestionIndex + 1}: {currentQuestion.content || currentQuestion.text}
+                                </h3>
+                            </div>
+                            <span style={{
+                                display: 'inline-block',
+                                padding: '3px 10px',
+                                borderRadius: '12px',
+                                fontSize: '0.8rem',
+                                fontWeight: 500,
+                                backgroundColor: isMultiple ? '#e3f2fd' : '#f3e5f5',
+                                color: isMultiple ? '#1565c0' : '#7b1fa2',
                             }}>
-                                Câu {currentQuestionIndex + 1}: {currentQuestion.text}
-                            </h3>
+                                {isMultiple ? '☑ Chọn nhiều đáp án' : '○ Chọn một đáp án'}
+                            </span>
                         </div>
 
                         {/* CHOICES */}
-                        <div style={{ marginBottom: '2rem' }}>
+                        <div style={{ marginBottom: '1.5rem' }}>
                             {currentQuestion.choices && currentQuestion.choices.length > 0 ? (
                                 <div>
-                                    {currentQuestion.choices.map((choice) => (
-                                        <div key={choice.id} style={{ marginBottom: '1rem' }}>
-                                            <label style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                padding: '12px 16px',
-                                                backgroundColor: answers[currentQuestion.id]?.includes(choice.id) ? '#e7f1ff' : '#f9f9f9',
-                                                borderRadius: '6px',
-                                                border: answers[currentQuestion.id]?.includes(choice.id) ? '2px solid #007bff' : '1px solid #ddd',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s'
-                                            }}>
-                                                <input
-                                                    type={currentQuestion.type === 'multiple_choice' ? 'checkbox' : 'radio'}
-                                                    name={`question-${currentQuestion.id}`}
-                                                    checked={answers[currentQuestion.id]?.includes(choice.id) || false}
-                                                    onChange={() => handleSelectChoice(
-                                                        currentQuestion.id,
-                                                        choice.id,
-                                                        currentQuestion.type === 'multiple_choice'
-                                                    )}
-                                                    disabled={saving[currentQuestion.id]}
-                                                    style={{ marginRight: '12px', width: '18px', height: '18px', cursor: 'pointer' }}
-                                                />
-                                                <span>{choice.content}</span>
-                                                {saving[currentQuestion.id] && (
-                                                    <span style={{ marginLeft: 'auto', fontSize: '0.9rem', color: '#007bff' }}>💾...</span>
-                                                )}
-                                            </label>
-                                        </div>
-                                    ))}
+                                    {currentQuestion.choices.map((choice) => {
+                                        const isSelected = answers[currentQuestion.id]?.includes(choice.id) || false;
+                                        return (
+                                            <div key={choice.id} style={{ marginBottom: '0.75rem' }}>
+                                                <label style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    padding: '12px 16px',
+                                                    backgroundColor: isSelected ? '#e7f1ff' : '#f9f9f9',
+                                                    borderRadius: '6px',
+                                                    border: isSelected ? '2px solid #007bff' : '1px solid #ddd',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s'
+                                                }}>
+                                                    <input
+                                                        type={isMultiple ? 'checkbox' : 'radio'}
+                                                        name={`question-${currentQuestion.id}`}
+                                                        checked={isSelected}
+                                                        onChange={() => handleSelectChoice(
+                                                            currentQuestion.id,
+                                                            choice.id,
+                                                            isMultiple
+                                                        )}
+                                                        style={{ marginRight: '12px', width: '18px', height: '18px', cursor: 'pointer' }}
+                                                    />
+                                                    <span>{choice.content}</span>
+                                                </label>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div style={{ padding: '2rem', textAlign: 'center', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
@@ -332,13 +407,81 @@ export default function TakeQuiz() {
                             )}
                         </div>
 
+                        {/* SAVE ANSWER BUTTON */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1rem',
+                            marginBottom: '1.5rem',
+                            padding: '1rem',
+                            backgroundColor: isCurrentDirty ? '#fffde7' : '#f5f5f5',
+                            borderRadius: '8px',
+                            border: isCurrentDirty ? '1px solid #ffeb3b' : '1px solid #e0e0e0',
+                            transition: 'all 0.3s'
+                        }}>
+                            <button
+                                onClick={() => handleSaveAnswer(currentQuestion.id)}
+                                disabled={isCurrentSaving || !questionAnswered}
+                                style={{
+                                    padding: '10px 24px',
+                                    backgroundColor: isCurrentSaving ? '#90caf9' : (!questionAnswered ? '#ccc' : (isCurrentDirty ? '#1976d2' : '#42a5f5')),
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    cursor: isCurrentSaving || !questionAnswered ? 'not-allowed' : 'pointer',
+                                    fontSize: '1rem',
+                                    fontWeight: 'bold',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s',
+                                    boxShadow: isCurrentDirty ? '0 2px 8px rgba(25,118,210,0.3)' : 'none'
+                                }}
+                            >
+                                {isCurrentSaving ? (
+                                    <>💾 Đang lưu...</>
+                                ) : (
+                                    <>💾 Lưu câu trả lời</>
+                                )}
+                            </button>
+
+                            {/* Status indicator */}
+                            {isCurrentSaveSuccess && (
+                                <span style={{
+                                    color: '#2e7d32',
+                                    fontWeight: 500,
+                                    fontSize: '0.95rem',
+                                    animation: 'fadeIn 0.3s ease-in'
+                                }}>
+                                    ✅ Đã lưu thành công!
+                                </span>
+                            )}
+                            {isCurrentDirty && !isCurrentSaving && (
+                                <span style={{
+                                    color: '#f57f17',
+                                    fontWeight: 500,
+                                    fontSize: '0.9rem'
+                                }}>
+                                    ⚠️ Chưa lưu — hãy nhấn "Lưu câu trả lời"
+                                </span>
+                            )}
+                            {!isCurrentDirty && !isCurrentSaveSuccess && savedAnswers[currentQuestion.id]?.length > 0 && (
+                                <span style={{
+                                    color: '#66bb6a',
+                                    fontSize: '0.9rem'
+                                }}>
+                                    ✓ Câu trả lời đã được lưu
+                                </span>
+                            )}
+                        </div>
+
                         {/* NAVIGATION BUTTONS */}
                         <div style={{
                             display: 'flex',
                             justifyContent: 'space-between',
                             gap: '1rem',
-                            marginTop: '2rem',
-                            paddingTop: '2rem',
+                            marginTop: '1rem',
+                            paddingTop: '1.5rem',
                             borderTop: '1px solid #eee'
                         }}>
                             <button

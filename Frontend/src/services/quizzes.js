@@ -35,6 +35,16 @@ export async function deleteQuiz(id) {
     });
 }
 
+export async function startQuiz(id) {
+    return apiClient.request(`/quizzes/${id}/start/`, {
+        method: 'POST',
+    });
+}
+
+export async function getQuizQuestions(id) {
+    return apiClient.request(`/quizzes/${id}/questions/`);
+}
+
 export default {
     getQuizzes,
     getQuiz,
@@ -42,4 +52,6 @@ export default {
     updateQuiz,
     partialUpdateQuiz,
     deleteQuiz,
+    startQuiz,
+    getQuizQuestions,
 };

@@ -38,7 +38,7 @@ export default function TeacherQuizEdit() {
                 } else {
                     // try fetching /quizzes/:id/questions/ which some backends expose
                     try {
-                        const qRes = await apiService.request(`/quizzes/${id}/questions/`);
+                        const qRes = await apiService.getQuizQuestions(id);
                         const qList = Array.isArray(qRes) ? qRes : (qRes.results || qRes);
                         setQuestions(qList || []);
                     } catch (qErr) {
@@ -102,10 +102,7 @@ export default function TeacherQuizEdit() {
             const selectedIds = selected.map(q => q.id || q.pk || q.question_id).filter(Boolean);
             const newQuestionIds = [...existingIds, ...selectedIds];
 
-            await apiService.request(`/quizzes/${id}/`, {
-                method: 'PATCH',
-                body: JSON.stringify({ question_ids: newQuestionIds }),
-            });
+            await apiService.partialUpdateQuiz(id, { question_ids: newQuestionIds });
 
             setQuestions(prev => [...prev, ...selected.map(q => ({ ...q }))]);
             setAvailableQuestions(prev => prev.filter(q => !q.is_ready));
@@ -130,10 +127,7 @@ export default function TeacherQuizEdit() {
                 is_published: Boolean(isPublished),
                 question_ids: questionIds,
             };
-            await apiService.request(`/quizzes/${id}/`, {
-                method: 'PATCH',
-                body: JSON.stringify(payload),
-            });
+            await apiService.partialUpdateQuiz(id, payload);
             navigate(`/teacher/quizzes/${id}`);
         } catch (err) {
             console.error('Save failed', err);
@@ -236,10 +230,7 @@ export default function TeacherQuizEdit() {
                                                             .filter(Boolean)
                                                             .map(x => Number(x));
 
-                                                        await apiService.request(`/quizzes/${id}/`, {
-                                                            method: 'PATCH',
-                                                            body: JSON.stringify({ question_ids: newQuestionIds }),
-                                                        });
+                                                        await apiService.partialUpdateQuiz(id, { question_ids: newQuestionIds });
 
                                                         setQuestions(prev => prev.filter(x => (x.id || x.pk || x.question_id) !== qId));
                                                         const removedQ = questions.find(x => (x.id || x.pk || x.question_id) === qId);

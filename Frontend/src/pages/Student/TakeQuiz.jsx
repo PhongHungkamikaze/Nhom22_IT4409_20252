@@ -20,6 +20,91 @@ export default function TakeQuiz() {
     const [error, setError] = useState(null);
     const [saveSuccess, setSaveSuccess] = useState({});
     const [timeLeft, setTimeLeft] = useState(null);
+    const [violations, setViolations] = useState(0);
+    const [socket, setSocket] = useState(null);
+
+    // WebSocket: Real-time cheating detection
+    useEffect(() => {
+        if (!attemptId) return;
+
+        let newSocket = null;
+        let isMounted = true;
+
+        const connect = () => {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            // Connect to the exam violation socket
+            const wsUrl = `${protocol}//localhost:8000/ws/exam/${attemptId}/`;
+            newSocket = new WebSocket(wsUrl);
+
+            newSocket.onopen = () => {
+                if (isMounted) console.log('Exam Monitoring WebSocket connected');
+            };
+
+            newSocket.onmessage = (e) => {
+                if (!isMounted) return;
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'violation_alert') {
+                        console.warn('Violation reported for:', data.user);
+                    }
+                } catch (err) {
+                    console.error('Error parsing WS message:', err);
+                }
+            };
+
+            newSocket.onerror = (err) => {
+                console.error('WebSocket Error:', err);
+            };
+
+            newSocket.onclose = (e) => {
+                if (isMounted) {
+                    console.log('Exam Monitoring WebSocket disconnected. Code:', e.code);
+                    // Reconnect after 3 seconds if not intentionally closed
+                    if (e.code !== 1000 && isMounted) {
+                        setTimeout(connect, 3000);
+                    }
+                }
+            };
+
+            setSocket(newSocket);
+        };
+
+        connect();
+
+        // Visibility Change Listener (Tab switching detection)
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                setViolations(prev => {
+                    const newCount = prev + 1;
+                    // Notify server about the violation
+                    if (newSocket && newSocket.readyState === WebSocket.OPEN) {
+                        newSocket.send(JSON.stringify({
+                            type: 'violation',
+                            reason: 'Tab switched/Window minimized',
+                            count: newCount
+                        }));
+                    }
+                    return newCount;
+                });
+                
+                // Visual alert for the student
+                setError('HỆ THỐNG: Phát hiện hành vi chuyển TAB/Cửa sổ! Thông tin này đã được gửi tới quản trị viên.');
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            isMounted = false;
+            if (newSocket) {
+                // Safely close if open or connecting
+                if (newSocket.readyState === WebSocket.OPEN || newSocket.readyState === WebSocket.CONNECTING) {
+                    newSocket.close(1000, "Component unmounted");
+                }
+            }
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [attemptId]);
 
     // Derived state: check for any unsaved changes
     const hasUnsavedChanges = useMemo(() => {

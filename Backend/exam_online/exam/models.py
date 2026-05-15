@@ -97,10 +97,6 @@ class StatusChoices(models.TextChoices):
 class Attempt(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attempts")
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    author = models.ForeignKey(
-        User,
-        on_delete=models.PROTECT,
-    )
     score = models.FloatField(default=0)
     status = models.CharField(
         max_length=20, choices=StatusChoices.choices, default=StatusChoices.Ready

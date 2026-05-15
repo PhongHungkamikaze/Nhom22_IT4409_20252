@@ -1,6 +1,6 @@
 from drf_spectacular.utils import extend_schema
 
-from ..models import Attempt, Answer, StatusChoices
+from ..models import Attempt, Answer, StatusChoices, UserRole
 from ..serializers import AttemptSerializer, AnswerSerializer
 from ..filters import AttemptFilter
 from rest_framework import viewsets, response, filters, status
@@ -40,6 +40,19 @@ class AttemptViewSet(viewsets.ModelViewSet):
     @property
     def filterset_class(self):
         return AttemptFilter
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == UserRole.Admin:
+            return self.queryset
+        elif user.role == UserRole.Teacher:
+            # Teachers only see attempts for quizzes they created
+            return self.queryset.filter(quiz__author=user)
+        elif user.role == UserRole.Student:
+            # Students only see their own attempts
+            return self.queryset.filter(user=user)
+
+        return self.queryset.none()
 
     @extend_schema(
         request=AnswerSerializer,

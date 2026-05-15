@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
 import './Student.css';
+import './TakeQuiz.css';
 
 export default function TakeQuiz() {
     const { attemptId } = useParams();
@@ -10,15 +11,31 @@ export default function TakeQuiz() {
     const [attempt, setAttempt] = useState(null);
     const [questions, setQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [answers, setAnswers] = useState({});       // local selections (not yet saved)
-    const [savedAnswers, setSavedAnswers] = useState({}); // answers confirmed saved to server
-    const [dirty, setDirty] = useState({});            // tracks which questions have unsaved changes
+    const [answers, setAnswers] = useState({});       // local selections
+    const [savedAnswers, setSavedAnswers] = useState({}); // confirmed saved
+    const [dirty, setDirty] = useState({});            // tracks unsaved changes
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [saving, setSaving] = useState({});
     const [error, setError] = useState(null);
     const [saveSuccess, setSaveSuccess] = useState({});
     const [timeLeft, setTimeLeft] = useState(null);
+
+    // Derived state: check for any unsaved changes
+    const hasUnsavedChanges = useMemo(() => {
+        return Object.values(dirty).some(v => v === true);
+    }, [dirty]);
+
+    // Handle back logic with protection
+    const handleExit = () => {
+        if (hasUnsavedChanges) {
+            if (window.confirm('Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn rời khỏi bài thi? Các câu chưa lưu sẽ bị mất.')) {
+                navigate('/student/quizzes');
+            }
+        } else {
+            navigate('/student/quizzes');
+        }
+    };
 
     // READ: Fetch attempt and questions data
     useEffect(() => {
@@ -46,7 +63,7 @@ export default function TakeQuiz() {
                 setError(null);
             } catch (err) {
                 console.error('Failed to fetch attempt data:', err);
-                setError('Không thể tải dữ liệu bài quiz');
+                setError('Không thể tải dữ liệu bài quiz. Vui lòng kiểm tra lại kết nối.');
                 setAttempt(null);
             } finally {
                 setLoading(false);
@@ -65,7 +82,8 @@ export default function TakeQuiz() {
             const diff = end - now;
 
             if (diff <= 0) {
-                handleSubmitQuiz();
+                // Auto-submit when time is up
+                handleSubmitQuiz(true);
             } else {
                 setTimeLeft(Math.floor(diff / 1000));
             }
@@ -74,51 +92,44 @@ export default function TakeQuiz() {
         updateTimer();
         const interval = setInterval(updateTimer, 1000);
         return () => clearInterval(interval);
-    }, [attempt, attemptId]);
+    }, [attempt]);
 
     // FORMAT TIME
     const formatTime = (seconds) => {
+        if (seconds === null) return '--:--';
         const hrs = Math.floor(seconds / 3600);
         const mins = Math.floor((seconds % 3600) / 60);
         const secs = seconds % 60;
-        return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        return `${hrs > 0 ? hrs.toString().padStart(2, '0') + ':' : ''}${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    // UPDATE: Save answer (POST /attempts/{id}/save-answer)
-    const handleSelectChoice = async (questionId, choiceId, isMultiple = false) => {
-        try {
-            setSaving(prev => ({ ...prev, [questionId]: true }));
-
-            let selectedChoices = [];
-            if (isMultiple) {
-                selectedChoices = answers[questionId] || [];
-                if (selectedChoices.includes(choiceId)) {
-                    selectedChoices = selectedChoices.filter(id => id !== choiceId);
-                } else {
-                    selectedChoices = [...selectedChoices, choiceId];
-                }
+    // UPDATE: Select local choices
+    const handleSelectChoice = (questionId, choiceId, isMultiple = false) => {
+        let selectedChoices = answers[questionId] || [];
+        
+        if (isMultiple) {
+            if (selectedChoices.includes(choiceId)) {
+                selectedChoices = selectedChoices.filter(id => id !== choiceId);
             } else {
-                selectedChoices = [choiceId];
+                selectedChoices = [...selectedChoices, choiceId];
             }
-
-            setAnswers(prev => ({
-                ...prev,
-                [questionId]: selectedChoices,
-            }));
-
-            // Mark as dirty (unsaved)
-            setDirty(prev => ({ ...prev, [questionId]: true }));
-            // Clear any previous success indicator
-            setSaveSuccess(prev => ({ ...prev, [questionId]: false }));
-        } catch (err) {
-            console.error('Failed to select choice:', err);
-            setError('Không thể chọn câu trả lời');
-        } finally {
-            setSaving(prev => ({ ...prev, [questionId]: false }));
+        } else {
+            selectedChoices = [choiceId];
         }
+
+        setAnswers(prev => ({
+            ...prev,
+            [questionId]: selectedChoices,
+        }));
+
+        // Mark as dirty compared to saved state
+        const saved = savedAnswers[questionId] || [];
+        const isActuallyDifferent = JSON.stringify(selectedChoices.sort()) !== JSON.stringify(saved.sort());
+        setDirty(prev => ({ ...prev, [questionId]: isActuallyDifferent }));
+        setSaveSuccess(prev => ({ ...prev, [questionId]: false }));
     };
 
-    // SAVE: Persist answer to server (POST /attempts/{id}/save-answer)
+    // SAVE: Persist answer to server
     const handleSaveAnswer = async (questionId) => {
         try {
             setSaving(prev => ({ ...prev, [questionId]: true }));
@@ -132,7 +143,7 @@ export default function TakeQuiz() {
                 selected_choices: selectedChoices,
             });
 
-            // Mark as saved
+            // Sync saved state
             setSavedAnswers(prev => ({
                 ...prev,
                 [questionId]: [...selectedChoices],
@@ -140,83 +151,70 @@ export default function TakeQuiz() {
             setDirty(prev => ({ ...prev, [questionId]: false }));
             setSaveSuccess(prev => ({ ...prev, [questionId]: true }));
 
-            // Auto-hide success after 2s
             setTimeout(() => {
                 setSaveSuccess(prev => ({ ...prev, [questionId]: false }));
-            }, 2000);
+            }, 3000);
         } catch (err) {
             console.error('Failed to save answer:', err);
-            setError('Không thể lưu câu trả lời');
+            setError('Lỗi khi lưu câu trả lời. Vui lòng thử lại.');
         } finally {
             setSaving(prev => ({ ...prev, [questionId]: false }));
         }
     };
 
-    // UPDATE: Submit quiz (POST /attempts/{id}/submit)
-    const handleSubmitQuiz = async () => {
-        // Check for unsaved answers
-        const unsavedQuestions = Object.keys(dirty).filter(qId => dirty[qId]);
-        let confirmMsg = 'Bạn có chắc chắn muốn nộp bài? Không thể quay lại!';
-        if (unsavedQuestions.length > 0) {
-            confirmMsg = `Bạn có ${unsavedQuestions.length} câu chưa lưu. Bạn có chắc chắn muốn nộp bài? Các câu chưa lưu sẽ không được tính!`;
-        }
-        if (!window.confirm(confirmMsg)) {
-            return;
+    // SUBMIT: Finalize the exam
+    const handleSubmitQuiz = async (isAuto = false) => {
+        if (!isAuto) {
+            const unsavedCount = Object.values(dirty).filter(v => v).length;
+            let msg = 'Bạn xác nhận nộp bài thi? Kết quả sẽ được tính điểm ngay lập tức.';
+            if (unsavedCount > 0) {
+                msg = `Bạn còn ${unsavedCount} câu chưa lưu. Các thay đổi này sẽ KHÔNG được tính. Vẫn tiếp tục nộp bài?`;
+            }
+            if (!window.confirm(msg)) return;
         }
 
         try {
             setSubmitting(true);
             await apiService.submitQuiz(attemptId);
-
-            // Navigate to results page
             navigate(`/student/result/${attemptId}`);
         } catch (err) {
             console.error('Failed to submit quiz:', err);
-            setError('Không thể nộp bài. Vui lòng thử lại!');
+            setError('Không thể nộp bài. Vui lòng kiểm tra lại kết nối!');
         } finally {
             setSubmitting(false);
         }
     };
 
-    // LOADING STATE
+    // Progress percentage
+    const progress = useMemo(() => {
+        if (!questions.length) return 0;
+        const answered = questions.filter(q => savedAnswers[q.id]?.length > 0).length;
+        return Math.round((answered / questions.length) * 100);
+    }, [questions, savedAnswers]);
+
     if (loading) {
         return (
-            <div className="student-page">
-                <section className="stu-hero">
-                    <div className="stu-loading">
-                        <div className="stu-spinner"></div>
-                        <p>Đang tải bài quiz...</p>
-                    </div>
-                </section>
+            <div className="take-quiz-container">
+                <div className="stu-loading" style={{ height: '80vh', justifyContent: 'center' }}>
+                    <div className="stu-spinner"></div>
+                    <p style={{ fontWeight: 600, fontSize: '1.2rem' }}>Đang chuẩn bị bộ đề thi...</p>
+                </div>
             </div>
         );
     }
 
-    if (error || !attempt || questions.length === 0) {
+    if (error || !attempt || (questions.length === 0 && !loading)) {
         return (
             <div className="student-page">
                 <section className="stu-hero">
                     <div className="stu-container">
-                        <div style={{
-                            padding: '2rem',
-                            textAlign: 'center',
-                            backgroundColor: '#fee',
-                            borderRadius: '8px'
-                        }}>
-                            <h2>⚠️ {error || 'Không thể tải bài quiz'}</h2>
-                            <button
-                                onClick={() => navigate('/student/quizzes')}
-                                style={{
-                                    marginTop: '1rem',
-                                    padding: '10px 20px',
-                                    backgroundColor: '#007bff',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '5px',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                ← Quay lại danh sách
+                        <div style={{ padding: '3rem', textAlign: 'center', background: 'white', borderRadius: '20px', color: '#1e293b' }}>
+                            <h2 style={{ color: '#ef4444' }}>⚠️ {error ? 'Đã xảy ra lỗi' : 'Thông báo'}</h2>
+                            <p style={{ margin: '1rem 0 2rem' }}>
+                                {error || (!attempt ? 'Không tìm thấy thông tin bài thi.' : 'Bài thi này hiện chưa có câu hỏi nào.')}
+                            </p>
+                            <button onClick={() => navigate('/student/quizzes')} className="stu-btn-primary">
+                                Quay lại danh sách
                             </button>
                         </div>
                     </div>
@@ -226,316 +224,179 @@ export default function TakeQuiz() {
     }
 
     const currentQuestion = questions[currentQuestionIndex];
+    // if (!currentQuestion) return null; // Removed to allow full render logic
+
     const isMultiple = currentQuestion.type === 'multiple';
-    const questionAnswered = answers[currentQuestion.id] && answers[currentQuestion.id].length > 0;
     const isCurrentDirty = dirty[currentQuestion.id] || false;
     const isCurrentSaving = saving[currentQuestion.id] || false;
     const isCurrentSaveSuccess = saveSuccess[currentQuestion.id] || false;
+    const currentChoices = answers[currentQuestion.id] || [];
 
     return (
-        <div className="student-page" style={{ backgroundColor: '#f5f5f5' }}>
-            {/* HEADER WITH TIMER */}
-            <section style={{
-                backgroundColor: '#007bff',
-                color: 'white',
-                padding: '1rem 0',
-                position: 'sticky',
-                top: 0,
-                zIndex: 100,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}>
-                <div className="stu-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                        <h2 style={{ margin: 0 }}>📝 {attempt.quiz_title || 'Quiz'}</h2>
+        <div className="take-quiz-container">
+            {/* STICKY HEADER */}
+            <header className="exam-header">
+                <div className="stu-container exam-header-content">
+                    <div className="exam-title-section">
+                        <button onClick={handleExit} className="exit-btn" title="Thoát khỏi bài thi">
+                            <span>✕</span> Thoát
+                        </button>
+                        <h2 style={{ margin: 0, fontSize: '1.4rem', color: '#1e293b' }}>
+                            {attempt?.quiz_title || 'Bài thi trực tuyến'}
+                        </h2>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
-                            ⏱️ {timeLeft ? formatTime(timeLeft) : 'Đang tải...'}
-                        </div>
-                        <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
-                            Câu {currentQuestionIndex + 1} / {questions.length}
-                        </div>
+
+                    <div className="timer-card">
+                        <span style={{ fontSize: '1.4rem' }}>⏱️</span>
+                        <span className={timeLeft < 60 ? 'timer-warning' : ''}>
+                            {formatTime(timeLeft)}
+                        </span>
                     </div>
                 </div>
-            </section>
+            </header>
 
-            {/* MAIN CONTENT */}
-            <section className="stu-container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
-                {/* ERROR MESSAGE */}
-                {error && (
-                    <div style={{
-                        padding: '12px 16px',
-                        backgroundColor: '#fee',
-                        color: '#c33',
-                        borderRadius: '8px',
-                        marginBottom: '1rem'
-                    }}>
-                        {error}
+            {/* PROGRESS BAR */}
+            <div style={{ height: '4px', background: '#e2e8f0', width: '100%' }}>
+                <div style={{ 
+                    height: '100%', 
+                    background: 'linear-gradient(90deg, #6366f1, #22c55e)', 
+                    width: `${progress}%`,
+                    transition: 'width 0.5s ease-out'
+                }}></div>
+            </div>
+
+            <main className="stu-container exam-layout">
+                {/* SIDEBAR NAVIGATION */}
+                <aside className="exam-sidebar animate-in">
+                    <div className="sidebar-title">
+                        <span>Tiến độ bài làm</span>
+                        <span style={{ fontSize: '0.85rem', color: '#6366f1' }}>{progress}%</span>
                     </div>
-                )}
+                    
+                    <div className="question-grid">
+                        {questions.map((q, idx) => {
+                            const isSaved = savedAnswers[q.id]?.length > 0;
+                            const isDirtyQ = dirty[q.id] || false;
+                            const isActive = currentQuestionIndex === idx;
 
-                {/* QUESTIONS - SIDEBAR + CONTENT */}
-                <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '2rem' }}>
-                    {/* SIDEBAR - QUESTION LIST */}
-                    <div style={{
-                        backgroundColor: 'white',
-                        padding: '1.5rem',
-                        borderRadius: '8px',
-                        height: 'fit-content',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }}>
-                        <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>Danh sách câu hỏi</h3>
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(2, 1fr)',
-                            gap: '0.5rem',
-                            maxHeight: '600px',
-                            overflowY: 'auto'
-                        }}>
-                            {questions.map((q, idx) => {
-                                const isSaved = savedAnswers[q.id]?.length > 0;
-                                const isDirtyQ = dirty[q.id] || false;
-                                let bgColor = 'white';
-                                if (currentQuestionIndex === idx) bgColor = '#e7f1ff';
-                                else if (isDirtyQ) bgColor = '#fff8e1';
-                                else if (isSaved) bgColor = '#e8f5e9';
+                            return (
+                                <button
+                                    key={q.id}
+                                    onClick={() => setCurrentQuestionIndex(idx)}
+                                    className={`q-nav-btn 
+                                        ${isActive ? 'active' : ''} 
+                                        ${isSaved ? 'saved' : ''} 
+                                        ${isDirtyQ ? 'dirty' : ''}`
+                                    }
+                                >
+                                    {idx + 1}
+                                </button>
+                            );
+                        })}
+                    </div>
 
+                    <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <div className="status-text status-saved">
+                            <span style={{ width: '10px', height: '10px', background: '#22c55e', borderRadius: '2px' }}></span>
+                            <span>Đã lưu bài</span>
+                        </div>
+                        <div className="status-text status-dirty">
+                            <span style={{ width: '10px', height: '10px', background: '#f59e0b', borderRadius: '50%' }}></span>
+                            <span>Chưa lưu thay đổi</span>
+                        </div>
+                        <div className="status-text" style={{ color: '#94a3b8' }}>
+                            <span style={{ width: '10px', height: '10px', background: 'white', border: '1px solid #cbd5e1', borderRadius: '2px' }}></span>
+                            <span>Chưa trả lời</span>
+                        </div>
+                    </div>
+                </aside>
+
+                {/* MAIN QUESTION SECTION */}
+                <div className="animate-in" style={{ animationDelay: '0.1s' }}>
+                    <div className="question-card">
+                        <div className="question-type-badge">
+                            {isMultiple ? (
+                                <><span style={{ fontSize: '1.1rem' }}>☑</span> Câu hỏi nhiều lựa chọn</>
+                            ) : (
+                                <><span style={{ fontSize: '1.1rem' }}>○</span> Câu hỏi một lựa chọn</>
+                            )}
+                        </div>
+
+                        <h3 className="question-text">
+                            Câu {currentQuestionIndex + 1}: {currentQuestion.content}
+                        </h3>
+
+                        <div className="choices-container">
+                            {currentQuestion.choices?.map((choice) => {
+                                const isSelected = currentChoices.includes(choice.id);
                                 return (
-                                    <button
-                                        key={q.id}
-                                        onClick={() => setCurrentQuestionIndex(idx)}
-                                        style={{
-                                            padding: '8px 12px',
-                                            borderRadius: '6px',
-                                            border: currentQuestionIndex === idx ? '2px solid #007bff' : '1px solid #ccc',
-                                            backgroundColor: bgColor,
-                                            cursor: 'pointer',
-                                            fontWeight: currentQuestionIndex === idx ? 'bold' : 'normal',
-                                            fontSize: '0.9rem',
-                                            position: 'relative'
-                                        }}
+                                    <div 
+                                        key={choice.id} 
+                                        className={`choice-option ${isSelected ? 'selected' : ''}`}
+                                        onClick={() => handleSelectChoice(currentQuestion.id, choice.id, isMultiple)}
                                     >
-                                        {isDirtyQ ? '●' : (isSaved ? '✓' : '')} Q{idx + 1}
-                                    </button>
+                                        <div className={isMultiple ? 'choice-checkbox' : 'choice-radio'}></div>
+                                        <span className="choice-text">{choice.content}</span>
+                                    </div>
                                 );
                             })}
                         </div>
 
-                        {/* Legend */}
-                        <div style={{ marginTop: '1rem', fontSize: '0.75rem', color: '#666' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                                <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#e8f5e9', border: '1px solid #ccc', borderRadius: '3px' }}></span>
-                                <span>Đã lưu</span>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                                <span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#fff8e1', border: '1px solid #ccc', borderRadius: '3px' }}></span>
-                                <span>Chưa lưu</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* MAIN CONTENT - QUESTION */}
-                    <div style={{
-                        backgroundColor: 'white',
-                        padding: '2rem',
-                        borderRadius: '8px',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }}>
-                        {/* QUESTION TEXT */}
-                        <div style={{ marginBottom: '1.5rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                                <h3 style={{
-                                    fontSize: '1.3rem',
-                                    margin: 0,
-                                    color: '#333'
-                                }}>
-                                    Câu {currentQuestionIndex + 1}: {currentQuestion.content || currentQuestion.text}
-                                </h3>
-                            </div>
-                            <span style={{
-                                display: 'inline-block',
-                                padding: '3px 10px',
-                                borderRadius: '12px',
-                                fontSize: '0.8rem',
-                                fontWeight: 500,
-                                backgroundColor: isMultiple ? '#e3f2fd' : '#f3e5f5',
-                                color: isMultiple ? '#1565c0' : '#7b1fa2',
-                            }}>
-                                {isMultiple ? '☑ Chọn nhiều đáp án' : '○ Chọn một đáp án'}
-                            </span>
-                        </div>
-
-                        {/* CHOICES */}
-                        <div style={{ marginBottom: '1.5rem' }}>
-                            {currentQuestion.choices && currentQuestion.choices.length > 0 ? (
-                                <div>
-                                    {currentQuestion.choices.map((choice) => {
-                                        const isSelected = answers[currentQuestion.id]?.includes(choice.id) || false;
-                                        return (
-                                            <div key={choice.id} style={{ marginBottom: '0.75rem' }}>
-                                                <label style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    padding: '12px 16px',
-                                                    backgroundColor: isSelected ? '#e7f1ff' : '#f9f9f9',
-                                                    borderRadius: '6px',
-                                                    border: isSelected ? '2px solid #007bff' : '1px solid #ddd',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.2s'
-                                                }}>
-                                                    <input
-                                                        type={isMultiple ? 'checkbox' : 'radio'}
-                                                        name={`question-${currentQuestion.id}`}
-                                                        checked={isSelected}
-                                                        onChange={() => handleSelectChoice(
-                                                            currentQuestion.id,
-                                                            choice.id,
-                                                            isMultiple
-                                                        )}
-                                                        style={{ marginRight: '12px', width: '18px', height: '18px', cursor: 'pointer' }}
-                                                    />
-                                                    <span>{choice.content}</span>
-                                                </label>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div style={{ padding: '2rem', textAlign: 'center', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
-                                    Không có lựa chọn
-                                </div>
-                            )}
-                        </div>
-
-                        {/* SAVE ANSWER BUTTON */}
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '1rem',
-                            marginBottom: '1.5rem',
-                            padding: '1rem',
-                            backgroundColor: isCurrentDirty ? '#fffde7' : '#f5f5f5',
-                            borderRadius: '8px',
-                            border: isCurrentDirty ? '1px solid #ffeb3b' : '1px solid #e0e0e0',
-                            transition: 'all 0.3s'
-                        }}>
-                            <button
-                                onClick={() => handleSaveAnswer(currentQuestion.id)}
-                                disabled={isCurrentSaving || !questionAnswered}
-                                style={{
-                                    padding: '10px 24px',
-                                    backgroundColor: isCurrentSaving ? '#90caf9' : (!questionAnswered ? '#ccc' : (isCurrentDirty ? '#1976d2' : '#42a5f5')),
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    cursor: isCurrentSaving || !questionAnswered ? 'not-allowed' : 'pointer',
-                                    fontSize: '1rem',
-                                    fontWeight: 'bold',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    transition: 'all 0.2s',
-                                    boxShadow: isCurrentDirty ? '0 2px 8px rgba(25,118,210,0.3)' : 'none'
-                                }}
-                            >
-                                {isCurrentSaving ? (
-                                    <>💾 Đang lưu...</>
+                        {/* SAVE SECTION */}
+                        <div className="save-action-section">
+                            <div>
+                                {isCurrentSaveSuccess ? (
+                                    <span className="status-text status-saved">✅ Đã lưu vào hệ thống</span>
+                                ) : isCurrentDirty ? (
+                                    <span className="status-text status-dirty">⚠️ Bạn có thay đổi chưa lưu</span>
+                                ) : savedAnswers[currentQuestion.id]?.length > 0 ? (
+                                    <span className="status-text status-saved" style={{ opacity: 0.7 }}>✓ Trạng thái: Đã lưu</span>
                                 ) : (
-                                    <>💾 Lưu câu trả lời</>
+                                    <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Chưa có câu trả lời</span>
                                 )}
-                            </button>
+                            </div>
 
-                            {/* Status indicator */}
-                            {isCurrentSaveSuccess && (
-                                <span style={{
-                                    color: '#2e7d32',
-                                    fontWeight: 500,
-                                    fontSize: '0.95rem',
-                                    animation: 'fadeIn 0.3s ease-in'
-                                }}>
-                                    ✅ Đã lưu thành công!
-                                </span>
-                            )}
-                            {isCurrentDirty && !isCurrentSaving && (
-                                <span style={{
-                                    color: '#f57f17',
-                                    fontWeight: 500,
-                                    fontSize: '0.9rem'
-                                }}>
-                                    ⚠️ Chưa lưu — hãy nhấn "Lưu câu trả lời"
-                                </span>
-                            )}
-                            {!isCurrentDirty && !isCurrentSaveSuccess && savedAnswers[currentQuestion.id]?.length > 0 && (
-                                <span style={{
-                                    color: '#66bb6a',
-                                    fontSize: '0.9rem'
-                                }}>
-                                    ✓ Câu trả lời đã được lưu
-                                </span>
-                            )}
-                        </div>
-
-                        {/* NAVIGATION BUTTONS */}
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: '1rem',
-                            marginTop: '1rem',
-                            paddingTop: '1.5rem',
-                            borderTop: '1px solid #eee'
-                        }}>
-                            <button
-                                onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
-                                disabled={currentQuestionIndex === 0}
-                                style={{
-                                    padding: '10px 20px',
-                                    backgroundColor: currentQuestionIndex === 0 ? '#ccc' : '#6c757d',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
-                                    fontSize: '1rem'
-                                }}
+                            <button 
+                                className="save-btn"
+                                onClick={() => handleSaveAnswer(currentQuestion.id)}
+                                disabled={isCurrentSaving || !isCurrentDirty}
                             >
-                                ← Câu trước
-                            </button>
-
-                            <button
-                                onClick={() => setCurrentQuestionIndex(prev => Math.min(questions.length - 1, prev + 1))}
-                                disabled={currentQuestionIndex === questions.length - 1}
-                                style={{
-                                    padding: '10px 20px',
-                                    backgroundColor: currentQuestionIndex === questions.length - 1 ? '#ccc' : '#6c757d',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    cursor: currentQuestionIndex === questions.length - 1 ? 'not-allowed' : 'pointer',
-                                    fontSize: '1rem'
-                                }}
-                            >
-                                Câu tiếp →
-                            </button>
-
-                            <button
-                                onClick={handleSubmitQuiz}
-                                disabled={submitting}
-                                style={{
-                                    padding: '10px 30px',
-                                    backgroundColor: submitting ? '#ccc' : '#28a745',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    cursor: submitting ? 'not-allowed' : 'pointer',
-                                    fontSize: '1rem',
-                                    fontWeight: 'bold'
-                                }}
-                            >
-                                {submitting ? '⏳ Đang nộp...' : '✓ Nộp bài'}
+                                {isCurrentSaving ? 'Đang đồng bộ...' : 'Lưu câu trả lời'}
                             </button>
                         </div>
                     </div>
                 </div>
-            </section>
+            </main>
+
+            {/* BOTTOM ACTION BAR */}
+            <footer className="exam-action-bar">
+                <div className="stu-container action-bar-content">
+                    <div className="nav-group">
+                        <button 
+                            className="nav-btn"
+                            disabled={currentQuestionIndex === 0}
+                            onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
+                        >
+                            ← Quay lại
+                        </button>
+                        <button 
+                            className="nav-btn"
+                            disabled={currentQuestionIndex === questions.length - 1}
+                            onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
+                        >
+                            Tiếp theo →
+                        </button>
+                    </div>
+
+                    <button 
+                        className="submit-btn"
+                        onClick={() => handleSubmitQuiz()}
+                        disabled={submitting}
+                    >
+                        {submitting ? 'Đanh nộp bài...' : 'Nộp bài thi'}
+                    </button>
+                </div>
+            </footer>
         </div>
     );
 }

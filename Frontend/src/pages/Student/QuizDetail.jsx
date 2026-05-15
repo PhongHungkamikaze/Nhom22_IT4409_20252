@@ -40,7 +40,7 @@ export default function QuizDetail() {
             setStarting(true);
             // Call the start endpoint
             const response = await apiService.startQuiz(id);
-            
+
             const attemptId = response.attempt?.id;
             if (attemptId) {
                 // Navigate to TakeQuiz page with attempt ID
@@ -56,7 +56,13 @@ export default function QuizDetail() {
         }
     };
 
+    // NAVIGATION: Go back to list
+    const handleGoBack = () => {
+        navigate('/student/quizzes/');
+    };
+
     if (loading) {
+
         return (
             <div className="student-page">
                 <section className="stu-hero">
@@ -226,10 +232,7 @@ export default function QuizDetail() {
                     {/* Start Button */}
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', pointerEvents: 'auto' }}>
                         <button
-                            onClick={() => {
-                                console.log('Back button clicked'); // Debug log
-                                navigate('/student/quizzes');
-                            }}
+                            onClick={handleGoBack}
                             style={{
                                 padding: '12px 30px',
                                 backgroundColor: '#e0e0e0',
@@ -239,8 +242,10 @@ export default function QuizDetail() {
                                 fontSize: '1rem',
                                 cursor: 'pointer',
                                 fontWeight: 'bold',
-                                pointerEvents: 'auto'
+                                transition: 'all 0.2s'
                             }}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#d0d0d0'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'}
                         >
                             ← Quay lại
                         </button>

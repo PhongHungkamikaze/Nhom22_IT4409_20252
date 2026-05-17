@@ -66,7 +66,7 @@ const AppRouter = () => {
             <Route path="/teacher/questions/add" element={<TeacherRoute><TeacherAddQuestion /></TeacherRoute>} />
             <Route path="/teacher/questions/edit/:id" element={<TeacherRoute><TeacherEditQuestion /></TeacherRoute>} />
             <Route path="/teacher/questions/:id" element={<TeacherRoute><TeacherQuestionDetail /></TeacherRoute>} />
-            <Route path="teacher/quizzes/create" element={<TeacherRoute><TeacherQuestionCreate /></TeacherRoute>} />
+            <Route path="/teacher/quizzes/create" element={<TeacherRoute><TeacherQuestionCreate /></TeacherRoute>} />
             <Route path="/teacher/quizzes/:id" element={<TeacherRoute><TeacherQuizDetail /></TeacherRoute>} />
             <Route path="/teacher/quizzes/edit/:id" element={<TeacherRoute><TeacherQuizEdit /></TeacherRoute>} />
             <Route path="/teacher/attempts" element={<TeacherRoute><TeacherAttempts /></TeacherRoute>} />

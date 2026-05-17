@@ -5,6 +5,8 @@ import { Routes, Route } from 'react-router-dom';
 import Homepage from '../pages/Homepage';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
+import NotFound from '../pages/NotFound';
+
 
 // Admin 
 import AdminDashboard from '../pages/Admin/Dashboard';
@@ -84,6 +86,9 @@ const AppRouter = () => {
 
             {/* Example of protecting any route with generic auth check */}
             <Route path="/protected-example" element={<ProtectedRoute><div>Protected content</div></ProtectedRoute>} />
+
+            {/* 404 Not Found - must be last */}
+            <Route path="*" element={<NotFound />} />
         </Routes>
     );
 };

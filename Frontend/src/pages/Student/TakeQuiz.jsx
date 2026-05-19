@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
 import './Student.css';
 import './TakeQuiz.css';
+import { getUserIdFromToken } from '../../utils/jwt';
 
 export default function TakeQuiz() {
     const { attemptId } = useParams();
@@ -14,14 +15,13 @@ export default function TakeQuiz() {
     const [answers, setAnswers] = useState({});       // local selections
     const [savedAnswers, setSavedAnswers] = useState({}); // confirmed saved
     const [dirty, setDirty] = useState({});            // tracks unsaved changes
+    const [violations, setViolations] = useState(0);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [saving, setSaving] = useState({});
     const [error, setError] = useState(null);
     const [saveSuccess, setSaveSuccess] = useState({});
     const [timeLeft, setTimeLeft] = useState(null);
-    const [violations, setViolations] = useState(0);
-    const [socket, setSocket] = useState(null);
 
     // WebSocket: Real-time cheating detection
     useEffect(() => {
@@ -32,13 +32,11 @@ export default function TakeQuiz() {
 
         const connect = () => {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            // Connect to the exam violation socket
-            const wsUrl = `${protocol}//localhost:8000/ws/exam/${attemptId}/`;
-            newSocket = new WebSocket(wsUrl);
+            const accessToken = localStorage.getItem('accessToken');
+            const userId = getUserIdFromToken(accessToken) || 'anonymous';
 
-            newSocket.onopen = () => {
-                if (isMounted) console.log('Exam Monitoring WebSocket connected');
-            };
+            const wsUrl = `${protocol}//localhost:8000/ws/exam/${attemptId}/${userId}/`;
+            newSocket = new WebSocket(wsUrl);
 
             newSocket.onmessage = (e) => {
                 if (!isMounted) return;
@@ -52,21 +50,14 @@ export default function TakeQuiz() {
                 }
             };
 
-            newSocket.onerror = (err) => {
-                console.error('WebSocket Error:', err);
-            };
-
             newSocket.onclose = (e) => {
                 if (isMounted) {
-                    console.log('Exam Monitoring WebSocket disconnected. Code:', e.code);
                     // Reconnect after 3 seconds if not intentionally closed
                     if (e.code !== 1000 && isMounted) {
                         setTimeout(connect, 3000);
                     }
                 }
             };
-
-            setSocket(newSocket);
         };
 
         connect();
@@ -74,19 +65,25 @@ export default function TakeQuiz() {
         // Visibility Change Listener (Tab switching detection)
         const handleVisibilityChange = () => {
             if (document.hidden) {
+                // Determine new count without putting side effects in state update
                 setViolations(prev => {
                     const newCount = prev + 1;
-                    // Notify server about the violation
-                    if (newSocket && newSocket.readyState === WebSocket.OPEN) {
-                        newSocket.send(JSON.stringify({
-                            type: 'violation',
-                            reason: 'Tab switched/Window minimized',
-                            count: newCount
-                        }));
-                    }
+                    
+                    // Notify server about the violation OUTSIDE of the return or as a side execution
+                    // But better yet, we can do it after this block or use a ref.
+                    // For simplicity, we just move it directly out of the functional update if we don't strictly need accurate 'prev'
+                    // Since it's a simple increment, we can just do:
                     return newCount;
                 });
-                
+
+                // Correct way: send info directly
+                if (newSocket && newSocket.readyState === WebSocket.OPEN) {
+                    newSocket.send(JSON.stringify({
+                        type: 'violation',
+                        reason: 'Tab switched/Window minimized',
+                    }));
+                }
+
                 // Visual alert for the student
                 setError('HỆ THỐNG: Phát hiện hành vi chuyển TAB/Cửa sổ! Thông tin này đã được gửi tới quản trị viên.');
             }
@@ -191,7 +188,7 @@ export default function TakeQuiz() {
     // UPDATE: Select local choices
     const handleSelectChoice = (questionId, choiceId, isMultiple = false) => {
         let selectedChoices = answers[questionId] || [];
-        
+
         if (isMultiple) {
             if (selectedChoices.includes(choiceId)) {
                 selectedChoices = selectedChoices.filter(id => id !== choiceId);
@@ -309,7 +306,6 @@ export default function TakeQuiz() {
     }
 
     const currentQuestion = questions[currentQuestionIndex];
-    // if (!currentQuestion) return null; // Removed to allow full render logic
 
     const isMultiple = currentQuestion.type === 'multiple';
     const isCurrentDirty = dirty[currentQuestion.id] || false;
@@ -342,9 +338,9 @@ export default function TakeQuiz() {
 
             {/* PROGRESS BAR */}
             <div style={{ height: '4px', background: '#e2e8f0', width: '100%' }}>
-                <div style={{ 
-                    height: '100%', 
-                    background: 'linear-gradient(90deg, #6366f1, #22c55e)', 
+                <div style={{
+                    height: '100%',
+                    background: 'linear-gradient(90deg, #6366f1, #22c55e)',
                     width: `${progress}%`,
                     transition: 'width 0.5s ease-out'
                 }}></div>
@@ -357,7 +353,7 @@ export default function TakeQuiz() {
                         <span>Tiến độ bài làm</span>
                         <span style={{ fontSize: '0.85rem', color: '#6366f1' }}>{progress}%</span>
                     </div>
-                    
+
                     <div className="question-grid">
                         {questions.map((q, idx) => {
                             const isSaved = savedAnswers[q.id]?.length > 0;
@@ -415,8 +411,8 @@ export default function TakeQuiz() {
                             {currentQuestion.choices?.map((choice) => {
                                 const isSelected = currentChoices.includes(choice.id);
                                 return (
-                                    <div 
-                                        key={choice.id} 
+                                    <div
+                                        key={choice.id}
                                         className={`choice-option ${isSelected ? 'selected' : ''}`}
                                         onClick={() => handleSelectChoice(currentQuestion.id, choice.id, isMultiple)}
                                     >
@@ -441,7 +437,7 @@ export default function TakeQuiz() {
                                 )}
                             </div>
 
-                            <button 
+                            <button
                                 className="save-btn"
                                 onClick={() => handleSaveAnswer(currentQuestion.id)}
                                 disabled={isCurrentSaving || !isCurrentDirty}
@@ -457,14 +453,14 @@ export default function TakeQuiz() {
             <footer className="exam-action-bar">
                 <div className="stu-container action-bar-content">
                     <div className="nav-group">
-                        <button 
+                        <button
                             className="nav-btn"
                             disabled={currentQuestionIndex === 0}
                             onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
                         >
                             ← Quay lại
                         </button>
-                        <button 
+                        <button
                             className="nav-btn"
                             disabled={currentQuestionIndex === questions.length - 1}
                             onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
@@ -473,7 +469,7 @@ export default function TakeQuiz() {
                         </button>
                     </div>
 
-                    <button 
+                    <button
                         className="submit-btn"
                         onClick={() => handleSubmitQuiz()}
                         disabled={submitting}

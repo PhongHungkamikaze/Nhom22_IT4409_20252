@@ -8,6 +8,7 @@ import * as profile from './profile';
 import * as stats from './stats';
 import * as questions from './questions'
 import * as users from './users';
+import * as notifications from './notifications';
 
 // Keep single default object for compatibility with existing imports
 const apiService = {
@@ -20,6 +21,7 @@ const apiService = {
   ...stats,
   ...questions,
   ...users,
+  ...notifications,
 };
 
 export default apiService;

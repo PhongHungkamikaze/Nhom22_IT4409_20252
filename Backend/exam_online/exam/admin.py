@@ -1,8 +1,13 @@
 from django.contrib import admin
-from .models import Quiz, User, Question, Choice, Attempt, Answer, Subject
+from .models import Quiz, User, Question, Choice, Attempt, Answer, Subject, Notification
 
 
 # Register your models here.
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    pass
+
+
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
     list_display = ["id", "title"]

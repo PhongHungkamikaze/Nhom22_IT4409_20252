@@ -131,3 +131,71 @@ class PasswordResetToken(models.Model):
 
     def __str__(self):
         return f"Reset token for {self.user.username} (used={self.is_used})"
+
+
+class NotificationType(models.TextChoices):
+    GENERIC = "GENERIC", "Generic"
+    # Exam related
+    EXAM_VIOLATION = "EXAM_VIOLATION", "Exam Violation"
+    QUIZ_PUBLISHED = "QUIZ_PUBLISHED", "Quiz Published"
+    QUIZ_UPCOMING = "QUIZ_UPCOMING", "Quiz Upcoming"
+    ATTEMPT_START = "ATTEMPT_START", "Attempt Started"
+    ATTEMPT_SUBMITTED = "ATTEMPT_SUBMITTED", "Attempt Submitted"
+    # Results
+    SCORE_RELEASED = "SCORE_RELEASED", "Score Released"
+    # Account & Communications
+    SYSTEM_ALERT = "SYSTEM_ALERT", "System Alert"
+    PASSWORD_RESET = "PASSWORD_RESET", "Password Reset"
+
+
+class NotificationManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at__isnull=True)
+
+
+class Notification(BaseModel):
+    recipient = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+    actor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="triggered_notifications",
+        null=True,
+        blank=True,
+    )
+    type = models.CharField(
+        max_length=64,
+        choices=NotificationType.choices,
+        default=NotificationType.GENERIC,
+        db_index=True,
+    )
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True, default="")
+    data = models.JSONField(default=dict, blank=True)
+
+    read_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    firebase_message_id = models.CharField(max_length=255, blank=True, default="")
+    delivery_error = models.TextField(blank=True, default="")
+
+    objects = NotificationManager()
+    all_objects = models.Manager()
+
+    class Meta:
+        ordering = ["-id"]
+        indexes = [
+            models.Index(fields=["recipient", "-id"]),
+            models.Index(fields=["recipient", "read_at"]),
+        ]
+
+    @property
+    def is_read(self) -> bool:
+        return self.read_at is not None
+
+    def __str__(self):
+        return f"{self.recipient.username} - {self.title} ({self.type})"

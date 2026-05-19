@@ -12,6 +12,8 @@ from .views import (
     ResetPasswordConfirmView,
     UserProfileView,
     UserViewSet,
+    SubjectViewSet,
+    NotificationViewSet,
 )
 
 router = DefaultRouter()
@@ -20,7 +22,8 @@ router.register(r"quizzes", QuizViewSet)
 router.register(r"questions", QuestionViewSet)
 router.register(r"attempts", AttemptViewSet)
 router.register(r"answers", AnswerViewSet)
-
+router.register(r"subjects", SubjectViewSet)
+router.register(r"notification", NotificationViewSet, basename="notification")
 urlpatterns = [
     path("", include(router.urls)),
     path("auth/register/", RegisterView.as_view(), name="register"),

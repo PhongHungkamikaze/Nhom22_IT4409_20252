@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 from decouple import config
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -210,3 +211,4 @@ SIMPLE_JWT = {
     # Refresh Token thường để dài hơn (Ví dụ: 7 ngày)
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
+NOTIFICATION_PURGE_AFTER_DAYS = int(os.environ.get("NOTIFICATION_PURGE_AFTER_DAYS", 30))

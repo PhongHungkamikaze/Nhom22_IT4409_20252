@@ -16,7 +16,7 @@ def send_notification(self, notification_id: int):
         logger.warning("Notification %s not found", notification_id)
         return
     logger.info(
-        "[stub] send_notification id=%s recipient=%s type=%s",
+        "Sending notification id=%s recipient=%s type=%s",
         n.id,
         n.recipient_id,
         n.type,

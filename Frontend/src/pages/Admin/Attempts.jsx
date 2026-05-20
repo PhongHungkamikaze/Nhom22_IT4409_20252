@@ -12,55 +12,52 @@ export default function Attempts() {
     const [attemptsLoading, setAttemptsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Fetch quizzes on mount
-    useEffect(() => {
-        const fetchQuizzes = async () => {
-            try {
-                setLoading(true);
-                const data = await apiService.getQuizzes();
-                setQuizzes(data.results || []);
-            } catch (err) {
-                console.error('Failed to fetch quizzes', err);
-                setError('Không thể tải danh sách bài thi');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchQuizzes();
-    }, []);
+    const [quizSorting, setQuizSorting] = useState('-id');
+    const [attemptSorting, setAttemptSorting] = useState('-started_at');
 
-    // Fetch attempts when a quiz is selected
-    useEffect(() => {
+    const fetchQuizzes = async () => {
+        try {
+            setLoading(true);
+            const params = { search: searchTerm, ordering: quizSorting };
+            const data = await apiService.getQuizzes(params);
+            setQuizzes(data.results || []);
+        } catch (err) {
+            console.error('Failed to fetch quizzes', err);
+            setError('Không thể tải danh sách bài thi');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchAttempts = async () => {
         if (!selectedQuiz) return;
+        try {
+            setAttemptsLoading(true);
+            const params = { 
+                quiz: selectedQuiz.id,
+                search: searchTerm,
+                ordering: attemptSorting
+            };
+            const data = await apiService.getAttempts(params);
+            setAttempts(data.results || []);
+        } catch (err) {
+            console.error('Failed to fetch attempts', err);
+            setError('Không thể tải kết quả bài làm');
+        } finally {
+            setAttemptsLoading(false);
+        }
+    };
 
-        const fetchAttempts = async () => {
-            try {
-                setAttemptsLoading(true);
-                const data = await apiService.getAttempts();
-                // Filter by selected quiz ID
-                const quizAttempts = (data.results || []).filter(a => a.quiz === selectedQuiz.id);
-                setAttempts(quizAttempts);
-            } catch (err) {
-                console.error('Failed to fetch attempts', err);
-                setError('Không thể tải kết quả bài làm');
-            } finally {
-                setAttemptsLoading(false);
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (selectedQuiz) {
+                fetchAttempts();
+            } else {
+                fetchQuizzes();
             }
-        };
-        fetchAttempts();
-    }, [selectedQuiz]);
-
-    const filteredQuizzes = quizzes.filter(q => {
-        const title = (q.title || '').toLowerCase();
-        const s = searchTerm.toLowerCase();
-        return title.includes(s);
-    });
-
-    const filteredAttempts = attempts.filter(a => {
-        const username = (a.user?.username || a.username || '').toString().toLowerCase();
-        const s = searchTerm.toLowerCase();
-        return username.includes(s);
-    });
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, selectedQuiz, quizSorting, attemptSorting]);
 
     // --- QUIZ SELECTION VIEW ---
     if (!selectedQuiz) {
@@ -85,6 +82,13 @@ export default function Attempts() {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
+                        <div className="filter-group">
+                            <select className="filter-select" value={quizSorting} onChange={(e) => setQuizSorting(e.target.value)}>
+                                <option value="-id">Mới nhất</option>
+                                <option value="id">Cũ nhất</option>
+                                <option value="title">Tiêu đề A-Z</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div className="table-responsive">
@@ -103,8 +107,8 @@ export default function Attempts() {
                                     <tr><td colSpan="5">Đang tải danh sách bài thi...</td></tr>
                                 ) : error ? (
                                     <tr><td colSpan="5" style={{ color: 'red' }}>Lỗi: {error}</td></tr>
-                                ) : filteredQuizzes.length > 0 ? (
-                                    filteredQuizzes.map(quiz => (
+                                ) : quizzes.length > 0 ? (
+                                    quizzes.map(quiz => (
                                         <tr key={quiz.id}>
                                             <td>{quiz.id}</td>
                                             <td><strong>{quiz.title}</strong></td>
@@ -158,6 +162,14 @@ export default function Attempts() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
+                    <div className="filter-group">
+                        <select className="filter-select" value={attemptSorting} onChange={(e) => setAttemptSorting(e.target.value)}>
+                            <option value="-started_at">Mới nhất</option>
+                            <option value="started_at">Cũ nhất</option>
+                            <option value="-score">Điểm cao nhất</option>
+                            <option value="score">Điểm thấp nhất</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div className="table-responsive">
@@ -175,8 +187,8 @@ export default function Attempts() {
                         <tbody>
                             {attemptsLoading ? (
                                 <tr><td colSpan="6">Đang tải kết quả bài làm...</td></tr>
-                            ) : filteredAttempts.length > 0 ? (
-                                filteredAttempts.map(attempt => (
+                            ) : attempts.length > 0 ? (
+                                attempts.map(attempt => (
                                     <tr key={attempt.id}>
                                         <td>{attempt.id}</td>
                                         <td>

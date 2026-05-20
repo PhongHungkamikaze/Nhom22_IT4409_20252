@@ -4,9 +4,7 @@ import apiClient from './apiClient';
  * Fetch notifications for the current user
  */
 export const getNotifications = async (params = {}) => {
-  // Build query string from params
-  const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
-  const response = await apiClient.request(`/notification/${queryString}`);
+  const response = await apiClient.request('/notification/', { params });
   return response;
 };
 

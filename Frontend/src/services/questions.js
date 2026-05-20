@@ -1,7 +1,7 @@
 import apiClient from './apiClient';
 
-export async function getQuestions() {
-    return apiClient.request('/questions/');
+export async function getQuestions(params = {}) {
+    return apiClient.request('/questions/', { params });
 }
 
 export async function getQuestion(id) {

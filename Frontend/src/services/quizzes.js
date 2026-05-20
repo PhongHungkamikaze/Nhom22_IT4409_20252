@@ -1,7 +1,7 @@
 import apiClient from './apiClient';
 
-export async function getQuizzes() {
-    return apiClient.request('/quizzes/');
+export async function getQuizzes(params = {}) {
+    return apiClient.request('/quizzes/', { params });
 }
 
 export async function getQuiz(id) {

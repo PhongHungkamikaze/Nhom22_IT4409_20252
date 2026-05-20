@@ -12,26 +12,50 @@ export default function MyQuizzes() {
 
     const { user } = useAuth();
 
+    const [ordering, setOrdering] = useState('-created_at');
+    const [publishedFilter, setPublishedFilter] = useState('all');
+    const [subjectFilter, setSubjectFilter] = useState('all');
+    const [subjects, setSubjects] = useState([]);
+
+    const fetchQuizzes = async () => {
+        setLoading(true);
+        try {
+            const params = {
+                search: searchTerm,
+                ordering: ordering,
+            };
+            if (publishedFilter === 'published') params.is_published = true;
+            if (publishedFilter === 'draft') params.is_published = false;
+            if (subjectFilter !== 'all') params.subject = subjectFilter;
+
+            const data = await apiService.getQuizzes(params);
+            setQuizzes(data.results || []);
+        } catch (err) {
+            console.error('Failed to fetch quizzes', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchSubjects = async () => {
+        try {
+            const data = await apiService.getSubjects();
+            setSubjects(Array.isArray(data) ? data : (data.results || []));
+        } catch (err) {
+            console.error('Failed to fetch subjects', err);
+        }
+    };
+
     useEffect(() => {
-        const load = async () => {
-            try {
-                const data = await apiService.getQuizzes();
-                setQuizzes(data.results);
-            } catch (err) {
-                console.error('Failed to fetch quizzes', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
+        fetchSubjects();
     }, []);
 
-    const filteredQuizzes = quizzes.filter(q => {
-        const title = (q.title || '').toLowerCase();
-        const code = ((q.code || q.slug || '') + '').toLowerCase();
-        const term = searchTerm.toLowerCase();
-        return title.includes(term) || code.includes(term);
-    });
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            fetchQuizzes();
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, publishedFilter, subjectFilter, ordering]);
 
     return (
         <div className="admin-container">
@@ -59,11 +83,21 @@ export default function MyQuizzes() {
                         />
                     </div>
                     <div className="filter-group">
-                        <select className="filter-select">
-                            <option value="all">All Statuses</option>
-                            <option value="active">Active</option>
-                            <option value="draft">Draft</option>
-                            <option value="upcoming">Upcoming</option>
+                        <select className="filter-select" value={publishedFilter} onChange={(e) => setPublishedFilter(e.target.value)}>
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="published">Đã xuất bản</option>
+                            <option value="draft">Bản nháp</option>
+                        </select>
+                        <select className="filter-select" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
+                            <option value="all">Tất cả môn học</option>
+                            {subjects.map(s => (
+                                <option key={s.id} value={s.id}>{s.name}</option>
+                            ))}
+                        </select>
+                        <select className="filter-select" value={ordering} onChange={(e) => setOrdering(e.target.value)}>
+                            <option value="-created_at">Mới nhất</option>
+                            <option value="created_at">Cũ nhất</option>
+                            <option value="title">Tiêu đề A-Z</option>
                         </select>
                     </div>
                 </div>
@@ -85,8 +119,8 @@ export default function MyQuizzes() {
                         <tbody>
                             {loading ? (
                                 <tr><td colSpan="8">Loading quizzes...</td></tr>
-                            ) : filteredQuizzes.length > 0 ? (
-                                filteredQuizzes.map(quiz => {
+                            ) : quizzes.length > 0 ? (
+                                quizzes.map(quiz => {
                                     const authorName = quiz.author_name || quiz.author || quiz.teacher_name || '';
                                     // determine if current user is the author
                                     const isAuthor = (() => {
@@ -144,7 +178,7 @@ export default function MyQuizzes() {
                 </div>
 
                 <div className="pagination">
-                    <span className="pagination-info">Showing {filteredQuizzes.length} quizzes</span>
+                    <span className="pagination-info">Showing {quizzes.length} quizzes</span>
                     <div className="pagination-controls">
                         <button className="page-btn active">1</button>
                     </div>

@@ -12,29 +12,51 @@ export default function QuestionBank() {
     const [error, setError] = useState(null);
     const { user } = useAuth();
 
+    const [ordering, setOrdering] = useState('-id');
+    const [typeFilter, setTypeFilter] = useState('all');
+    const [subjectFilter, setSubjectFilter] = useState('all');
+    const [subjects, setSubjects] = useState([]);
+
+    const fetchQuestions = async () => {
+        setLoading(true);
+        try {
+            const params = {
+                search: searchTerm,
+                ordering: ordering,
+            };
+            if (typeFilter !== 'all') params.type = typeFilter;
+            if (subjectFilter !== 'all') params.subject = subjectFilter;
+            
+            const data = await apiService.getQuestions(params);
+            setQuestions(data.results || []);
+            setError(null);
+        } catch (err) {
+            console.error('Failed to fetch questions', err);
+            setError(err.message || 'Fetch failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchSubjects = async () => {
+        try {
+            const data = await apiService.getSubjects();
+            setSubjects(Array.isArray(data) ? data : (data.results || []));
+        } catch (err) {
+            console.error('Failed to fetch subjects', err);
+        }
+    };
+
     useEffect(() => {
-        let mounted = true;
-        const load = async () => {
-            try {
-                const data = await apiService.getQuestions();
-                if (mounted) setQuestions(data.results || []);
-            } catch (err) {
-                console.error('Failed to fetch questions', err);
-                if (mounted) setError(err.message || 'Fetch failed');
-            } finally {
-                if (mounted) setLoading(false);
-            }
-        };
-        load();
-        return () => { mounted = false; };
+        fetchSubjects();
     }, []);
 
-    const filteredQuestions = questions.filter(q => {
-        const ct = (q.content || '').toString().toLowerCase();
-        const qt = (q.quiz_title || '').toString().toLowerCase();
-        const s = searchTerm.toLowerCase();
-        return ct.includes(s) || qt.includes(s);
-    });
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            fetchQuestions();
+        }, 500); // Debounce
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, typeFilter, subjectFilter, ordering]);
 
     const isAuthor = (question) => {
         if (!user) return false;
@@ -84,18 +106,21 @@ export default function QuestionBank() {
                         />
                     </div>
                     <div className="filter-group">
-                        <select className="filter-select">
-                            <option value="all">All Topics</option>
-                            <option value="react">React.js</option>
-                            <option value="css">CSS</option>
-                            <option value="html">HTML</option>
-                            <option value="js">JavaScript</option>
+                        <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                            <option value="all">Tất cả loại câu</option>
+                            <option value="single">Một lựa chọn</option>
+                            <option value="multiple">Nhiều lựa chọn</option>
                         </select>
-                        <select className="filter-select">
-                            <option value="all">Difficulty</option>
-                            <option value="easy">Easy</option>
-                            <option value="medium">Medium</option>
-                            <option value="hard">Hard</option>
+                        <select className="filter-select" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
+                            <option value="all">Tất cả môn học</option>
+                            {subjects.map(s => (
+                                <option key={s.id} value={s.id}>{s.name}</option>
+                            ))}
+                        </select>
+                        <select className="filter-select" value={ordering} onChange={(e) => setOrdering(e.target.value)}>
+                            <option value="-id">Mới nhất</option>
+                            <option value="id">Cũ nhất</option>
+                            <option value="content">Nội dung A-Z</option>
                         </select>
                     </div>
                 </div>
@@ -106,7 +131,6 @@ export default function QuestionBank() {
                             <tr>
                                 <th style={{ width: '35%' }}>Question Prompt</th>
                                 <th>Author</th>
-                                <th>Quiz</th>
                                 <th>Type</th>
                                 <th>Choices</th>
                                 <th>Actions</th>
@@ -117,8 +141,8 @@ export default function QuestionBank() {
                                 <tr><td colSpan="6">Loading questions...</td></tr>
                             ) : error ? (
                                 <tr><td colSpan="6" style={{ color: 'red' }}>Error: {error}</td></tr>
-                            ) : filteredQuestions.length > 0 ? (
-                                filteredQuestions.map(q => {
+                            ) : questions.length > 0 ? (
+                                questions.map(q => {
                                     const questionIsAuthor = isAuthor(q);
                                     const authorDisplay = q.author_name || q.author || '-';
                                     return (
@@ -127,7 +151,6 @@ export default function QuestionBank() {
                                                 <div className="question-text">{q.content}</div>
                                             </td>
                                             <td>{authorDisplay}</td>
-                                            <td>{q.quiz_title || (q.quiz ? `#${q.quiz}` : '-')}</td>
                                             <td>{q.type}</td>
                                             <td>
                                                 <ul className="choice-list">
@@ -158,7 +181,7 @@ export default function QuestionBank() {
                 </div>
 
                 <div className="pagination">
-                    <span className="pagination-info">Showing {filteredQuestions.length} questions</span>
+                    <span className="pagination-info">Showing {questions.length} questions</span>
                     <div className="pagination-controls">
                         <button className="page-btn active">1</button>
                     </div>

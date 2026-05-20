@@ -9,6 +9,7 @@ import * as stats from './stats';
 import * as questions from './questions'
 import * as users from './users';
 import * as notifications from './notifications';
+import * as subjects from './subjects';
 
 // Keep single default object for compatibility with existing imports
 const apiService = {
@@ -22,6 +23,7 @@ const apiService = {
   ...questions,
   ...users,
   ...notifications,
+  ...subjects,
 };
 
 export default apiService;

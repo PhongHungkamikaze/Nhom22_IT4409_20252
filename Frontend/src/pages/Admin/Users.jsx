@@ -11,39 +11,36 @@ export default function Users() {
     const [roleFilter, setRoleFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
 
-    useEffect(() => {
-        let mounted = true;
-        const load = async () => {
-            setLoading(true);
-            try {
-                const data = await apiService.getUsers();
-                // support both paginated ({results: []}) and plain list
-                const list = Array.isArray(data) ? data : (data.results || []);
-                const transformed = list.map(u => ({
-                    id: u.id,
-                    username: u.username,
-                    email: u.email || '',
-                    role: u.role,
-                }));
-                if (mounted) setUsers(transformed);
-            } catch (err) {
-                console.error('Failed to load users', err);
-                if (mounted) setError(err.message || 'Failed to fetch users');
-            } finally {
-                if (mounted) setLoading(false);
-            }
-        };
-        load();
-        return () => { mounted = false; };
-    }, []);
+    const [ordering, setOrdering] = useState('id');
 
-    const filteredUsers = users.filter(user => {
-        const q = searchTerm.toLowerCase();
-        const matchesSearch = user.username.toLowerCase().includes(q);
-        const matchesRole = roleFilter === 'all' || user.role.toLowerCase() === roleFilter.toLowerCase();
-        const matchesStatus = statusFilter === 'all' || user.status.toLowerCase() === statusFilter.toLowerCase();
-        return matchesSearch && matchesRole && matchesStatus;
-    });
+    const fetchUsers = async () => {
+        setLoading(true);
+        try {
+            const params = {
+                search: searchTerm,
+                ordering: ordering,
+            };
+            if (roleFilter !== 'all') params.role = roleFilter;
+            if (statusFilter !== 'all') params.is_active = statusFilter === 'active';
+
+            const data = await apiService.getUsers(params);
+            const list = Array.isArray(data) ? data : (data.results || []);
+            setUsers(list);
+            setError(null);
+        } catch (err) {
+            console.error('Failed to load users', err);
+            setError(err.message || 'Failed to fetch users');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            fetchUsers();
+        }, 500); // Debounce search
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, roleFilter, statusFilter, ordering]);
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this user?')) return;
@@ -61,94 +58,102 @@ export default function Users() {
             <QuickSystem />
             <header className="admin-header">
                 <div>
-                    <h1 className="admin-title">User Management</h1>
-                    <p className="admin-subtitle">View, add, edit, and remove users across the platform.</p>
+                    <h1 className="admin-title">Quản lý người dùng</h1>
+                    <p className="admin-subtitle">Xem, thêm, sửa và xóa người dùng trên hệ thống.</p>
                 </div>
                 <button className="primary-btn">
-                    <span className="btn-icon">+</span> Add New User
+                    <span className="btn-icon">+</span> Thêm người dùng
                 </button>
             </header>
 
             <div className="admin-card">
                 {loading && <p>Loading users...</p>}
                 {error && <p className="error-message">Error: {error}</p>}
+                <div className="table-controls">
+                    <div className="search-bar">
+                        <span className="search-icon">🔍</span>
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm theo tên hoặc email..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <select className="filter-select" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+                            <option value="all">Tất cả vai trò</option>
+                            <option value="student">Học sinh</option>
+                            <option value="teacher">Giáo viên</option>
+                            <option value="admin">Quản trị viên</option>
+                        </select>
+                        <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="active">Đang hoạt động</option>
+                            <option value="inactive">Bị khóa</option>
+                        </select>
+                        <select className="filter-select" value={ordering} onChange={(e) => setOrdering(e.target.value)}>
+                            <option value="id">ID (Tăng dần)</option>
+                            <option value="-id">ID (Giảm dần)</option>
+                            <option value="username">Tên người dùng A-Z</option>
+                            <option value="-username">Tên người dùng Z-A</option>
+                            <option value="-date_joined">Mới tham gia</option>
+                        </select>
+                    </div>
+                </div>
+
+                {loading && <p style={{ padding: '20px' }}>Loading users...</p>}
+                {error && <p className="error-message" style={{ padding: '20px' }}>Error: {error}</p>}
+                
                 {!loading && !error && (
-                    <>
-                        <div className="table-controls">
-                            <div className="search-bar">
-                                <span className="search-icon">🔍</span>
-                                <input
-                                    type="text"
-                                    placeholder="Search by name or email..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            <div className="filter-group">
-                                <select className="filter-select" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
-                                    <option value="all">All Roles</option>
-                                    <option value="student">Student</option>
-                                    <option value="teacher">Teacher</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                                <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                                    <option value="all">All Status</option>
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="table-responsive">
-                            <table className="table">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Actions</th>
+                    <div className="table-responsive">
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th>Họ và tên</th>
+                                    <th>Email</th>
+                                    <th>Vai trò</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {users.map(user => (
+                                    <tr key={user.id}>
+                                        <td>
+                                            <div className="user-name-cell">
+                                                <div className="avatar">{(user.username || '?').charAt(0)}</div>
+                                                <span>{user.username}</span>
+                                            </div>
+                                        </td>
+                                        <td>{user.email}</td>
+                                        <td>
+                                            <span className={`role-badge role-${(user.role || '').toLowerCase()}`}>
+                                                {user.role}
+                                            </span>
+                                        </td>
+                                        <td className="action-group">
+                                            <button className="text-btn">Sửa</button>
+                                            <button className="text-btn danger" onClick={() => handleDelete(user.id)}>Xóa</button>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredUsers.map(user => (
-                                        <tr key={user.id}>
-                                            <td>
-                                                <div className="user-name-cell">
-                                                    <div className="avatar">{user.username.charAt(0)}</div>
-                                                    <span>{user.username}</span>
-                                                </div>
-                                            </td>
-                                            <td>{user.email}</td>
-                                            <td>
-                                                <span className={`role-badge role-${user.role.toLowerCase()}`}>
-                                                    {user.role}
-                                                </span>
-                                            </td>
-                                            <td className="action-group">
-                                                <button className="text-btn">Edit</button>
-                                                <button className="text-btn danger" onClick={() => handleDelete(user.id)}>Delete</button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {filteredUsers.length === 0 && (
-                                        <tr>
-                                            <td colSpan="6" className="empty-state">
-                                                No users found matching your search.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div className="pagination">
-                            <span className="pagination-info">Showing {filteredUsers.length} of {users.length} users</span>
-                            <div className="pagination-controls">
-                                <button className="page-btn active">1</button>
-                            </div>
-                        </div>
-                    </>
+                                ))}
+                                {users.length === 0 && (
+                                    <tr>
+                                        <td colSpan="4" className="empty-state">
+                                            Không tìm thấy người dùng nào phù hợp.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
+
+                <div className="pagination">
+                    <span className="pagination-info">Hiển thị {users.length} người dùng</span>
+                    <div className="pagination-controls">
+                        <button className="page-btn active">1</button>
+                    </div>
+                </div>
             </div>
         </div>
     );

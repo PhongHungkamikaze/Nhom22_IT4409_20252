@@ -14,8 +14,8 @@ export async function finishAttempt(attemptId) {
     });
 }
 
-export async function getAttempts() {
-    return apiClient.request('/attempts/');
+export async function getAttempts(params = {}) {
+    return apiClient.request('/attempts/', { params });
 }
 
 export async function saveAnswer(attemptId, rowData) {

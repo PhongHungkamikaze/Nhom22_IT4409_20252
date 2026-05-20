@@ -2,10 +2,11 @@ import apiClient from './apiClient';
 
 const USERS_ENDPOINT = '/users/';
 
-export async function getUsers(params = '') {
-    // params can be a query string like '?page=1&search=foo'
-    const endpoint = `${USERS_ENDPOINT}${params}`;
-    return await apiClient.request(endpoint, { method: 'GET' });
+export async function getUsers(params = {}) {
+    return await apiClient.request(USERS_ENDPOINT, { 
+        method: 'GET',
+        params 
+    });
 }
 
 export async function getUser(id) {

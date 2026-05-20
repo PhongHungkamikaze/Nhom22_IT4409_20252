@@ -10,39 +10,34 @@ export default function QuizList() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredQuizzes, setFilteredQuizzes] = useState([]);
 
-    // READ: Fetch all quizzes from API
-    useEffect(() => {
-        const fetchQuizzes = async () => {
-            try {
-                setLoading(true);
-                const data = await apiService.getQuizzes();
-                const quizList = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
-                setQuizzes(quizList);
-                setFilteredQuizzes(quizList);
-                setError(null);
-            } catch (err) {
-                console.error('Failed to fetch quizzes:', err);
-                setError('Không thể tải danh sách bài quiz');
-                setQuizzes([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchQuizzes();
-    }, []);
+    const [ordering, setOrdering] = useState('-created_at');
 
-    // Handle search/filter
-    useEffect(() => {
-        if (!searchTerm.trim()) {
-            setFilteredQuizzes(quizzes);
-        } else {
-            const filtered = quizzes.filter(quiz =>
-                quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (quiz.description && quiz.description.toLowerCase().includes(searchTerm.toLowerCase()))
-            );
-            setFilteredQuizzes(filtered);
+    const fetchQuizzes = async () => {
+        try {
+            setLoading(true);
+            const params = {
+                search: searchTerm,
+                ordering: ordering,
+            };
+            const data = await apiService.getQuizzes(params);
+            const quizList = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
+            setQuizzes(quizList);
+            setError(null);
+        } catch (err) {
+            console.error('Failed to fetch quizzes:', err);
+            setError('Không thể tải danh sách bài quiz');
+            setQuizzes([]);
+        } finally {
+            setLoading(false);
         }
-    }, [searchTerm, quizzes]);
+    };
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            fetchQuizzes();
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, ordering]);
 
     return (
         <div className="student-page">
@@ -96,7 +91,7 @@ export default function QuizList() {
                             <div className="stu-spinner"></div>
                             <p>Đang tải bài quiz...</p>
                         </div>
-                    ) : filteredQuizzes.length === 0 ? (
+                    ) : quizzes.length === 0 ? (
                         <div className="stu-empty">
                             <span className="stu-empty-icon">📭</span>
                             <p>{searchTerm ? 'Không tìm thấy bài quiz nào' : 'Chưa có bài quiz nào khả dụng'}</p>
@@ -104,10 +99,10 @@ export default function QuizList() {
                     ) : (
                         <>
                             <div style={{ marginBottom: '1rem', color: '#666' }}>
-                                Tìm thấy {filteredQuizzes.length} bài quiz
+                                Tìm thấy {quizzes.length} bài quiz
                             </div>
                             <div className="stu-quizzes-grid">
-                                {filteredQuizzes.map(quiz => (
+                                {quizzes.map(quiz => (
                                     <div key={quiz.id} className="stu-quiz-card">
                                         <div className="stu-quiz-header">
                                             <h3>{quiz.title}</h3>

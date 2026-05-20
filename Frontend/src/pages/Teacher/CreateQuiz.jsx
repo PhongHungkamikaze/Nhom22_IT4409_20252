@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Teacher.css';
+import toast from 'react-hot-toast';
 import apiService from '../../services/api';
+import './Teacher.css';
 
 export default function CreateQuiz() {
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ export default function CreateQuiz() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!title.trim()) {
-            setError('Title is required');
+            toast.error('Tiêu đề không được để trống');
             return;
         }
         setError(null);
@@ -26,11 +27,14 @@ export default function CreateQuiz() {
                 time_limit: Number(timeLimit) || 0,
             };
             await apiService.createQuiz(payload);
+            toast.success('Tạo bài thi thành công!');
             // on success navigate back to quiz list
             navigate('/teacher/quizzes');
         } catch (err) {
             console.error('Create quiz failed', err);
-            setError(err.message || 'Failed to create quiz');
+            const msg = err.message || 'Lỗi khi tạo bài thi';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSubmitting(false);
         }

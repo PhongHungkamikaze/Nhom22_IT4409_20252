@@ -1,20 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Teacher.css';
+import toast from 'react-hot-toast';
 import apiService from '../../services/api';
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
+import './Teacher.css';
 
 export default function AddQuestion() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [fetchingSubjects, setFetchingSubjects] = useState(true);
+    const [subjects, setSubjects] = useState([]);
     const [error, setError] = useState(null);
 
     const [content, setContent] = useState('');
     const [type, setType] = useState('multiple');
+    const [subjectId, setSubjectId] = useState('');
     const [choices, setChoices] = useState([
         { content: '', is_correct: false },
         { content: '', is_correct: false }
     ]);
+
+    useEffect(() => {
+        const loadSubjects = async () => {
+            try {
+                const data = await apiService.getSubjects();
+                setSubjects(Array.isArray(data) ? data : (data.results || []));
+                if (data.length > 0) setSubjectId(data[0].id);
+            } catch (err) {
+                console.error('Failed to load subjects', err);
+                toast.error("Không thể tải danh sách môn học");
+            } finally {
+                setFetchingSubjects(false);
+            }
+        };
+        loadSubjects();
+    }, []);
 
     const handleBack = () => {
         navigate('/teacher/questions');
@@ -46,6 +66,11 @@ export default function AddQuestion() {
             return;
         }
 
+        if (!subjectId) {
+            setError("Subject is required");
+            return;
+        }
+
         const validChoices = choices.filter(c => c.content.trim() !== '');
         if (validChoices.length < 2) {
             setError("At least two choices with content are required");
@@ -63,14 +88,21 @@ export default function AddQuestion() {
             await apiService.createQuestion({
                 type,
                 content,
+                subject: subjectId,
                 choices: validChoices
             });
+            toast.success('Thêm câu hỏi thành công!');
             navigate('/teacher/questions');
         } catch (err) {
-            setError(err.message || 'Failed to create question');
+            const errorData = err.response?.data;
+            const msg = errorData ? (Object.values(errorData)[0][0] || 'Lỗi khi tạo câu hỏi') : (err.message || 'Lỗi khi tạo câu hỏi');
+            setError(msg);
+            toast.error(msg);
             setLoading(false);
         }
     };
+
+    if (fetchingSubjects) return <div className="admin-container"><p>Đang tải môn học...</p></div>;
 
     return (
         <div className="admin-container teacher-createquiz">
@@ -88,6 +120,22 @@ export default function AddQuestion() {
             <div className="admin-card">
                 <form className="create-quiz-form" onSubmit={handleSubmit}>
                     {error && <div className="error-message" style={{ marginBottom: '16px', padding: '10px', backgroundColor: '#fee2e2', borderRadius: '8px' }}>{error}</div>}
+
+                    <div className="form-group" style={{ marginBottom: '20px' }}>
+                        <label>Môn học</label>
+                        <select
+                            className="filter-select"
+                            style={{ width: '100%', padding: '10px' }}
+                            value={subjectId}
+                            onChange={e => setSubjectId(e.target.value)}
+                            required
+                        >
+                            <option value="">Chọn môn học</option>
+                            {subjects.map(sub => (
+                                <option key={sub.id} value={sub.id}>{sub.name}</option>
+                            ))}
+                        </select>
+                    </div>
 
                     <div className="form-group">
                         <label>Question Type</label>

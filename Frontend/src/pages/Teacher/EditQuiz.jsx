@@ -1,6 +1,6 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import apiService from '../../services/api';
 import './Teacher.css';
@@ -68,11 +68,12 @@ const EditQuiz = () => {
 
     try {
       await apiService.updateQuiz(id, formData);
-      alert('Bài quiz đã được cập nhật thành công!');
+      toast.success('Cập nhật bài thi thành công!');
       navigate('/teacher/quizzes');
     } catch (err) {
-      setError('Không thể cập nhật bài quiz. Vui lòng thử lại.');
-      console.error('Error updating quiz:', err);
+      const msg = err.message || 'Lỗi khi cập nhật bài thi';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

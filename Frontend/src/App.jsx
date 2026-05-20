@@ -20,9 +20,12 @@ import TeacherQuestionBank from './pages/Teacher/QuestionBank';
 import TeacherAttempts from './pages/Teacher/Attempts';
 import StudentDashboard from './pages/Student/Dashboard';
 
+import { Toaster } from 'react-hot-toast';
+
 function App() {
   return (
     <AuthProvider>
+      <Toaster position="top-right" reverseOrder={false} />
       <NotificationProvider>
         <Router>
           <div className="App">

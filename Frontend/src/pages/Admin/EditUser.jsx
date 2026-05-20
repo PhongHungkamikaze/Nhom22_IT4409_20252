@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import './Admin.css';
+import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import apiService from '../../services/api';
+import './Admin.css';
 
 export default function EditUser() {
     const { id } = useParams();
@@ -44,11 +45,13 @@ export default function EditUser() {
         setError(null);
         try {
             await apiService.partialUpdateUser(id, formData);
-            alert('Cập nhật người dùng thành công!');
+            toast.success('Cập nhật người dùng thành công!');
             navigate('/admin/users');
         } catch (err) {
             console.error('Update failed', err);
-            setError(err.response?.data?.non_field_errors?.[0] || err.response?.data?.role?.[0] || 'Cập nhật thất bại.');
+            const msg = err.response?.data?.non_field_errors?.[0] || err.response?.data?.role?.[0] || 'Cập nhật thất bại.';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSaving(false);
         }

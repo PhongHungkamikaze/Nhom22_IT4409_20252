@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import './Admin.css';
-import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
+import toast from 'react-hot-toast';
 import apiService from '../../services/api';
+import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
+import './Admin.css';
 
 export default function Subjects() {
     const [subjects, setSubjects] = useState([]);
@@ -34,9 +35,10 @@ export default function Subjects() {
         try {
             await apiService.deleteSubject(id);
             setSubjects(subjects.filter(s => s.id !== id));
+            toast.success('Xóa môn học thành công!');
         } catch (err) {
             console.error('Delete failed', err);
-            alert('Xóa môn học thất bại.');
+            toast.error('Xóa môn học thất bại.');
         }
     };
 
@@ -45,16 +47,16 @@ export default function Subjects() {
         try {
             if (isEdit) {
                 await apiService.updateSubject(currentSubject.id, currentSubject);
-                alert('Cập nhật thành công!');
+                toast.success('Cập nhật môn học thành công!');
             } else {
                 await apiService.createSubject(currentSubject);
-                alert('Thêm mới thành công!');
+                toast.success('Thêm mới môn học thành công!');
             }
             setIsModalOpen(false);
             fetchSubjects();
         } catch (err) {
             console.error('Save failed', err);
-            alert('Thao tác thất bại.');
+            toast.error('Thao tác thất bại.');
         }
     };
 

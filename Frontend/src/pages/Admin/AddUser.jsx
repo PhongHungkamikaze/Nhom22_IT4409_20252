@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Admin.css';
+import toast from 'react-hot-toast';
 import apiService from '../../services/api';
+import './Admin.css';
 
 export default function AddUser() {
     const navigate = useNavigate();
@@ -22,17 +23,18 @@ export default function AddUser() {
         setError(null);
         try {
             await apiService.createUser(formData);
-            alert('Thêm người dùng mới thành công!');
+            toast.success('Thêm người dùng mới thành công!');
             navigate('/admin/users');
         } catch (err) {
             console.error('Create failed', err);
             const errorData = err.response?.data;
+            let msg = 'Thêm người dùng thất bại. Vui lòng thử lại.';
             if (errorData) {
                 const firstError = Object.values(errorData)[0];
-                setError(Array.isArray(firstError) ? firstError[0] : firstError);
-            } else {
-                setError('Thêm người dùng thất bại. Vui lòng thử lại.');
+                msg = Array.isArray(firstError) ? firstError[0] : firstError;
             }
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSaving(false);
         }

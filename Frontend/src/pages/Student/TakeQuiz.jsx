@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import apiService from '../../services/api';
-import './Student.css';
-import './TakeQuiz.css';
 import { getUserIdFromToken } from '../../utils/jwt';
+import './TakeQuiz.css';
 
 export default function TakeQuiz() {
     const { attemptId } = useParams();

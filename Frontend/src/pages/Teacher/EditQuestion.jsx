@@ -1,28 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import './Teacher.css';
+import toast from 'react-hot-toast';
 import apiService from '../../services/api';
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
+import './Teacher.css';
 
 export default function EditQuestion() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
+    const [subjects, setSubjects] = useState([]);
     const [error, setError] = useState(null);
 
     const [content, setContent] = useState('');
     const [type, setType] = useState('multiple');
+    const [subjectId, setSubjectId] = useState('');
     const [choices, setChoices] = useState([]);
 
     useEffect(() => {
         let mounted = true;
-        const loadQuestion = async () => {
+        const loadInitialData = async () => {
             try {
+                // Fetch subjects first
+                const subjectsData = await apiService.getSubjects();
+                if (mounted) setSubjects(Array.isArray(subjectsData) ? subjectsData : (subjectsData.results || []));
+
+                // Fetch question
                 const data = await apiService.getQuestion(id);
                 if (mounted) {
                     setContent(data.content || '');
                     setType(data.type || 'multiple');
+                    setSubjectId(data.subject || '');
                     // Ensure choices exist
                     if (data.choices && data.choices.length > 0) {
                         setChoices(data.choices);
@@ -34,14 +43,14 @@ export default function EditQuestion() {
                     }
                 }
             } catch (err) {
-                console.error("Failed to fetch question", err);
+                console.error("Failed to fetch initial data", err);
                 if (mounted) setError(err.message || 'Failed to fetch question details');
             } finally {
                 if (mounted) setFetching(false);
             }
         };
 
-        loadQuestion();
+        loadInitialData();
         return () => { mounted = false; };
     }, [id]);
 
@@ -75,6 +84,11 @@ export default function EditQuestion() {
             return;
         }
 
+        if (!subjectId) {
+            setError("Subject is required");
+            return;
+        }
+
         const validChoices = choices.filter(c => c.content.trim() !== '');
         if (validChoices.length < 2) {
             setError("At least two choices with content are required");
@@ -92,11 +106,16 @@ export default function EditQuestion() {
             await apiService.partialUpdateQuestion(id, {
                 type,
                 content,
+                subject: subjectId,
                 choices: validChoices
             });
+            toast.success('Cập nhật câu hỏi thành công!');
             navigate('/teacher/questions');
         } catch (err) {
-            setError(err.message || 'Failed to update question');
+            const errorData = err.response?.data;
+            const msg = errorData ? (Object.values(errorData)[0][0] || 'Lỗi khi cập nhật câu hỏi') : (err.message || 'Lỗi khi cập nhật câu hỏi');
+            setError(msg);
+            toast.error(msg);
             setLoading(false);
         }
     };
@@ -116,9 +135,9 @@ export default function EditQuestion() {
             <header className="admin-header">
                 <div>
                     <h1 className="admin-title">Edit Question</h1>
-                    <p className="admin-subtitle">Modify the details of your question.</p>
+                    <p className="admin-subtitle">Update question details and choices.</p>
                 </div>
-                <button className="secondary-btn" onClick={handleBack}>
+                <button className="secondary-btn" onClick={() => navigate('/teacher/questions')}>
                     Back to Question Bank
                 </button>
             </header>
@@ -126,6 +145,22 @@ export default function EditQuestion() {
             <div className="admin-card">
                 <form className="create-quiz-form" onSubmit={handleSubmit}>
                     {error && <div className="error-message" style={{ marginBottom: '16px', padding: '10px', backgroundColor: '#fee2e2', borderRadius: '8px' }}>{error}</div>}
+
+                    <div className="form-group" style={{ marginBottom: '20px' }}>
+                        <label>Môn học</label>
+                        <select
+                            className="filter-select"
+                            style={{ width: '100%', padding: '10px' }}
+                            value={subjectId}
+                            onChange={e => setSubjectId(e.target.value)}
+                            required
+                        >
+                            <option value="">Chọn môn học</option>
+                            {subjects.map(sub => (
+                                <option key={sub.id} value={sub.id}>{sub.name}</option>
+                            ))}
+                        </select>
+                    </div>
 
                     <div className="form-group">
                         <label>Question Type</label>

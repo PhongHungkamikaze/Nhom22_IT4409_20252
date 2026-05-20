@@ -1,5 +1,6 @@
 import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import Header from './components/Header';
 import Homepage from './pages/Homepage';
 import Login from './pages/Login';
@@ -22,13 +23,15 @@ import StudentDashboard from './pages/Student/Dashboard';
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="App">
-          <Header />
-          <AppRouter />
-          <Footer />
-        </div>
-      </Router>
+      <NotificationProvider>
+        <Router>
+          <div className="App">
+            <Header />
+            <AppRouter />
+            <Footer />
+          </div>
+        </Router>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

@@ -4,43 +4,54 @@ import apiClient from './apiClient';
  * Fetch notifications for the current user
  */
 export const getNotifications = async (params = {}) => {
-  const response = await apiClient.get('/notification/', { params });
-  return response.data;
+  // Build query string from params
+  const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
+  const response = await apiClient.request(`/notification/${queryString}`);
+  return response;
 };
 
 /**
  * Get unread notification count
  */
 export const getUnreadCount = async () => {
-  const response = await apiClient.get('/notification/unread-count/');
-  return response.data;
+  const response = await apiClient.request('/notification/unread-count/');
+  return response;
 };
 
 /**
  * Mark specific notifications as read
  */
 export const markNotificationsRead = async (ids) => {
-  const response = await apiClient.post('/notification/mark-as-read/', { ids });
-  return response.data;
+  const response = await apiClient.request('/notification/mark-as-read/', {
+    method: 'POST',
+    body: JSON.stringify({ ids }),
+  });
+  return response;
 };
 
 /**
  * Mark specific notifications as deleted
  */
 export const markNotificationsDeleted = async (ids) => {
-  const response = await apiClient.post('/notification/mark-as-deleted/', { ids });
-  return response.data;
+  const response = await apiClient.request('/notification/mark-as-deleted/', {
+    method: 'POST',
+    body: JSON.stringify({ ids }),
+  });
+  return response;
 };
 
 /**
  * [NEW] send_notification function for frontend
- * This triggers a server-side notification creation.
- * If the project uses a REST API for manual notifications, we call it here.
  */
 export const sendNotification = async (type, title, content, data = {}) => {
-  // If there's an endpoint for creating notifications (internal use), call it.
-  // For now, many notifications are triggered automatically on the backend.
-  // This function can be expanded to call specialized API endpoints if they exist.
   console.log(`Triggering notification: ${title} (${type})`);
-  // return await apiClient.post('/notification/trigger/', { type, title, content, data });
+  // If there's an endpoint for creating notifications, call it.
+};
+
+export default {
+    getNotifications,
+    getUnreadCount,
+    markNotificationsRead,
+    markNotificationsDeleted,
+    sendNotification,
 };

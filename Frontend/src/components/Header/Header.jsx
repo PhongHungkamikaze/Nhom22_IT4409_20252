@@ -1,26 +1,43 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotifications } from '../../context/NotificationContext';
+import { 
+  FiUser, FiLogOut, FiSettings, FiChevronDown, 
+  FiPieChart, FiHome, FiLayout, FiBookOpen,
+  FiBell, FiClock, FiCheckCircle, FiInfo 
+} from 'react-icons/fi';
 import './Header.css';
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAuthenticated, logout, getUserDisplayName } = useAuth();
+  const { notifications, unreadCount, markAllRead, markAsRead } = useNotifications();
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  // Debug log
-  console.log('Header - Auth state:', { user, isAuthenticated, displayName: getUserDisplayName() });
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const handleLogin = () => {
-    navigate('/login');
-    setIsMenuOpen(false);
-  };
-
-  const handleRegister = () => {
-    navigate('/register');
-    setIsMenuOpen(false);
-  };
+  // Determine base path based on role
+  const roleBasePath = useMemo(() => {
+    if (!user) return '/student';
+    switch (user.role) {
+      case 'teacher': return '/teacher';
+      case 'admin': return '/admin';
+      default: return '/student';
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -28,111 +45,192 @@ const Header = () => {
     navigate('/');
   };
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  const handleNotificationClick = (n) => {
+    markAsRead(n.id);
+    setIsNotifOpen(false);
+    // Navigate based on type if needed
   };
 
-  const toggleUserMenu = () => {
-    setIsUserMenuOpen(!isUserMenuOpen);
-  };
+  // Close menus on navigation
+  useEffect(() => {
+    setIsMenuOpen(false);
+    setIsUserMenuOpen(false);
+    setIsNotifOpen(false);
+  }, [location.pathname]);
 
-  // Close user menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isUserMenuOpen && !event.target.closest('.user-menu')) {
         setIsUserMenuOpen(false);
       }
+      if (isNotifOpen && !event.target.closest('.notif-container')) {
+        setIsNotifOpen(false);
+      }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isUserMenuOpen]);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isUserMenuOpen, isNotifOpen]);
+
+  const formatNotifTime = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   return (
-    <header className="header">
+    <header className={`header ${scrolled ? 'header-scrolled' : ''}`}>
       <div className="header-container">
-
-        {/* Logo */}
+        
+        {/* Logo Section */}
         <Link to="/" className="logo">
-          <span className="logo-icon">📚</span>
-          <span className="logo-text">QuizMaster</span>
+          <div className="logo-badge">Q</div>
+          <span className="logo-text">Quiz<span>Master</span></span>
         </Link>
 
-        {/* Navigation */}
+        {/* Desktop Navigation */}
         <nav className={`nav ${isMenuOpen ? 'nav-open' : ''}`}>
           <ul className="nav-links">
-            <li><Link to="/">Trang chủ</Link></li>
-            <li><a href="#quizzes">Bài Quiz</a></li>
-            <li><a href="#about">Giới thiệu</a></li>
-            <li><a href="#contact">Liên hệ</a></li>
+            <li>
+              <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
+                <FiHome className="nav-icon" /> Trang chủ
+              </Link>
+            </li>
+            
+            {isAuthenticated && (
+              <li>
+                <Link 
+                  to={`${roleBasePath}/quizzes`} 
+                  className={location.pathname.includes('/quizzes') ? 'active' : ''}
+                >
+                  <FiBookOpen className="nav-icon" /> Bài Quiz
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
 
-        {/* Auth Buttons / User Menu */}
-        <div className="auth-section">
+        {/* Right Section: Auth/User */}
+        <div className="header-right">
           {isAuthenticated ? (
-            <div className="user-menu">
-              <button
-                className="user-button"
-                onClick={toggleUserMenu}
-              >
-                <span className="user-avatar">👤</span>
-                <span className="user-name">Xin chào, {getUserDisplayName()}!</span>
-                <span className={`dropdown-arrow ${isUserMenuOpen ? 'open' : ''}`}>▼</span>
-              </button>
+            <>
+              {/* Notification Bell */}
+              <div className="notif-container">
+                <button 
+                  className={`notif-btn ${isNotifOpen ? 'active' : ''}`}
+                  onClick={() => setIsNotifOpen(!isNotifOpen)}
+                >
+                  <FiBell />
+                  {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
+                </button>
 
-              {isUserMenuOpen && (
-                <div className="user-dropdown">
-                  <div className="user-info">
-                    <div className="user-detail">
-                      <strong>{user?.username}</strong>
-                      {user?.email && <div className="user-email">{user.email}</div>}
+                {isNotifOpen && (
+                  <div className="notif-dropdown animate-in">
+                    <div className="notif-header">
+                      <h3>Thông báo</h3>
+                      <button onClick={markAllRead}>Đánh dấu đã đọc</button>
+                    </div>
+                    
+                    <div className="notif-list">
+                      {notifications.length > 0 ? (
+                        notifications.map(n => (
+                          <div 
+                            key={n.id} 
+                            className={`notif-item ${!n.is_read ? 'unread' : ''}`}
+                            onClick={() => handleNotificationClick(n)}
+                          >
+                            <div className="notif-icon">
+                              {n.type === 'EXAM_VIOLATION' ? <FiInfo style={{color:'#ef4444'}} /> : <FiBell />}
+                            </div>
+                            <div className="notif-content">
+                              <p className="notif-title">{n.title}</p>
+                              <p className="notif-desc">{n.content}</p>
+                              <span className="notif-time">
+                                <FiClock /> {formatNotifTime(n.created_at)}
+                              </span>
+                            </div>
+                            {!n.is_read && <div className="unread-dot"></div>}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="notif-empty">
+                          <FiBell size={40} />
+                          <p>Bạn chưa có thông báo nào</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <Link to={`${roleBasePath}/notifications`} className="notif-footer">
+                      Xem tất cả thông báo
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* User Menu */}
+              <div className="user-menu">
+                <button 
+                  className={`user-profile-btn ${isUserMenuOpen ? 'active' : ''}`}
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                >
+                  <div className="avatar-wrapper">
+                    <FiUser />
+                  </div>
+                  <div className="user-brief">
+                    <span className="welcome-text">Xin chào,</span>
+                    <span className="display-name">{getUserDisplayName()}</span>
+                  </div>
+                  <FiChevronDown className={`chevron ${isUserMenuOpen ? 'open' : ''}`} />
+                </button>
+
+                {isUserMenuOpen && (
+                  <div className="user-dropdown animate-in">
+                    <div className="dropdown-header">
+                      <p className="full-name">{user?.username}</p>
+                      <p className="user-role-badge">{user?.role?.toUpperCase()}</p>
+                    </div>
+                    
+                    <div className="dropdown-section">
+                      <Link to={`${roleBasePath}/profile`} className="dropdown-item">
+                        <FiUser /> Thông tin cá nhân
+                      </Link>
+                      <Link to={`${roleBasePath}/dashboard`} className="dropdown-item">
+                        <FiLayout /> Bảng điều khiển
+                      </Link>
+                      <Link to={`${roleBasePath}/history`} className="dropdown-item">
+                        <FiPieChart /> Lịch sử hoạt động
+                      </Link>
+                      <Link to={`${roleBasePath}/settings`} className="dropdown-item">
+                        <FiSettings /> Cài đặt
+                      </Link>
+                    </div>
+
+                    <div className="dropdown-footer">
+                      <button onClick={handleLogout} className="logout-button">
+                        <FiLogOut /> Đăng xuất
+                      </button>
                     </div>
                   </div>
-                  <hr className="dropdown-divider" />
-                  <a href="/student/profile" className="dropdown-item">
-                    <span className="item-icon">👤</span>
-                    Thông tin cá nhân
-                  </a>
-                  <a href="/student/history" className="dropdown-item">
-                    <span className="item-icon">📊</span>
-                    Lịch sử làm bài
-                  </a>
-                  <a href="/student/settings" className="dropdown-item">
-                    <span className="item-icon">⚙️</span>
-                    Cài đặt
-                  </a>
-                  <hr className="dropdown-divider" />
-                  <button onClick={handleLogout} className="dropdown-item logout-btn">
-                    <span className="item-icon">🚪</span>
-                    Đăng xuất
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              <button className="btn-secondary" onClick={handleLogin}>
-                Đăng nhập
-              </button>
-              <button className="btn-primary" onClick={handleRegister}>
-                Đăng ký
-              </button>
+                )}
+              </div>
             </>
+          ) : (
+            <div className="auth-group">
+              <Link to="/login" className="login-link">Đăng nhập</Link>
+              <Link to="/register" className="register-btn">Bắt đầu ngay</Link>
+            </div>
           )}
-        </div>
 
-        {/* Mobile Menu Button */}
-        <button
-          className={`menu-toggle ${isMenuOpen ? 'active' : ''}`}
-          onClick={toggleMenu}
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+          {/* Mobile Menu Toggle */}
+          <button 
+            className={`mobile-toggle ${isMenuOpen ? 'active' : ''}`}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Menu"
+          >
+            <div className="bar"></div>
+            <div className="bar"></div>
+            <div className="bar"></div>
+          </button>
+        </div>
       </div>
     </header>
   );

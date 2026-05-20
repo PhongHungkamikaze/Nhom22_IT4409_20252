@@ -91,9 +91,6 @@ export default function QuizDetail() {
                             <p style={{ color: '#666', marginBottom: '1.5rem' }}>
                                 {error || 'Bài quiz không tồn tại hoặc chưa được publish'}
                             </p>
-                            <p style={{ fontSize: '0.9rem', color: '#999', marginBottom: '1.5rem' }}>
-                                Lưu ý: Bạn chỉ có thể xem các bài quiz đã được giáo viên publish.
-                            </p>
                             <button
                                 onClick={() => {
                                     console.log('Error page back button clicked'); // DEBUG

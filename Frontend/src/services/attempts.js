@@ -25,9 +25,11 @@ export async function saveAnswer(attemptId, rowData) {
     });
 }
 
-export async function submitQuiz(attemptId) {
+export async function submitQuiz(attemptId, status = null) {
+    const body = status ? { status } : {};
     return apiClient.request(`/attempts/${attemptId}/submit/`, {
         method: 'POST',
+        body: JSON.stringify(body),
     });
 }
 

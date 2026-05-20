@@ -169,7 +169,7 @@ export default function QuizDetail() {
                         }}>
                             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📝</div>
                             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#007bff' }}>
-                                {quiz.questions_count || quiz.question_count || '?'}
+                                {quiz.question_count || '0'}
                             </div>
                             <div style={{ color: '#666', marginTop: '0.5rem' }}>Số câu hỏi</div>
                         </div>
@@ -182,7 +182,7 @@ export default function QuizDetail() {
                         }}>
                             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⏱️</div>
                             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#d946a6' }}>
-                                {quiz.time_limit || quiz.duration || '30'}
+                                {quiz.time_limit || '30'}
                             </div>
                             <div style={{ color: '#666', marginTop: '0.5rem' }}>Phút</div>
                         </div>
@@ -195,7 +195,7 @@ export default function QuizDetail() {
                         }}>
                             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>👤</div>
                             <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#059669' }}>
-                                {quiz.author || quiz.teacher_name || 'Giáo viên'}
+                                {quiz.author_name || 'Giáo viên'}
                             </div>
                             <div style={{ color: '#666', marginTop: '0.5rem' }}>Người tạo</div>
                         </div>

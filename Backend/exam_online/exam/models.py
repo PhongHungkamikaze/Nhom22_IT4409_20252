@@ -95,6 +95,7 @@ class StatusChoices(models.TextChoices):
     )
     Processing = ("processing", "Processing")
     Completed = "completed", "Completed"
+    Error = "error", "Error"
 
 
 class Attempt(BaseModel):

@@ -17,7 +17,7 @@ class AttemptViewSet(PermissionMixin, viewsets.ModelViewSet):
     )
     serializer_class = AttemptSerializer
     permission_classes_by_action = {
-        "list": [IsTeacherUser | IsAdminUser],
+        "list": [IsTeacherUser | IsAdminUser | IsStudentUser],
         "retrieve": [IsTeacherUser | IsAdminUser | IsStudentUser],
         "create": [IsTeacherUser | IsStudentUser],
         "update": [IsStudentUser],
@@ -92,11 +92,18 @@ class AttemptViewSet(PermissionMixin, viewsets.ModelViewSet):
             return response.Response(
                 {"error": "Already submitted"}, status=status.HTTP_400_BAD_REQUEST
             )
-        attempt.status = StatusChoices.Processing
+
+        # Check if submitted due to violation
+        new_status = request.data.get("status")
+        if new_status == "error":
+            attempt.status = StatusChoices.Error
+        else:
+            attempt.status = StatusChoices.Processing
         attempt.save(update_fields=["status"])
         calculate_score.delay(attempt.id)
+        
         return response.Response(
-            {"message": "Calculate in progress..."}, status=status.HTTP_200_OK
+            {"message": f"Submitted with status: {attempt.status}"}, status=status.HTTP_200_OK
         )
 
     @action(detail=False, methods=["get"], url_path="current")

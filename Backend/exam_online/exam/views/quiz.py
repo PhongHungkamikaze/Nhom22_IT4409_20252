@@ -1,5 +1,10 @@
-from exam.permissions import PermissionMixin
-from exam.permissions import IsAdminUser, IsTeacherUser, IsStudentUser, IsOwnerTeacher
+from exam.permissions import (
+    IsAdminUser,
+    IsTeacherUser,
+    IsStudentUser,
+    IsOwnerTeacher,
+    PermissionMixin,
+)
 from drf_spectacular.utils import extend_schema
 
 from ..models import Quiz

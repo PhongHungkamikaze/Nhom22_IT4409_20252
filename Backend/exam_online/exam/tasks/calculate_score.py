@@ -33,5 +33,7 @@ def calculate_score(attempt_id):
     )
 
     attempt.score = calculate_attempt_score(attempt)
-    attempt.status = StatusChoices.Completed
+    attempt.refresh_from_db()
+    if attempt.status == StatusChoices.Processing:
+        attempt.status = StatusChoices.Completed
     attempt.save(update_fields=["score", "status"])

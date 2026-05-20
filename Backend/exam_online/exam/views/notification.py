@@ -1,9 +1,10 @@
+from django.db import models
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, mixins, permissions, response, status, viewsets
 from rest_framework.decorators import action
-
+from ..models import UserRole
 from ..filters import NotificationFilter
 from ..models import Notification
 from ..serializers import (
@@ -35,6 +36,9 @@ class NotificationViewSet(
         return NotificationFilter
 
     def get_queryset(self):
+        user = self.request.user
+        if user.role == UserRole.Admin:
+            return Notification.all_objects.all()
         return Notification.objects.filter(recipient=self.request.user)
 
     def get_serializer_class(self):

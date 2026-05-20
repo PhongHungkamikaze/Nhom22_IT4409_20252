@@ -31,7 +31,8 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 class NotificationListSerializer(serializers.ModelSerializer):
-    actor = SimpleUserNotificationSerializer(read_only=True)
+    actor_name = serializers.ReadOnlyField(source="actor.username")
+    recipient_name = serializers.ReadOnlyField(source="recipient.username")
 
     class Meta:
         model = Notification
@@ -39,11 +40,16 @@ class NotificationListSerializer(serializers.ModelSerializer):
             "id",
             "type",
             "title",
+            "content",
             "is_read",
             "read_at",
             "sent_at",
             "actor",
+            "actor_name",
+            "recipient",
+            "recipient_name",
             "created_at",
+            "data",
         ]
 
 

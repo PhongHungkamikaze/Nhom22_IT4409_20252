@@ -39,6 +39,28 @@ class QuestionSerializer(serializers.ModelSerializer):
             "choices",
         ]
 
+    def validate(self, data):
+        type_question = data.get("type")
+        choices = data.get("choices", [])
+
+        if not choices:
+            raise serializers.ValidationError({"choices": "Câu hỏi phải có ít nhất một lựa chọn."})
+
+        correct_count = sum(1 for c in choices if c.get("is_correct", False))
+
+        if type_question == Question.TypeQuestion.Single:
+            if correct_count != 1:
+                raise serializers.ValidationError(
+                    {"choices": "Câu hỏi một lựa chọn phải có duy nhất một đáp án đúng."}
+                )
+        elif type_question == Question.TypeQuestion.Multiple:
+            if correct_count < 1:
+                raise serializers.ValidationError(
+                    {"choices": "Câu hỏi nhiều lựa chọn phải có ít nhất một đáp án đúng."}
+                )
+
+        return data
+
     def create(self, validated_data):
         choices_data = validated_data.pop("choices", None)
         request = self.context.get("request")
@@ -78,6 +100,7 @@ class QuizSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
     )
+    question_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Quiz
@@ -95,12 +118,16 @@ class QuizSerializer(serializers.ModelSerializer):
             "max_attempts",
             "questions",
             "question_ids",
+            "question_count",
         ]
         extra_kwargs = {
             "author": {"read_only": True},
             "created_at": {"read_only": True},
             "subject": {"read_only": True},
         }
+
+    def get_question_count(self, obj):
+        return obj.questions.count()
 
     def create(self, validated_data):
         request = self.context.get("request")

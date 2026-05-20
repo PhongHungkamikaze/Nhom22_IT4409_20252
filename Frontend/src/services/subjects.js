@@ -21,3 +21,9 @@ export async function deleteSubject(id) {
         method: 'DELETE'
     });
 }
+export async function updateSubject(id, data) {
+    return await apiClient.request(`${SUBJECTS_ENDPOINT}${id}/`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    });
+}

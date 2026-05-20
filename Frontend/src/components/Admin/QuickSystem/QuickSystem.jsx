@@ -27,6 +27,10 @@ export default function QuickSystem() {
                     <span className="action-icon">🔔</span>
                     Notifications
                 </Link>
+                <Link to="/admin/subjects" className="action-btn" style={{ textDecoration: 'none' }}>
+                    <span className="action-icon">📖</span>
+                    Subject Management
+                </Link>
             </div>
         </div>
     );

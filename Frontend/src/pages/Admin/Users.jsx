@@ -62,9 +62,9 @@ export default function Users() {
                     <h1 className="admin-title">Quản lý người dùng</h1>
                     <p className="admin-subtitle">Xem, thêm, sửa và xóa người dùng trên hệ thống.</p>
                 </div>
-                <button className="primary-btn">
+                <Link to="/admin/users/add" className="primary-btn">
                     <span className="btn-icon">+</span> Thêm người dùng
-                </button>
+                </Link>
             </header>
 
             <div className="admin-card">

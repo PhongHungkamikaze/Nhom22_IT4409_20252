@@ -11,8 +11,10 @@ import NotFound from '../pages/NotFound';
 // Admin 
 import AdminDashboard from '../pages/Admin/Dashboard';
 import AdminUsers from '../pages/Admin/Users';
+import AdminAddUser from '../pages/Admin/AddUser';
 import AdminQuizzes from '../pages/Admin/MyQuizzes';
 import AdminQuestions from "../pages/Admin/Questions"
+import AdminSubjects from '../pages/Admin/Subjects';
 import AdminEditUser from '../pages/Admin/EditUser';
 import AdminAttempts from '../pages/Admin/Attempts';
 import AdminQuizDetail from '../pages/Admin/AdminQuizDetail';
@@ -29,6 +31,7 @@ import TeacherQuestionCreate from '../pages/Teacher/CreateQuiz'
 import TeacherAttempts from '../pages/Teacher/Attempts';
 import TeacherQuizDetail from '../pages/Teacher/TeacherQuizDetail';
 import TeacherQuizEdit from '../pages/Teacher/TeacherQuizEdit';
+import TeacherSubjects from '../pages/Teacher/TeacherSubjects';
 import TeacherQuestionDetail from '../pages/Teacher/TeacherQuestionDetail';
 
 // Student
@@ -57,11 +60,13 @@ const AppRouter = () => {
             {/* Admin routes (require admin role) */}
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+            <Route path="/admin/users/add" element={<AdminRoute><AdminAddUser /></AdminRoute>} />
             <Route path="/admin/users/edit/:id" element={<AdminRoute><AdminEditUser /></AdminRoute>} />
             <Route path="/admin/quizzes" element={<AdminRoute><AdminQuizzes /></AdminRoute>} />
             <Route path="/admin/quizzes/:id" element={<AdminRoute><AdminQuizDetail /></AdminRoute>} />
             <Route path="/admin/questions" element={<AdminRoute><AdminQuestions /></AdminRoute>} />
             <Route path="/admin/questions/:id" element={<AdminRoute><AdminQuestionDetail /></AdminRoute>} />
+            <Route path="/admin/subjects" element={<AdminRoute><AdminSubjects /></AdminRoute>} />
             <Route path="/admin/attempts" element={<AdminRoute><AdminAttempts /></AdminRoute>} />
             <Route path="/admin/notifications" element={<AdminRoute><NotificationManagement role="admin" /></AdminRoute>} />
 
@@ -75,6 +80,7 @@ const AppRouter = () => {
             <Route path="/teacher/quizzes/create" element={<TeacherRoute><TeacherQuestionCreate /></TeacherRoute>} />
             <Route path="/teacher/quizzes/:id" element={<TeacherRoute><TeacherQuizDetail /></TeacherRoute>} />
             <Route path="/teacher/quizzes/edit/:id" element={<TeacherRoute><TeacherQuizEdit /></TeacherRoute>} />
+            <Route path="/teacher/subjects" element={<TeacherRoute><TeacherSubjects /></TeacherRoute>} />
             <Route path="/teacher/attempts" element={<TeacherRoute><TeacherAttempts /></TeacherRoute>} />
             <Route path="/teacher/notifications" element={<TeacherRoute><NotificationManagement role="teacher" /></TeacherRoute>} />
 

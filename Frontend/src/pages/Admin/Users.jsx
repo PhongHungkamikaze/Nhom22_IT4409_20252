@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './Admin.css';
 import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
 import apiService from '../../services/api';
@@ -131,7 +132,7 @@ export default function Users() {
                                             </span>
                                         </td>
                                         <td className="action-group">
-                                            <button className="text-btn">Sửa</button>
+                                            <Link to={`/admin/users/edit/${user.id}`} className="text-btn">Sửa</Link>
                                             <button className="text-btn danger" onClick={() => handleDelete(user.id)}>Xóa</button>
                                         </td>
                                     </tr>

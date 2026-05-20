@@ -6,16 +6,12 @@ from ..filters import AttemptFilter
 from rest_framework import viewsets, response, filters, status
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
-from exam.permissions import (
-    IsAdminUser,
-    IsTeacherUser,
-    IsStudentUser,
-)
+from exam.permissions import IsAdminUser, IsTeacherUser, IsStudentUser, PermissionMixin
 from ..tasks import calculate_score
 
 
 @extend_schema(tags=["Attempt"])
-class AttemptViewSet(viewsets.ModelViewSet):
+class AttemptViewSet(PermissionMixin, viewsets.ModelViewSet):
     queryset = (
         Attempt.objects.all().select_related("user", "quiz").prefetch_related("answers")
     )

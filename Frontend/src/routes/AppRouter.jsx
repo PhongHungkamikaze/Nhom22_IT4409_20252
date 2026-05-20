@@ -13,6 +13,7 @@ import AdminDashboard from '../pages/Admin/Dashboard';
 import AdminUsers from '../pages/Admin/Users';
 import AdminQuizzes from '../pages/Admin/MyQuizzes';
 import AdminQuestions from "../pages/Admin/Questions"
+import AdminEditUser from '../pages/Admin/EditUser';
 import AdminAttempts from '../pages/Admin/Attempts';
 import AdminQuizDetail from '../pages/Admin/AdminQuizDetail';
 import AdminQuestionDetail from '../pages/Admin/AdminQuestionDetail';
@@ -56,6 +57,7 @@ const AppRouter = () => {
             {/* Admin routes (require admin role) */}
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+            <Route path="/admin/users/edit/:id" element={<AdminRoute><AdminEditUser /></AdminRoute>} />
             <Route path="/admin/quizzes" element={<AdminRoute><AdminQuizzes /></AdminRoute>} />
             <Route path="/admin/quizzes/:id" element={<AdminRoute><AdminQuizDetail /></AdminRoute>} />
             <Route path="/admin/questions" element={<AdminRoute><AdminQuestions /></AdminRoute>} />

@@ -4,9 +4,17 @@ from django_filters.rest_framework import DjangoFilterBackend
 from ..models import Subject
 from ..serializers import SubjectSerializer
 from ..filters import SubjectFilter
+from exam.permissions import (
+    IsAdminUser,
+    IsTeacherUser,
+    IsStudentUser,
+    IsOwnerTeacher,
+    PermissionMixin,
+)
+
 
 @extend_schema(tags=["Subjects: Subject"])
-class SubjectViewSet(viewsets.ModelViewSet):
+class SubjectViewSet(PermissionMixin, viewsets.ModelViewSet):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
     filter_backends = [
@@ -19,7 +27,8 @@ class SubjectViewSet(viewsets.ModelViewSet):
     ordering = ["name"]
     filterset_class = SubjectFilter
 
-    def get_permissions(self):
-        if self.action in ["create", "update", "partial_update", "destroy"]:
-            return [permissions.IsAdminUser()]
-        return [permissions.IsAuthenticated()]
+    permission_classes_by_action = {
+        "list": [IsTeacherUser | IsAdminUser],
+        "retrieve": [IsTeacherUser | IsAdminUser],
+    }
+    permission_classes = [IsAdminUser]

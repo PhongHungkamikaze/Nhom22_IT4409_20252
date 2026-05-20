@@ -9,6 +9,20 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "email", "first_name", "last_name", "role", "password"]
         extra_kwargs = {"password": {"write_only": True}}
 
+    def validate(self, data):
+        request = self.context.get("request")
+        # Ensure only admins can set the role to admin
+        if "role" in data and data["role"] == UserRole.Admin:
+            if not request or not request.user or request.user.role != UserRole.Admin:
+                raise serializers.ValidationError("Chỉ Admin mới có quyền cấp quyền Admin.")
+
+        # Ensure non-admins cannot modify an existing admin account
+        if self.instance and self.instance.role == UserRole.Admin:
+            if not request or not request.user or request.user.role != UserRole.Admin:
+                raise serializers.ValidationError("Bạn không có quyền sửa thông tin của một Admin.")
+
+        return data
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)

@@ -15,6 +15,8 @@ from ..models import StatusChoices, Attempt
 from ..filters import QuizFilter
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+from ..tasks.create_notifications import create_notifications
+from ..models import User, UserRole
 
 
 @extend_schema(tags=["Quiz"])
@@ -41,6 +43,41 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     ordering_fields = ["id", "created_at", "time_limit", "title"]
     ordering = ["-created_at"]
     filterset_class = QuizFilter
+
+    def perform_create(self, serializer):
+        quiz = serializer.save(author=self.request.user)
+        # Create notification for all admins
+        admin_ids = list(
+            User.objects.filter(role=UserRole.Admin).values_list("id", flat=True)
+        )
+        create_notifications.delay(
+            recipient_ids=admin_ids,
+            title="Bài thi mới",
+            content=f"Giáo viên {self.request.user.username} đã tạo bài thi mới: {quiz.title}",
+        )
+
+    def perform_update(self, serializer):
+        quiz = serializer.save()
+        admin_ids = list(
+            User.objects.filter(role=UserRole.Admin).values_list("id", flat=True)
+        )
+        create_notifications.delay(
+            recipient_ids=admin_ids,
+            title="Cập nhật bài thi",
+            content=f"Người dùng {self.request.user.username} đã cập nhật bài thi: {quiz.title}",
+        )
+
+    def perform_destroy(self, instance):
+        title = instance.title
+        instance.delete()
+        admin_ids = list(
+            User.objects.filter(role=UserRole.Admin).values_list("id", flat=True)
+        )
+        create_notifications.delay(
+            recipient_ids=admin_ids,
+            title="Xóa bài thi",
+            content=f"Người dùng {self.request.user.username} đã xóa bài thi: {title}",
+        )
 
     def get_serializer_class(self):
         if self.action == "start":

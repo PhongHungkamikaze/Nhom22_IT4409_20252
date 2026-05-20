@@ -37,6 +37,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             "content",
             "author_name",
             "choices",
+            "subject",
         ]
 
     def validate(self, data):
@@ -44,19 +45,25 @@ class QuestionSerializer(serializers.ModelSerializer):
         choices = data.get("choices", [])
 
         if not choices:
-            raise serializers.ValidationError({"choices": "Câu hỏi phải có ít nhất một lựa chọn."})
+            raise serializers.ValidationError(
+                {"choices": "Câu hỏi phải có ít nhất một lựa chọn."}
+            )
 
         correct_count = sum(1 for c in choices if c.get("is_correct", False))
 
         if type_question == Question.TypeQuestion.Single:
             if correct_count != 1:
                 raise serializers.ValidationError(
-                    {"choices": "Câu hỏi một lựa chọn phải có duy nhất một đáp án đúng."}
+                    {
+                        "choices": "Câu hỏi một lựa chọn phải có duy nhất một đáp án đúng."
+                    }
                 )
         elif type_question == Question.TypeQuestion.Multiple:
             if correct_count < 1:
                 raise serializers.ValidationError(
-                    {"choices": "Câu hỏi nhiều lựa chọn phải có ít nhất một đáp án đúng."}
+                    {
+                        "choices": "Câu hỏi nhiều lựa chọn phải có ít nhất một đáp án đúng."
+                    }
                 )
 
         return data

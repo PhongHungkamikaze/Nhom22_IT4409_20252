@@ -23,6 +23,10 @@ export default function QuickSystem() {
                     <span className="action-icon">📊</span>
                     View Attempts
                 </Link>
+                <Link to="/admin/notifications" className="action-btn" style={{ textDecoration: 'none' }}>
+                    <span className="action-icon">🔔</span>
+                    Notifications
+                </Link>
             </div>
         </div>
     );

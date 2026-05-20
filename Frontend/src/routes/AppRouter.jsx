@@ -16,6 +16,7 @@ import AdminQuestions from "../pages/Admin/Questions"
 import AdminAttempts from '../pages/Admin/Attempts';
 import AdminQuizDetail from '../pages/Admin/AdminQuizDetail';
 import AdminQuestionDetail from '../pages/Admin/AdminQuestionDetail';
+import NotificationManagement from '../pages/common/Notifications/NotificationManagement';
 
 // Teacher
 import TeacherDashboard from '../pages/Teacher/Dashboard';
@@ -60,6 +61,7 @@ const AppRouter = () => {
             <Route path="/admin/questions" element={<AdminRoute><AdminQuestions /></AdminRoute>} />
             <Route path="/admin/questions/:id" element={<AdminRoute><AdminQuestionDetail /></AdminRoute>} />
             <Route path="/admin/attempts" element={<AdminRoute><AdminAttempts /></AdminRoute>} />
+            <Route path="/admin/notifications" element={<AdminRoute><NotificationManagement role="admin" /></AdminRoute>} />
 
             {/* Teacher routes */}
             <Route path="/teacher" element={<TeacherRoute><TeacherDashboard /></TeacherRoute>} />
@@ -72,6 +74,7 @@ const AppRouter = () => {
             <Route path="/teacher/quizzes/:id" element={<TeacherRoute><TeacherQuizDetail /></TeacherRoute>} />
             <Route path="/teacher/quizzes/edit/:id" element={<TeacherRoute><TeacherQuizEdit /></TeacherRoute>} />
             <Route path="/teacher/attempts" element={<TeacherRoute><TeacherAttempts /></TeacherRoute>} />
+            <Route path="/teacher/notifications" element={<TeacherRoute><NotificationManagement role="teacher" /></TeacherRoute>} />
 
             {/* Student routes */}
             <Route path="/student" element={<StudentRoute><StudentDashboard /></StudentRoute>} />

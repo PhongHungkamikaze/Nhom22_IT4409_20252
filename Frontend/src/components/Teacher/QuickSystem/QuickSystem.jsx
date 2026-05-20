@@ -19,6 +19,10 @@ export default function QuickSystem() {
                     <span className="action-icon">📊</span>
                     Xem Attempts
                 </Link>
+                <Link to="/teacher/notifications" className="action-btn" style={{ textDecoration: 'none' }}>
+                    <span className="action-icon">🔔</span>
+                    Quản lý Thông báo
+                </Link>
             </div>
         </div>
     );

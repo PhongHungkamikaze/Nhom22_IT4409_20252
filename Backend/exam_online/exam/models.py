@@ -72,6 +72,9 @@ class Question(BaseModel):
         User,
         on_delete=models.PROTECT,
     )
+    subject = models.ForeignKey(
+        Subject, related_name="questions", on_delete=models.CASCADE
+    )
 
 
 class Choice(BaseModel):

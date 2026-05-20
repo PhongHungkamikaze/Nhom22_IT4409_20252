@@ -17,10 +17,10 @@ class AnswerViewSet(viewsets.ModelViewSet):
 
     filter_backends = [
         DjangoFilterBackend,
+        filters.OrderingFilter,
         filters.SearchFilter,
     ]
     search_fields = ["question__content", "attempt__user__username"]
-
-    @property
-    def filterset_class(self):
-        return AnswerFilter
+    ordering_fields = ["id", "attempt", "question"]
+    ordering = ["id"]
+    filterset_class = AnswerFilter

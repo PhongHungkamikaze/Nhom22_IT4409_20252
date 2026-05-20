@@ -24,10 +24,10 @@ class QuestionViewSet(PermissionMixin, viewsets.ModelViewSet):
 
     filter_backends = [
         DjangoFilterBackend,
+        filters.OrderingFilter,
         filters.SearchFilter,
     ]
-    search_fields = ["content", "quiz__title"]
-
-    @property
-    def filterset_class(self):
-        return QuestionFilter
+    search_fields = ["content"]
+    ordering_fields = ["id", "type"]
+    ordering = ["id"]
+    filterset_class = QuestionFilter

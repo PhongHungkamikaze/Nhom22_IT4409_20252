@@ -33,13 +33,13 @@ class AttemptViewSet(viewsets.ModelViewSet):
     }
     filter_backends = [
         DjangoFilterBackend,
+        filters.OrderingFilter,
         filters.SearchFilter,
     ]
-    search_fields = ["user__username", "quiz__title", "status"]
-
-    @property
-    def filterset_class(self):
-        return AttemptFilter
+    search_fields = ["user__username", "quiz__title"]
+    ordering_fields = ["id", "started_at", "score"]
+    ordering = ["-started_at"]
+    filterset_class = AttemptFilter
 
     def get_queryset(self):
         user = self.request.user

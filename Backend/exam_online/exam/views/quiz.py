@@ -29,10 +29,12 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     serializer_class = QuizSerializer
     filter_backends = [
         DjangoFilterBackend,
+        filters.OrderingFilter,
         filters.SearchFilter,
     ]
-    search_fields = ["title", "author__username"]
-
+    search_fields = ["title", "description", "author__username", "subject__name"]
+    ordering_fields = ["id", "created_at", "time_limit", "title"]
+    ordering = ["-created_at"]
     filterset_class = QuizFilter
 
     def get_serializer_class(self):

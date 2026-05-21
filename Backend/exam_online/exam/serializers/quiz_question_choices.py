@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 from ..models import Question, Quiz, Choice
 from ..models import UserRole
 
@@ -148,3 +150,22 @@ class QuizSerializer(serializers.ModelSerializer):
             instance.questions.set(questions)
 
         return instance
+
+
+@extend_schema_field(OpenApiTypes.BINARY)
+class UploadFileField(serializers.FileField):
+    pass
+
+class BulkImportSerializer(serializers.Serializer):
+    file = UploadFileField()
+    subject_id = serializers.IntegerField()
+
+
+class QuestionAISerializer(serializers.Serializer):
+    subject_id = serializers.IntegerField()
+    content = serializers.CharField()
+    count = serializers.IntegerField(default=5, required=False)
+    type = serializers.ChoiceField(
+        choices=["single", "multiple"], default="single", required=False
+    )
+

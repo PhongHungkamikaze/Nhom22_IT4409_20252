@@ -1,4 +1,10 @@
-from .quiz_question_choices import ChoiceSerializer, QuestionSerializer, QuizSerializer
+from .quiz_question_choices import (
+    ChoiceSerializer,
+    QuestionSerializer,
+    QuizSerializer,
+    BulkImportSerializer,
+    QuestionAISerializer,
+)
 from .attempt import AttemptSerializer
 from .answer import AnswerSerializer
 from .user import (
@@ -34,4 +40,6 @@ __all__ = [
     "NotificationSerializer",
     "MarkBulkSerializer",
     "NotificationListSerializer",
+    "BulkImportSerializer",
+    "QuestionAISerializer",
 ]

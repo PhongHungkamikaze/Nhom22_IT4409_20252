@@ -23,10 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-zz2&31)t*(vx1!x@ue-e4vash2)gn7)j61m+9&j=1sueca=i)7"
+SECRET_KEY = config("SECRET_KEY", default="django-insecure-zz2&31)t*(vx1!x@ue-e4vash2)gn7)j61m+9&j=1sueca=i)7")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", default=True, cast=bool)
 
 ALLOWED_HOSTS = ["*"]
 
@@ -218,4 +218,7 @@ SIMPLE_JWT = {
     # Refresh Token thường để dài hơn (Ví dụ: 7 ngày)
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
-NOTIFICATION_PURGE_AFTER_DAYS = int(os.environ.get("NOTIFICATION_PURGE_AFTER_DAYS", 30))
+NOTIFICATION_PURGE_AFTER_DAYS = config("NOTIFICATION_PURGE_AFTER_DAYS", default=30, cast=int)
+
+# AI Configuration
+GEMINI_API_KEY = config("GEMINI_API_KEY", default="")

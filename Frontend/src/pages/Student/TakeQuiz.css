@@ -185,7 +185,7 @@
     margin-bottom: 1.5rem;
 }
 
-.question-text {
+.take-quiz-container .question-text {
     font-size: 1.5rem;
     font-weight: 700;
     color: #1e293b;

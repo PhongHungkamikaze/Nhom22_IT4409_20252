@@ -17,3 +17,23 @@ body {
 .App {
   min-height: 100vh;
 }
+
+body.admin-theme,
+body.admin-theme button,
+body.admin-theme input,
+body.admin-theme select,
+body.admin-theme textarea {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  letter-spacing: -0.011em;
+}
+
+body.admin-theme h1,
+body.admin-theme h2,
+body.admin-theme h3,
+body.admin-theme h4,
+body.admin-theme h5,
+body.admin-theme h6 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}

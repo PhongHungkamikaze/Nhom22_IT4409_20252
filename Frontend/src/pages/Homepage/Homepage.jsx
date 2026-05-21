@@ -71,10 +71,6 @@ const Homepage = () => {
           <div className="hero-text">
             <h1>Nền tảng thi trực tuyến <span className="highlight">hàng đầu</span></h1>
             <p>Trải nghiệm làm bài thi trực tuyến mượt mà, đánh giá năng lực chính xác và kết quả tức thì</p>
-            <div className="hero-buttons">
-              <button className="btn-hero-primary">Bắt đầu làm bài</button>
-              <button className="btn-hero-secondary">Tạo bài quiz</button>
-            </div>
           </div>
           <div className="hero-image">
             <div className="floating-cards">
@@ -139,7 +135,6 @@ const Homepage = () => {
                     </div>
                     <div className="quiz-author">Bởi: {quiz.author}</div>
                   </div>
-                  <button className="quiz-start-btn">Bắt đầu làm bài</button>
                 </div>
               ))}
             </div>
@@ -153,24 +148,32 @@ const Homepage = () => {
           <h2 className="section-title">Tính năng nổi bật</h2>
           <div className="features-grid">
             <div className="feature-item">
-              <div className="feature-icon">⚡</div>
-              <h3>Nhanh chóng</h3>
-              <p>Giao diện tối ưu, tải nhanh, trải nghiệm mượt mà</p>
+              <span className="feature-icon" aria-hidden="true"></span>
+              <div className="feature-content">
+                <h3>Nhanh chóng</h3>
+                <p>Giao diện tối ưu, tải nhanh, trải nghiệm mượt mà</p>
+              </div>
             </div>
             <div className="feature-item">
-              <div className="feature-icon">🔒</div>
-              <h3>Bảo mật</h3>
-              <p>Dữ liệu được mã hóa và bảo vệ tuyệt đối</p>
+              <span className="feature-icon" aria-hidden="true"></span>
+              <div className="feature-content">
+                <h3>Bảo mật</h3>
+                <p>Dữ liệu được mã hóa và bảo vệ tuyệt đối</p>
+              </div>
             </div>
             <div className="feature-item">
-              <div className="feature-icon">📊</div>
-              <h3>Phân tích chi tiết</h3>
-              <p>Báo cáo kết quả chi tiết và thống kê tiến bộ</p>
+              <span className="feature-icon" aria-hidden="true"></span>
+              <div className="feature-content">
+                <h3>Phân tích chi tiết</h3>
+                <p>Báo cáo kết quả chi tiết và thống kê tiến bộ</p>
+              </div>
             </div>
             <div className="feature-item">
-              <div className="feature-icon">🎯</div>
-              <h3>Đa dạng</h3>
-              <p>Nhiều loại câu hỏi và định dạng bài thi</p>
+              <span className="feature-icon" aria-hidden="true"></span>
+              <div className="feature-content">
+                <h3>Đa dạng</h3>
+                <p>Nhiều loại câu hỏi và định dạng bài thi</p>
+              </div>
             </div>
           </div>
         </div>

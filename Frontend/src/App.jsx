@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import Header from './components/Header';
 import Homepage from './pages/Homepage';
@@ -22,19 +23,39 @@ import StudentDashboard from './pages/Student/Dashboard';
 
 import { Toaster } from 'react-hot-toast';
 
+function AdminThemeWrapper({ children }) {
+  const { user, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    const role = user && user.role ? String(user.role).toLowerCase() : '';
+    if (isAuthenticated && role === 'admin') {
+      document.body.classList.add('admin-theme');
+    } else {
+      document.body.classList.remove('admin-theme');
+    }
+    return () => {
+      document.body.classList.remove('admin-theme');
+    };
+  }, [isAuthenticated, user]);
+
+  return children;
+}
+
 function App() {
   return (
     <AuthProvider>
-      <Toaster position="top-right" reverseOrder={false} />
-      <NotificationProvider>
-        <Router>
-          <div className="App">
-            <Header />
-            <AppRouter />
-            <Footer />
-          </div>
-        </Router>
-      </NotificationProvider>
+      <AdminThemeWrapper>
+        <Toaster position="top-right" reverseOrder={false} />
+        <NotificationProvider>
+          <Router>
+            <div className="App">
+              <Header />
+              <AppRouter />
+              <Footer />
+            </div>
+          </Router>
+        </NotificationProvider>
+      </AdminThemeWrapper>
     </AuthProvider>
   );
 }

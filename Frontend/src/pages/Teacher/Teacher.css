@@ -301,10 +301,11 @@
 }
 
 /* ========== QUESTION BANK & ATTEMPTS ========== */
-.question-text {
+.admin-container .question-text {
     font-weight: 500;
     color: #1e293b;
     line-height: 1.5;
+    font-size: 0.875rem;
 }
 
 .choice-list {
@@ -604,4 +605,16 @@
     display: inline-block;
     width: fit-content;
     font-weight: 600;
+}
+
+/* ========== NOTIFICATION MANAGEMENT ========== */
+.admin-container .notification-title {
+    font-size: 0.875rem;
+    color: #0f172a;
+}
+
+.admin-container .notification-content {
+    font-size: 0.875rem;
+    color: #475569;
+    line-height: 1.5;
 }

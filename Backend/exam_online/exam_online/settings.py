@@ -14,6 +14,19 @@ from datetime import timedelta
 from pathlib import Path
 from decouple import config
 import os
+import socket
+
+def check_redis():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(0.2)
+        s.connect(("127.0.0.1", 6379))
+        s.close()
+        return True
+    except Exception:
+        return False
+
+REDIS_RUNNING = check_redis()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -57,14 +70,21 @@ INSTALLED_APPS = [
 ]
 ASGI_APPLICATION = "exam_online.asgi.application"
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+if REDIS_RUNNING:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [("127.0.0.1", 6379)],
+            },
         },
-    },
-}
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
+    }
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -211,6 +231,9 @@ CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://127.0.0.1:6379/
 CELERY_RESULT_BACKEND = config(
     "CELERY_RESULT_BACKEND", default="redis://127.0.0.1:6379/0"
 )
+if not REDIS_RUNNING:
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
 
 SIMPLE_JWT = {
     # Kéo dài thời gian sống của Access Token (Ví dụ: 60 phút)

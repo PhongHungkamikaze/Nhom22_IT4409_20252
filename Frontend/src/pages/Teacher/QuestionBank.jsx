@@ -159,16 +159,18 @@ export default function QuestionBank() {
                                                     ))}
                                                 </ul>
                                             </td>
-                                            <td className="action-group">
-                                                <Link to={`/teacher/questions/${q.id}`} className="text-btn">Detail</Link>
-                                                {questionIsAuthor && (
-                                                    <>
-                                                        <Link to={`/teacher/questions/edit/${q.id}`} style={{textDecoration: 'none'}}>
-                                                            <button className="text-btn">Edit</button>
-                                                        </Link>
-                                                        <button className="text-btn danger" onClick={() => handleDelete(q.id)}>Delete</button>
-                                                    </>
-                                                )}
+                                            <td>
+                                                <div className="action-group">
+                                                    <Link to={`/teacher/questions/${q.id}`} className="text-btn">Detail</Link>
+                                                    {questionIsAuthor && (
+                                                        <>
+                                                            <Link to={`/teacher/questions/edit/${q.id}`} style={{textDecoration: 'none'}}>
+                                                                <button className="text-btn">Edit</button>
+                                                            </Link>
+                                                            <button className="text-btn danger" onClick={() => handleDelete(q.id)}>Delete</button>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     );

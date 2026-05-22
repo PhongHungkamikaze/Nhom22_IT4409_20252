@@ -220,28 +220,30 @@ export default function TeacherQuizEdit() {
                                                     ))}
                                                 </ul>
                                             </td>
-                                            <td className="action-group">
-                                                <button className="text-btn danger" onClick={async () => {
-                                                    if (!window.confirm('Xác nhận xóa câu hỏi này khỏi quiz?')) return;
-                                                    try {
-                                                        const newQuestionIds = questions
-                                                            .filter(x => (x.id || x.pk || x.question_id) !== qId)
-                                                            .map(x => x.id || x.pk || x.question_id)
-                                                            .filter(Boolean)
-                                                            .map(x => Number(x));
+                                            <td>
+                                                <div className="action-group">
+                                                    <button className="text-btn danger" onClick={async () => {
+                                                        if (!window.confirm('Xác nhận xóa câu hỏi này khỏi quiz?')) return;
+                                                        try {
+                                                            const newQuestionIds = questions
+                                                                .filter(x => (x.id || x.pk || x.question_id) !== qId)
+                                                                .map(x => x.id || x.pk || x.question_id)
+                                                                .filter(Boolean)
+                                                                .map(x => Number(x));
 
-                                                        await apiService.partialUpdateQuiz(id, { question_ids: newQuestionIds });
+                                                            await apiService.partialUpdateQuiz(id, { question_ids: newQuestionIds });
 
-                                                        setQuestions(prev => prev.filter(x => (x.id || x.pk || x.question_id) !== qId));
-                                                        const removedQ = questions.find(x => (x.id || x.pk || x.question_id) === qId);
-                                                        if (removedQ) {
-                                                            setAvailableQuestions(prev => [...prev, { ...removedQ, is_ready: false }]);
+                                                            setQuestions(prev => prev.filter(x => (x.id || x.pk || x.question_id) !== qId));
+                                                            const removedQ = questions.find(x => (x.id || x.pk || x.question_id) === qId);
+                                                            if (removedQ) {
+                                                                setAvailableQuestions(prev => [...prev, { ...removedQ, is_ready: false }]);
+                                                            }
+                                                        } catch (err) {
+                                                            console.error('Failed to delete question from quiz', err);
+                                                            alert('Không thể xóa câu hỏi. Xem console để biết chi tiết.');
                                                         }
-                                                    } catch (err) {
-                                                        console.error('Failed to delete question from quiz', err);
-                                                        alert('Không thể xóa câu hỏi. Xem console để biết chi tiết.');
-                                                    }
-                                                }}>Delete</button>
+                                                    }}>Delete</button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -292,15 +294,17 @@ export default function TeacherQuizEdit() {
                                                     ))}
                                                 </ul>
                                             </td>
-                                            <td className="action-group">
-                                                <button className="text-btn" onClick={() => {
-                                                    setAvailableQuestions(prev => prev.map(item => {
-                                                        const id = item.id || item.pk || item.question_id;
-                                                        if (String(id) === String(qId)) return { ...item, is_ready: true };
-                                                        return item;
-                                                    }));
-                                                    setTimeout(() => handleAddSelected(), 50);
-                                                }}>Add</button>
+                                            <td>
+                                                <div className="action-group">
+                                                    <button className="text-btn" onClick={() => {
+                                                        setAvailableQuestions(prev => prev.map(item => {
+                                                            const id = item.id || item.pk || item.question_id;
+                                                            if (String(id) === String(qId)) return { ...item, is_ready: true };
+                                                            return item;
+                                                        }));
+                                                        setTimeout(() => handleAddSelected(), 50);
+                                                    }}>Add</button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );

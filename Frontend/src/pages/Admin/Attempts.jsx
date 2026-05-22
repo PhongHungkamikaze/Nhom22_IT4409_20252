@@ -206,8 +206,10 @@ export default function Attempts() {
                                                 {attempt.status || 'Completed'}
                                             </span>
                                         </td>
-                                        <td className="action-group">
-                                            <button className="text-btn">Xem chi tiết</button>
+                                        <td>
+                                            <div className="action-group">
+                                                <button className="text-btn">Xem chi tiết</button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

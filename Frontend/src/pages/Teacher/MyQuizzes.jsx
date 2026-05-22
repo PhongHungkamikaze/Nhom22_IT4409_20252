@@ -144,28 +144,30 @@ export default function MyQuizzes() {
                                             <td>
                                                 {quiz.is_published ? "Đã xuất bản" : "Chưa xuất bản"}
                                             </td>
-                                            <td className="action-group">
-                                                {isAuthor ? (
-                                                    <>
+                                            <td>
+                                                <div className="action-group">
+                                                    {isAuthor ? (
+                                                        <>
+                                                            <Link to={`/teacher/quizzes/${quiz.id}`} className="text-btn">Detail</Link>
+                                                            <Link to={`/teacher/quizzes/edit/${quiz.id}`} className="text-btn">Edit</Link>
+                                                            <button
+                                                                className="text-btn danger"
+                                                                onClick={async () => {
+                                                                    if (!window.confirm('Xác nhận xóa quiz này?')) return;
+                                                                    try {
+                                                                        await apiService.deleteQuiz(quiz.id);
+                                                                        setQuizzes(prev => prev.filter(q => q.id !== quiz.id));
+                                                                    } catch (err) {
+                                                                        console.error('Failed to delete quiz', err);
+                                                                        alert('Không thể xóa quiz. Xem console để biết chi tiết.');
+                                                                    }
+                                                                }}
+                                                            >Delete</button>
+                                                        </>
+                                                    ) : (
                                                         <Link to={`/teacher/quizzes/${quiz.id}`} className="text-btn">Detail</Link>
-                                                        <Link to={`/teacher/quizzes/edit/${quiz.id}`} className="text-btn">Edit</Link>
-                                                        <button
-                                                            className="text-btn danger"
-                                                            onClick={async () => {
-                                                                if (!window.confirm('Xác nhận xóa quiz này?')) return;
-                                                                try {
-                                                                    await apiService.deleteQuiz(quiz.id);
-                                                                    setQuizzes(prev => prev.filter(q => q.id !== quiz.id));
-                                                                } catch (err) {
-                                                                    console.error('Failed to delete quiz', err);
-                                                                    alert('Không thể xóa quiz. Xem console để biết chi tiết.');
-                                                                }
-                                                            }}
-                                                        >Delete</button>
-                                                    </>
-                                                ) : (
-                                                    <Link to={`/teacher/quizzes/${quiz.id}`} className="text-btn">Detail</Link>
-                                                )}
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     );

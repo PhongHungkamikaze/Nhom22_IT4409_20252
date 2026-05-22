@@ -187,8 +187,8 @@ const NotificationManagement = ({ role }) => {
                                                 {getTypeLabel(n.type)}
                                             </span>
                                         </td>
-                                        <td><strong>{n.title}</strong></td>
-                                        <td>{n.content}</td>
+                                        <td className="notification-title"><strong>{n.title}</strong></td>
+                                        <td className="notification-content">{n.content}</td>
                                         <td>{n.recipient_name || `User #${n.recipient}`}</td>
                                         <td>{formatDate(n.created_at)}</td>
                                         <td>

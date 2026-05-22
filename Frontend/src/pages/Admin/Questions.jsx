@@ -136,9 +136,11 @@ export default function Questions() {
                                         </td>
                                         <td>{q.author_name || q.author || '-'}</td>
                                         <td>{q.type}</td>
-                                        <td className="action-group">
-                                            <button className="text-btn">Chi tiết</button>
-                                            <button className="text-btn danger">Xóa</button>
+                                        <td>
+                                            <div className="action-group">
+                                                <button className="text-btn">Chi tiết</button>
+                                                <button className="text-btn danger">Xóa</button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

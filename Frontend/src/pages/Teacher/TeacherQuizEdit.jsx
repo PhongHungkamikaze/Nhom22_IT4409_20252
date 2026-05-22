@@ -50,7 +50,7 @@ export default function TeacherQuizEdit() {
         return content.includes(availSearch.toLowerCase());
     });
     const totalPages = Math.ceil(filteredAvail.length / PAGE_SIZE);
-    const pagedAvail  = filteredAvail.slice((availPage - 1) * PAGE_SIZE, availPage * PAGE_SIZE);
+    const pagedAvail = filteredAvail.slice((availPage - 1) * PAGE_SIZE, availPage * PAGE_SIZE);
 
     // Reset về trang 1 khi search thay đổi
     useEffect(() => { setAvailPage(1); }, [availSearch]);
@@ -269,18 +269,45 @@ export default function TeacherQuizEdit() {
                                                 </ul>
                                             </td>
                                             <td>
-                                                <button className="text-btn danger" onClick={() => handleRemoveQuestion(qId)}>Xóa</button>
+                                                <div className="action-group">
+                                                    <button className="text-btn danger" onClick={async () => {
+                                                        if (!window.confirm('Xác nhận xóa câu hỏi này khỏi quiz?')) return;
+                                                        try {
+                                                            const newQuestionIds = questions
+                                                                .filter(x => (x.id || x.pk || x.question_id) !== qId)
+                                                                .map(x => x.id || x.pk || x.question_id)
+                                                                .filter(Boolean)
+                                                                .map(x => Number(x));
+
+                                                            await apiService.partialUpdateQuiz(id, { question_ids: newQuestionIds });
+
+                                                            setQuestions(prev => prev.filter(x => (x.id || x.pk || x.question_id) !== qId));
+                                                            const removedQ = questions.find(x => (x.id || x.pk || x.question_id) === qId);
+                                                            if (removedQ) {
+                                                                setAvailableQuestions(prev => [...prev, { ...removedQ, is_ready: false }]);
+                                                            }
+                                                        } catch (err) {
+                                                            console.error('Failed to delete question from quiz', err);
+                                                            alert('Không thể xóa câu hỏi. Xem console để biết chi tiết.');
+                                                        }
+                                                    }}>Delete</button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
                                 })}
+                                {questions.length === 0 && (
+                                    <tr><td colSpan="3">No questions yet.</td></tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
-                </section>
 
+
+                </section>
                 {/* ── Available questions ── */}
-                <section style={{ marginTop: 28 }}>
+                < section style={{ marginTop: 28 }
+                }>
                     <h3>
                         Available questions (Question bank)
                         <span style={{ fontWeight: 400, fontSize: '0.9rem', color: '#6b7280', marginLeft: 8 }}>
@@ -390,66 +417,68 @@ export default function TeacherQuizEdit() {
                     </div>
 
                     {/* Pagination */}
-                    {totalPages > 1 && (
-                        <div className="pagination" style={{ marginTop: 16 }}>
-                            <span className="pagination-info">
-                                Trang {availPage}/{totalPages} · {filteredAvail.length} câu hỏi
-                            </span>
-                            <div className="pagination-controls">
-                                <button
-                                    className="page-btn"
-                                    disabled={availPage === 1}
-                                    onClick={() => setAvailPage(1)}
-                                >«</button>
-                                <button
-                                    className="page-btn"
-                                    disabled={availPage === 1}
-                                    onClick={() => setAvailPage(p => p - 1)}
-                                >‹</button>
+                    {
+                        totalPages > 1 && (
+                            <div className="pagination" style={{ marginTop: 16 }}>
+                                <span className="pagination-info">
+                                    Trang {availPage}/{totalPages} · {filteredAvail.length} câu hỏi
+                                </span>
+                                <div className="pagination-controls">
+                                    <button
+                                        className="page-btn"
+                                        disabled={availPage === 1}
+                                        onClick={() => setAvailPage(1)}
+                                    >«</button>
+                                    <button
+                                        className="page-btn"
+                                        disabled={availPage === 1}
+                                        onClick={() => setAvailPage(p => p - 1)}
+                                    >‹</button>
 
-                                {/* Page numbers */}
-                                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                                    .filter(p => p === 1 || p === totalPages || Math.abs(p - availPage) <= 2)
-                                    .reduce((acc, p, idx, arr) => {
-                                        if (idx > 0 && p - arr[idx - 1] > 1) acc.push('...');
-                                        acc.push(p);
-                                        return acc;
-                                    }, [])
-                                    .map((p, i) => p === '...'
-                                        ? <span key={`dots-${i}`} style={{ padding: '0 4px', color: '#9ca3af' }}>…</span>
-                                        : <button
-                                            key={p}
-                                            className={`page-btn ${availPage === p ? 'active' : ''}`}
-                                            onClick={() => setAvailPage(p)}
-                                        >{p}</button>
-                                    )
-                                }
+                                    {/* Page numbers */}
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                        .filter(p => p === 1 || p === totalPages || Math.abs(p - availPage) <= 2)
+                                        .reduce((acc, p, idx, arr) => {
+                                            if (idx > 0 && p - arr[idx - 1] > 1) acc.push('...');
+                                            acc.push(p);
+                                            return acc;
+                                        }, [])
+                                        .map((p, i) => p === '...'
+                                            ? <span key={`dots-${i}`} style={{ padding: '0 4px', color: '#9ca3af' }}>…</span>
+                                            : <button
+                                                key={p}
+                                                className={`page-btn ${availPage === p ? 'active' : ''}`}
+                                                onClick={() => setAvailPage(p)}
+                                            >{p}</button>
+                                        )
+                                    }
 
-                                <button
-                                    className="page-btn"
-                                    disabled={availPage === totalPages}
-                                    onClick={() => setAvailPage(p => p + 1)}
-                                >›</button>
-                                <button
-                                    className="page-btn"
-                                    disabled={availPage === totalPages}
-                                    onClick={() => setAvailPage(totalPages)}
-                                >»</button>
+                                    <button
+                                        className="page-btn"
+                                        disabled={availPage === totalPages}
+                                        onClick={() => setAvailPage(p => p + 1)}
+                                    >›</button>
+                                    <button
+                                        className="page-btn"
+                                        disabled={availPage === totalPages}
+                                        onClick={() => setAvailPage(totalPages)}
+                                    >»</button>
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </section>
+                        )
+                    }
+                </section >
 
                 {/* ── Save / Cancel ── */}
-                <div className="form-actions" style={{ justifyContent: 'flex-end', marginTop: 28 }}>
+                < div className="form-actions" style={{ justifyContent: 'flex-end', marginTop: 28 }}>
                     <button className="primary-btn" type="button" onClick={handleSave} disabled={saving}>
                         {saving ? 'Đang lưu...' : '💾 Lưu tất cả'}
                     </button>
                     <button type="button" className="secondary-btn" onClick={() => navigate(-1)} disabled={saving}>
                         Hủy
                     </button>
-                </div>
-            </div>
-        </div>
+                </div >
+            </div >
+        </div >
     );
 }

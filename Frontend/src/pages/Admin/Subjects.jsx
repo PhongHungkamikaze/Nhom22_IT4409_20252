@@ -106,9 +106,11 @@ export default function Subjects() {
                                         <td>{subject.id}</td>
                                         <td><strong>{subject.name}</strong></td>
                                         <td>{subject.description || '-'}</td>
-                                        <td className="action-group">
-                                            <button className="text-btn" onClick={() => openEditModal(subject)}>Sửa</button>
-                                            <button className="text-btn danger" onClick={() => handleDelete(subject.id)}>Xóa</button>
+                                        <td>
+                                            <div className="action-group">
+                                                <button className="text-btn" onClick={() => openEditModal(subject)}>Sửa</button>
+                                                <button className="text-btn danger" onClick={() => handleDelete(subject.id)}>Xóa</button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

@@ -13,20 +13,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 from decouple import config
-import os
-import socket
-
-def check_redis():
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(0.2)
-        s.connect(("127.0.0.1", 6379))
-        s.close()
-        return True
-    except Exception:
-        return False
-
-REDIS_RUNNING = check_redis()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,7 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY", default="django-insecure-zz2&31)t*(vx1!x@ue-e4vash2)gn7)j61m+9&j=1sueca=i)7")
+SECRET_KEY = config(
+    "SECRET_KEY",
+    default="django-insecure-zz2&31)t*(vx1!x@ue-e4vash2)gn7)j61m+9&j=1sueca=i)7",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=True, cast=bool)
@@ -70,21 +59,14 @@ INSTALLED_APPS = [
 ]
 ASGI_APPLICATION = "exam_online.asgi.application"
 
-if REDIS_RUNNING:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels_redis.core.RedisChannelLayer",
-            "CONFIG": {
-                "hosts": [("127.0.0.1", 6379)],
-            },
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
         },
-    }
-else:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer",
-        },
-    }
+    },
+}
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -231,9 +213,6 @@ CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://127.0.0.1:6379/
 CELERY_RESULT_BACKEND = config(
     "CELERY_RESULT_BACKEND", default="redis://127.0.0.1:6379/0"
 )
-if not REDIS_RUNNING:
-    CELERY_TASK_ALWAYS_EAGER = True
-    CELERY_TASK_EAGER_PROPAGATES = True
 
 SIMPLE_JWT = {
     # Kéo dài thời gian sống của Access Token (Ví dụ: 60 phút)
@@ -241,7 +220,9 @@ SIMPLE_JWT = {
     # Refresh Token thường để dài hơn (Ví dụ: 7 ngày)
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
-NOTIFICATION_PURGE_AFTER_DAYS = config("NOTIFICATION_PURGE_AFTER_DAYS", default=30, cast=int)
+NOTIFICATION_PURGE_AFTER_DAYS = config(
+    "NOTIFICATION_PURGE_AFTER_DAYS", default=30, cast=int
+)
 
 # AI Configuration
 GEMINI_API_KEY = config("GEMINI_API_KEY", default="")

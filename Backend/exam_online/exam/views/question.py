@@ -2,12 +2,12 @@ from exam.permissions import PermissionMixin, IsAdminUser, IsTeacherUser, IsOwne
 import pandas as pd
 import google.generativeai as genai
 from django.conf import settings
-from rest_framework import viewsets, filters, status, response, serializers
+from rest_framework import viewsets, filters, status, response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import action
 from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema, inline_serializer
+from drf_spectacular.utils import extend_schema
 from ..models import Question, Choice, Subject, User, UserRole
 from ..serializers import QuestionSerializer, BulkImportSerializer, QuestionAISerializer
 from ..filters import QuestionFilter

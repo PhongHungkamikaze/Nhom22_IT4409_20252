@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, filters
 from drf_spectacular.utils import extend_schema
 from django_filters.rest_framework import DjangoFilterBackend
 from ..models import Subject
@@ -7,8 +7,6 @@ from ..filters import SubjectFilter
 from exam.permissions import (
     IsAdminUser,
     IsTeacherUser,
-    IsStudentUser,
-    IsOwnerTeacher,
     PermissionMixin,
 )
 

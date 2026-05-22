@@ -84,7 +84,17 @@ class ApiClient {
                     return await retry();
                 }
 
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                let errorData = null;
+                try {
+                    errorData = errorText ? JSON.parse(errorText) : null;
+                } catch (parseError) {
+                    errorData = errorText || null;
+                }
+                const error = new Error(`HTTP error! status: ${response.status}`);
+                error.status = response.status;
+                error.data = errorData;
+                throw error;
             }
 
             // Some endpoints may return no content (204). Parse safely.

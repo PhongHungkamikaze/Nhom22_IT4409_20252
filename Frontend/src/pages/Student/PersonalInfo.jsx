@@ -63,23 +63,23 @@ export default function PersonalInfo() {
                 last_name: formData.last_name,
                 email: formData.email,
             };
-            
+
             console.log('Saving profile data:', updateData); // DEBUG
-            
+
             const response = await apiService.updateUserProfile(updateData);
             console.log('Update response:', response); // DEBUG
-            
+
             // Update localStorage
             const updatedUser = { ...user, ...updateData };
             login(updatedUser, localStorage.getItem('accessToken'), localStorage.getItem('refreshToken'));
-            
+
             setSuccess('✓ Cập nhật thành công!');
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Failed to save profile - Full error:', err); // DEBUG
             console.error('Error message:', err.message); // DEBUG
             console.error('Error response:', err.response); // DEBUG
-            
+
             setError(err.message || 'Không thể cập nhật thông tin. Vui lòng kiểm tra kết nối API.');
         } finally {
             setSaving(false);

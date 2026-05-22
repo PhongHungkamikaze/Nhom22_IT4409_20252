@@ -151,8 +151,8 @@ export default function History() {
                                 {filter === 'all'
                                     ? 'Bạn chưa làm bài quiz nào'
                                     : filter === 'completed'
-                                    ? 'Bạn chưa hoàn thành bài quiz nào'
-                                    : 'Không có bài quiz đang làm'}
+                                        ? 'Bạn chưa hoàn thành bài quiz nào'
+                                        : 'Không có bài quiz đang làm'}
                             </p>
                         </div>
                     ) : (
@@ -190,62 +190,62 @@ export default function History() {
                             {/* Table for larger screens */}
                             <div className="stu-history-table-wrap">
                                 <table className="stu-history-table">
-                                <thead>
-                                    <tr>
-                                        <th>
-                                            Bài Quiz
-                                        </th>
-                                        <th>
-                                            Ngày giờ
-                                        </th>
-                                        <th className="is-center">
-                                            Trạng thái
-                                        </th>
-                                        <th className="is-center">
-                                            Điểm
-                                        </th>
-                                        <th className="is-center">
-                                            Chi tiết
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredAttempts.map((attempt, idx) => {
-                                        const statusBadge = getStatusBadge(attempt.status);
-                                        return (
-                                            <tr key={attempt.id} className={idx % 2 === 0 ? 'is-even' : 'is-odd'}>
-                                                <td className="is-strong">
-                                                    {attempt.quiz_title || attempt.quiz}
-                                                </td>
-                                                <td className="is-muted">
-                                                    {formatDate(attempt.started_at)}
-                                                </td>
-                                                <td className="is-center">
-                                                    <span className={`stu-status-badge ${statusBadge.className}`}>
-                                                        {statusBadge.label}
-                                                    </span>
-                                                </td>
-                                                <td className="is-center">
-                                                    <span className={attempt.status === 'completed' ? 'stu-score' : 'stu-score is-muted'}>
-                                                    {attempt.status === 'completed' ? `${(attempt.score || 0).toFixed(1)} / 10` : '-'}
-                                                    </span>
-                                                </td>
-                                                <td className="is-center">
-                                                    {attempt.status === 'completed' ? (
-                                                        <Link
-                                                            to={`/student/result/${attempt.id}`}
-                                                            className="stu-history-link"
-                                                        >
-                                                            Xem kết quả
-                                                        </Link>
-                                                    ) : (
-                                                        <span className="is-muted">-</span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Bài Quiz
+                                            </th>
+                                            <th>
+                                                Ngày giờ
+                                            </th>
+                                            <th className="is-center">
+                                                Trạng thái
+                                            </th>
+                                            <th className="is-center">
+                                                Điểm
+                                            </th>
+                                            <th className="is-center">
+                                                Chi tiết
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredAttempts.map((attempt, idx) => {
+                                            const statusBadge = getStatusBadge(attempt.status);
+                                            return (
+                                                <tr key={attempt.id} className={idx % 2 === 0 ? 'is-even' : 'is-odd'}>
+                                                    <td className="is-strong">
+                                                        {attempt.quiz_title || attempt.quiz}
+                                                    </td>
+                                                    <td className="is-muted">
+                                                        {formatDate(attempt.started_at)}
+                                                    </td>
+                                                    <td className="is-center">
+                                                        <span className={`stu-status-badge ${statusBadge.className}`}>
+                                                            {statusBadge.label}
+                                                        </span>
+                                                    </td>
+                                                    <td className="is-center">
+                                                        <span className={attempt.status === 'completed' ? 'stu-score' : 'stu-score is-muted'}>
+                                                            {attempt.status === 'completed' ? `${(attempt.score || 0).toFixed(1)} / 10` : '-'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="is-center">
+                                                        {attempt.status === 'completed' ? (
+                                                            <Link
+                                                                to={`/student/result/${attempt.id}`}
+                                                                className="stu-history-link"
+                                                            >
+                                                                Xem kết quả
+                                                            </Link>
+                                                        ) : (
+                                                            <span className="is-muted">-</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
                                 </table>
                             </div>
                         </div>

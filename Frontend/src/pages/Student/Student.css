@@ -217,6 +217,157 @@
     color: #764ba2;
 }
 
+/* ========== Profile Page ========== */
+.stu-profile-card {
+    max-width: 640px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.stu-alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.stu-alert-error {
+    background: #fee;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.stu-alert-success {
+    background: #ecfdf3;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.stu-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.stu-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.stu-form-group-last {
+    margin-bottom: 2rem;
+}
+
+.stu-label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+.stu-input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stu-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.stu-input-disabled {
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+
+.stu-help-text {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    margin: 0.5rem 0 0 0;
+}
+
+.stu-form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.stu-action-btn {
+    padding: 10px 26px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.stu-action-btn-secondary {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+.stu-action-btn-primary {
+    background: #4f46e5;
+    color: white;
+    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+}
+
+.stu-action-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(79, 70, 229, 0.25);
+}
+
+.stu-action-btn.is-disabled {
+    background: #d1d5db;
+    color: #6b7280;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.stu-divider {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.stu-section-subtitle {
+    margin: 0 0 1rem 0;
+    color: #1f2937;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.stu-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.stu-info-label {
+    font-weight: 700;
+    color: #6b7280;
+}
+
+.stu-info-value {
+    color: #111827;
+    margin-top: 0.4rem;
+    font-weight: 600;
+}
+
+.stu-info-value-positive {
+    color: #16a34a;
+}
+
 .stu-quizzes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -364,6 +515,165 @@
     margin: 0;
 }
 
+/* ========== History Page ========== */
+.stu-history-filters {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.stu-filter-btn {
+    padding: 10px 18px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #1f2937;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.stu-filter-btn.active {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    color: #ffffff;
+}
+
+.stu-history-card {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.stu-history-list {
+    display: none;
+}
+
+.stu-history-item {
+    padding: 1.4rem;
+    background: #ffffff;
+}
+
+.stu-history-item.has-divider {
+    border-bottom: 1px solid #eef2f7;
+}
+
+.stu-history-title {
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.4rem;
+}
+
+.stu-history-time {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+}
+
+.stu-history-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.stu-status-badge {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stu-status-badge.is-completed {
+    background: #16a34a;
+}
+
+.stu-status-badge.is-processing {
+    background: #f59e0b;
+}
+
+.stu-status-badge.is-ongoing {
+    background: #2563eb;
+}
+
+.stu-status-badge.is-unknown {
+    background: #6b7280;
+}
+
+.stu-history-score {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2563eb;
+}
+
+.stu-history-table-wrap {
+    overflow-x: auto;
+}
+
+.stu-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+}
+
+.stu-history-table thead th {
+    text-align: left;
+    padding: 1rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #475569;
+    background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.stu-history-table thead th.is-center {
+    text-align: center;
+}
+
+.stu-history-table tbody td {
+    padding: 1rem;
+    border-bottom: 1px solid #eef2f7;
+    color: #1f2937;
+}
+
+.stu-history-table tbody tr.is-even {
+    background: #fafafa;
+}
+
+.stu-history-table tbody tr:hover {
+    background: #f3f4f6;
+}
+
+.stu-history-table td.is-center {
+    text-align: center;
+}
+
+.stu-history-table td.is-strong {
+    font-weight: 700;
+}
+
+.stu-history-table td.is-muted {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.stu-history-link {
+    color: #2563eb;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.stu-history-link:hover {
+    text-decoration: underline;
+}
+
 /* ========== Quick Navigation Section ========== */
 .stu-nav-section {
     background: #f8fafc;
@@ -445,6 +755,10 @@
         grid-template-columns: 1fr;
     }
 
+    .stu-history-table {
+        min-width: 600px;
+    }
+
     .stu-section-header {
         flex-direction: column;
         align-items: flex-start;
@@ -476,5 +790,13 @@
 
     .stu-nav-grid {
         grid-template-columns: 1fr;
+    }
+
+    .stu-history-list {
+        display: block;
+    }
+
+    .stu-history-table-wrap {
+        display: none;
     }
 }

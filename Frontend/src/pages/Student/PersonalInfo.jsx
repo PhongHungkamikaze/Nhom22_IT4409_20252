@@ -103,7 +103,7 @@ export default function PersonalInfo() {
             <section className="stu-hero">
                 <div className="stu-hero-content">
                     <div className="stu-hero-text">
-                        <h1>👤 Thông Tin Cá Nhân</h1>
+                        <h1>Thông tin cá nhân</h1>
                         <p>Quản lý thông tin tài khoản của bạn</p>
                     </div>
                 </div>
@@ -112,79 +112,42 @@ export default function PersonalInfo() {
             {/* Content */}
             <section className="stu-quizzes-section">
                 <div className="stu-container">
-                    <div style={{
-                        maxWidth: '600px',
-                        margin: '0 auto',
-                        backgroundColor: 'white',
-                        padding: '2rem',
-                        borderRadius: '8px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                    }}>
+                    <div className="stu-card stu-profile-card">
                         {/* Error Message */}
                         {error && (
-                            <div style={{
-                                padding: '12px 16px',
-                                backgroundColor: '#fee',
-                                color: '#c33',
-                                borderRadius: '8px',
-                                marginBottom: '1rem'
-                            }}>
+                            <div className="stu-alert stu-alert-error">
                                 {error}
                             </div>
                         )}
 
                         {/* Success Message */}
                         {success && (
-                            <div style={{
-                                padding: '12px 16px',
-                                backgroundColor: '#efe',
-                                color: '#3c3',
-                                borderRadius: '8px',
-                                marginBottom: '1rem'
-                            }}>
+                            <div className="stu-alert stu-alert-success">
                                 {success}
                             </div>
                         )}
 
                         {/* Form */}
-                        <form onSubmit={handleSave}>
+                        <form onSubmit={handleSave} className="stu-form">
                             {/* Username (read-only) */}
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{
-                                    display: 'block',
-                                    fontWeight: 'bold',
-                                    marginBottom: '0.5rem',
-                                    color: '#333'
-                                }}>
+                            <div className="stu-form-group">
+                                <label className="stu-label">
                                     Tên đăng nhập
                                 </label>
                                 <input
                                     type="text"
                                     value={formData.username}
                                     disabled
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px 12px',
-                                        borderRadius: '6px',
-                                        border: '1px solid #ddd',
-                                        backgroundColor: '#f5f5f5',
-                                        fontFamily: 'inherit',
-                                        cursor: 'not-allowed'
-                                    }}
+                                    className="stu-input stu-input-disabled"
                                 />
-                                <p style={{ fontSize: '0.9rem', color: '#999', margin: '0.5rem 0 0 0' }}>
+                                <p className="stu-help-text">
                                     Không thể thay đổi tên đăng nhập
                                 </p>
                             </div>
 
                             {/* First Name */}
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{
-                                    display: 'block',
-                                    fontWeight: 'bold',
-                                    marginBottom: '0.5rem',
-                                    color: '#333'
-                                }}>
+                            <div className="stu-form-group">
+                                <label className="stu-label">
                                     Tên
                                 </label>
                                 <input
@@ -193,25 +156,13 @@ export default function PersonalInfo() {
                                     value={formData.first_name}
                                     onChange={handleChange}
                                     placeholder="Nhập tên của bạn"
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px 12px',
-                                        borderRadius: '6px',
-                                        border: '1px solid #ddd',
-                                        fontFamily: 'inherit',
-                                        boxSizing: 'border-box'
-                                    }}
+                                    className="stu-input"
                                 />
                             </div>
 
                             {/* Last Name */}
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{
-                                    display: 'block',
-                                    fontWeight: 'bold',
-                                    marginBottom: '0.5rem',
-                                    color: '#333'
-                                }}>
+                            <div className="stu-form-group">
+                                <label className="stu-label">
                                     Họ
                                 </label>
                                 <input
@@ -220,25 +171,13 @@ export default function PersonalInfo() {
                                     value={formData.last_name}
                                     onChange={handleChange}
                                     placeholder="Nhập họ của bạn"
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px 12px',
-                                        borderRadius: '6px',
-                                        border: '1px solid #ddd',
-                                        fontFamily: 'inherit',
-                                        boxSizing: 'border-box'
-                                    }}
+                                    className="stu-input"
                                 />
                             </div>
 
                             {/* Email */}
-                            <div style={{ marginBottom: '2rem' }}>
-                                <label style={{
-                                    display: 'block',
-                                    fontWeight: 'bold',
-                                    marginBottom: '0.5rem',
-                                    color: '#333'
-                                }}>
+                            <div className="stu-form-group stu-form-group-last">
+                                <label className="stu-label">
                                     Email
                                 </label>
                                 <input
@@ -247,79 +186,40 @@ export default function PersonalInfo() {
                                     value={formData.email}
                                     onChange={handleChange}
                                     placeholder="Nhập email của bạn"
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px 12px',
-                                        borderRadius: '6px',
-                                        border: '1px solid #ddd',
-                                        fontFamily: 'inherit',
-                                        boxSizing: 'border-box'
-                                    }}
+                                    className="stu-input"
                                 />
                             </div>
 
                             {/* Buttons */}
-                            <div style={{
-                                display: 'flex',
-                                gap: '1rem',
-                                justifyContent: 'flex-end'
-                            }}>
+                            <div className="stu-form-actions">
                                 <button
                                     type="button"
                                     onClick={() => navigate('/student')}
-                                    style={{
-                                        padding: '10px 30px',
-                                        backgroundColor: '#e0e0e0',
-                                        color: '#333',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                        fontWeight: 'bold'
-                                    }}
+                                    className="stu-action-btn stu-action-btn-secondary"
                                 >
                                     Hủy
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    style={{
-                                        padding: '10px 30px',
-                                        backgroundColor: saving ? '#ccc' : '#007bff',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: saving ? 'not-allowed' : 'pointer',
-                                        fontWeight: 'bold'
-                                    }}
+                                    className={`stu-action-btn stu-action-btn-primary${saving ? ' is-disabled' : ''}`}
                                 >
-                                    {saving ? '⏳ Đang lưu...' : '✓ Lưu thay đổi'}
+                                    {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
                                 </button>
                             </div>
                         </form>
 
                         {/* Additional Info */}
-                        <div style={{
-                            marginTop: '2rem',
-                            paddingTop: '2rem',
-                            borderTop: '1px solid #eee'
-                        }}>
-                            <h3 style={{ marginTop: 0, color: '#333' }}>📋 Thông tin tài khoản</h3>
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '1rem'
-                            }}>
+                        <div className="stu-divider">
+                            <h3 className="stu-section-subtitle">Thông tin tài khoản</h3>
+                            <div className="stu-info-grid">
                                 <div>
-                                    <div style={{ fontWeight: 'bold', color: '#666' }}>Vai trò</div>
-                                    <div style={{ color: '#333', marginTop: '0.5rem' }}>
-                                        🎓 Student
-                                    </div>
+                                    <div className="stu-info-label">Vai trò</div>
+                                    <div className="stu-info-value">Student</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontWeight: 'bold', color: '#666' }}>Trạng thái</div>
-                                    <div style={{ color: '#28a745', marginTop: '0.5rem' }}>
-                                        ✓ Hoạt động
-                                    </div>
+                                    <div className="stu-info-label">Trạng thái</div>
+                                    <div className="stu-info-value stu-info-value-positive">Hoạt động</div>
                                 </div>
                             </div>
                         </div>

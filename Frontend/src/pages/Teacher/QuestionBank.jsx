@@ -20,18 +20,13 @@ export default function QuestionBank() {
     const fetchQuestions = async () => {
         setLoading(true);
         try {
-            const params = {
-                search: searchTerm,
-                ordering: ordering,
-            };
+            const params = { search: searchTerm, ordering };
             if (typeFilter !== 'all') params.type = typeFilter;
             if (subjectFilter !== 'all') params.subject = subjectFilter;
-            
             const data = await apiService.getQuestions(params);
             setQuestions(data.results || []);
             setError(null);
         } catch (err) {
-            console.error('Failed to fetch questions', err);
             setError(err.message || 'Fetch failed');
         } finally {
             setLoading(false);
@@ -47,77 +42,77 @@ export default function QuestionBank() {
         }
     };
 
-    useEffect(() => {
-        fetchSubjects();
-    }, []);
+    useEffect(() => { fetchSubjects(); }, []);
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            fetchQuestions();
-        }, 500); // Debounce
-        return () => clearTimeout(timeoutId);
+        const t = setTimeout(fetchQuestions, 500);
+        return () => clearTimeout(t);
     }, [searchTerm, typeFilter, subjectFilter, ordering]);
 
-    const isAuthor = (question) => {
+    const isAuthor = (q) => {
         if (!user) return false;
         const uid = user.id || user.user_id || user.pk;
-        if (question.author === uid || question.author_id === uid || String(question.author) === String(uid)) return true;
-        if (question.author_username && user.username && question.author_username === user.username) return true;
-        if (question.author_name && (question.author_name === user.username || question.author_name === `${user.first_name} ${user.last_name}`)) return true;
+        if (q.author === uid || q.author_id === uid || String(q.author) === String(uid)) return true;
+        if (q.author_username && user.username && q.author_username === user.username) return true;
+        if (q.author_name && (q.author_name === user.username || q.author_name === `${user.first_name} ${user.last_name}`)) return true;
         return false;
     };
 
-    const handleDelete = async (questionId) => {
+    const handleDelete = async (id) => {
         if (!window.confirm('Xác nhận xóa câu hỏi này?')) return;
         try {
-            await apiService.deleteQuestion(questionId);
-            setQuestions(prev => prev.filter(q => q.id !== questionId));
-        } catch (err) {
-            console.error('Failed to delete question', err);
-            alert('Không thể xóa câu hỏi. Xem console để biết chi tiết.');
+            await apiService.deleteQuestion(id);
+            setQuestions(prev => prev.filter(q => q.id !== id));
+        } catch {
+            alert('Không thể xóa câu hỏi.');
         }
     };
+
+    const typeLabel = (t) => t === 'single' ? 'Một lựa chọn' : t === 'multiple' ? 'Nhiều lựa chọn' : t;
+    const typeColor = (t) => t === 'single' ? 'qb-badge--single' : 'qb-badge--multiple';
 
     return (
         <div className="admin-container">
             <QuickSystem />
+
             <header className="admin-header">
                 <div>
                     <h1 className="admin-title">Question Bank</h1>
                     <p className="admin-subtitle">Organize and manage the repository of your exam questions.</p>
                 </div>
-                <Link to="/teacher/questions/add" style={{textDecoration: 'none'}}>
-                    <button className="primary-btn">
-                        <span className="btn-icon">📝</span> Add Question
-                    </button>
-                </Link>
+                <div className="header-buttons-group">
+                    <Link to="/teacher/questions/import" style={{ textDecoration: 'none' }}>
+                        <button className="primary-btn">📚 Nhập &amp; Tạo Câu Hỏi</button>
+                    </Link>
+                    <Link to="/teacher/questions/add" style={{ textDecoration: 'none' }}>
+                        <button className="primary-btn">📝 Thêm Câu Hỏi</button>
+                    </Link>
+                </div>
             </header>
 
-
             <div className="admin-card">
+                {/* Controls */}
                 <div className="table-controls">
                     <div className="search-bar">
                         <span className="search-icon">🔍</span>
                         <input
                             type="text"
-                            placeholder="Search keywords or topics..."
+                            placeholder="Tìm kiếm câu hỏi..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <div className="filter-group">
-                        <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                        <select className="filter-select" value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
                             <option value="all">Tất cả loại câu</option>
                             <option value="single">Một lựa chọn</option>
                             <option value="multiple">Nhiều lựa chọn</option>
                         </select>
-                        <select className="filter-select" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
+                        <select className="filter-select" value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)}>
                             <option value="all">Tất cả môn học</option>
-                            {subjects.map(s => (
-                                <option key={s.id} value={s.id}>{s.name}</option>
-                            ))}
+                            {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                         </select>
-                        <select className="filter-select" value={ordering} onChange={(e) => setOrdering(e.target.value)}>
+                        <select className="filter-select" value={ordering} onChange={e => setOrdering(e.target.value)}>
                             <option value="-id">Mới nhất</option>
                             <option value="id">Cũ nhất</option>
                             <option value="content">Nội dung A-Z</option>
@@ -125,63 +120,99 @@ export default function QuestionBank() {
                     </div>
                 </div>
 
-                <div className="table-responsive">
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th style={{ width: '35%' }}>Question Prompt</th>
-                                <th>Author</th>
-                                <th>Type</th>
-                                <th>Choices</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
-                                <tr><td colSpan="6">Loading questions...</td></tr>
-                            ) : error ? (
-                                <tr><td colSpan="6" style={{ color: 'red' }}>Error: {error}</td></tr>
-                            ) : questions.length > 0 ? (
-                                questions.map(q => {
-                                    const questionIsAuthor = isAuthor(q);
-                                    const authorDisplay = q.author_name || q.author || '-';
-                                    return (
-                                        <tr key={q.id}>
-                                            <td>
-                                                <div className="question-text">{q.content}</div>
-                                            </td>
-                                            <td>{authorDisplay}</td>
-                                            <td>{q.type}</td>
-                                            <td>
-                                                <ul className="choice-list">
-                                                    {(q.choices || []).map(c => (
-                                                        <li key={c.id} className="choice-item">{c.content}</li>
-                                                    ))}
-                                                </ul>
-                                            </td>
-                                            <td className="action-group">
-                                                <Link to={`/teacher/questions/${q.id}`} className="text-btn">Detail</Link>
-                                                {questionIsAuthor && (
+                {/* Content */}
+                {loading ? (
+                    <div className="qb-state">
+                        <div className="qb-spinner" />
+                        <p>Đang tải câu hỏi...</p>
+                    </div>
+                ) : error ? (
+                    <div className="qb-state qb-state--error">❌ {error}</div>
+                ) : questions.length === 0 ? (
+                    <div className="qb-state">
+                        <div style={{ fontSize: '3rem', marginBottom: 12 }}>📭</div>
+                        <p>Không tìm thấy câu hỏi nào.</p>
+                    </div>
+                ) : (
+                    <div className="qb-list">
+                        {questions.map((q, idx) => {
+                            const canEdit = isAuthor(q);
+                            const correctChoices = (q.choices || []).filter(c => c.is_correct);
+                            const wrongChoices  = (q.choices || []).filter(c => !c.is_correct);
+                            return (
+                                <div className="qb-card" key={q.id}>
+                                    {/* Left accent bar */}
+                                    <div className={`qb-card__accent ${typeColor(q.type)}`} />
+
+                                    <div className="qb-card__body">
+                                        {/* Top row */}
+                                        <div className="qb-card__top">
+                                            <div className="qb-card__meta">
+                                                <span className="qb-index">#{idx + 1}</span>
+                                                <span className={`qb-badge ${typeColor(q.type)}`}>
+                                                    {q.type === 'single' ? '◉' : '☑'} {typeLabel(q.type)}
+                                                </span>
+                                                {q.subject_name && (
+                                                    <span className="qb-subject">📖 {q.subject_name}</span>
+                                                )}
+                                            </div>
+                                            <div className="qb-card__actions">
+                                                <Link to={`/teacher/questions/${q.id}`} className="qb-btn qb-btn--detail">
+                                                    Chi tiết
+                                                </Link>
+                                                {canEdit && (
                                                     <>
-                                                        <Link to={`/teacher/questions/edit/${q.id}`} style={{textDecoration: 'none'}}>
-                                                            <button className="text-btn">Edit</button>
+                                                        <Link to={`/teacher/questions/edit/${q.id}`} className="qb-btn qb-btn--edit">
+                                                            Sửa
                                                         </Link>
-                                                        <button className="text-btn danger" onClick={() => handleDelete(q.id)}>Delete</button>
+                                                        <button className="qb-btn qb-btn--delete" onClick={() => handleDelete(q.id)}>
+                                                            Xóa
+                                                        </button>
                                                     </>
                                                 )}
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            ) : (
-                                <tr><td colSpan="6">No questions found.</td></tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Question content */}
+                                        <p className="qb-card__content">{q.content}</p>
+
+                                        {/* Choices */}
+                                        {q.choices && q.choices.length > 0 && (
+                                            <div className="qb-choices">
+                                                {q.choices.map((c, ci) => (
+                                                    <div
+                                                        key={c.id}
+                                                        className={`qb-choice ${c.is_correct ? 'qb-choice--correct' : 'qb-choice--wrong'}`}
+                                                    >
+                                                        <span className="qb-choice__letter">
+                                                            {String.fromCharCode(65 + ci)}
+                                                        </span>
+                                                        <span className="qb-choice__text">{c.content}</span>
+                                                        {c.is_correct && <span className="qb-choice__tick">✓</span>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Footer */}
+                                        <div className="qb-card__footer">
+                                            <span className="qb-author">
+                                                👤 {q.author_name || q.author_username || 'Ẩn danh'}
+                                            </span>
+                                            <span className="qb-stats">
+                                                <span className="qb-stat qb-stat--correct">✓ {correctChoices.length} đúng</span>
+                                                <span className="qb-stat qb-stat--wrong">✗ {wrongChoices.length} sai</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
 
                 <div className="pagination">
-                    <span className="pagination-info">Showing {questions.length} questions</span>
+                    <span className="pagination-info">Hiển thị {questions.length} câu hỏi</span>
                     <div className="pagination-controls">
                         <button className="page-btn active">1</button>
                     </div>

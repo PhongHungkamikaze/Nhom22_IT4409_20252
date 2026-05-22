@@ -86,11 +86,18 @@ export default function QuestionBank() {
                     <h1 className="admin-title">Question Bank</h1>
                     <p className="admin-subtitle">Organize and manage the repository of your exam questions.</p>
                 </div>
-                <Link to="/teacher/questions/add" style={{textDecoration: 'none'}}>
-                    <button className="primary-btn">
-                        <span className="btn-icon">📝</span> Add Question
-                    </button>
-                </Link>
+                <div className="header-buttons-group">
+                    <Link to="/teacher/questions/import" style={{ textDecoration: 'none' }}>
+                        <button className="primary-btn">
+                            <span className="btn-icon">📚</span> Nhập & Tạo Câu Hỏi
+                        </button>
+                    </Link>
+                    <Link to="/teacher/questions/add" style={{ textDecoration: 'none' }}>
+                        <button className="primary-btn">
+                            <span className="btn-icon">📝</span> Thêm Câu Hỏi
+                        </button>
+                    </Link>
+                </div>
             </header>
 
 

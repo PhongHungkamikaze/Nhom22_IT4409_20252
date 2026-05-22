@@ -33,6 +33,7 @@ import TeacherQuizDetail from '../pages/Teacher/TeacherQuizDetail';
 import TeacherQuizEdit from '../pages/Teacher/TeacherQuizEdit';
 import TeacherSubjects from '../pages/Teacher/TeacherSubjects';
 import TeacherQuestionDetail from '../pages/Teacher/TeacherQuestionDetail';
+import ImportAIQuestions from '../pages/Teacher/ImportAIQuestions';
 
 // Student
 import StudentDashboard from '../pages/Student/Dashboard';
@@ -75,6 +76,7 @@ const AppRouter = () => {
             <Route path="/teacher/quizzes" element={<TeacherRoute><TeacherMyQuizzes /></TeacherRoute>} />
             <Route path="/teacher/questions" element={<TeacherRoute><TeacherQuestionBank /></TeacherRoute>} />
             <Route path="/teacher/questions/add" element={<TeacherRoute><TeacherAddQuestion /></TeacherRoute>} />
+            <Route path="/teacher/questions/import" element={<TeacherRoute><ImportAIQuestions /></TeacherRoute>} />
             <Route path="/teacher/questions/edit/:id" element={<TeacherRoute><TeacherEditQuestion /></TeacherRoute>} />
             <Route path="/teacher/questions/:id" element={<TeacherRoute><TeacherQuestionDetail /></TeacherRoute>} />
             <Route path="/teacher/quizzes/create" element={<TeacherRoute><TeacherQuestionCreate /></TeacherRoute>} />
@@ -83,6 +85,7 @@ const AppRouter = () => {
             <Route path="/teacher/subjects" element={<TeacherRoute><TeacherSubjects /></TeacherRoute>} />
             <Route path="/teacher/attempts" element={<TeacherRoute><TeacherAttempts /></TeacherRoute>} />
             <Route path="/teacher/notifications" element={<TeacherRoute><NotificationManagement role="teacher" /></TeacherRoute>} />
+            
 
             {/* Student routes */}
             <Route path="/student" element={<StudentRoute><StudentDashboard /></StudentRoute>} />

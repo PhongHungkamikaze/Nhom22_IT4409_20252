@@ -140,8 +140,10 @@ export default function MyQuizzes() {
                                             <td>
                                                 {quiz.is_published ? "Đã xuất bản" : "Chưa xuất bản"}
                                             </td>
-                                            <td className="action-group">
-                                                <Link to={`/admin/quizzes/${quiz.id}`} className="text-btn">Chi tiết</Link>
+                                            <td>
+                                                <div className="action-group">
+                                                    <Link to={`/admin/quizzes/${quiz.id}`} className="text-btn">Chi tiết</Link>
+                                                </div>
                                             </td>
                                         </tr>
                                     );

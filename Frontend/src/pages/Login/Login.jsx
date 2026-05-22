@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import apiService from '../../services/api';
+import toast from 'react-hot-toast';
 import './Login.css';
 
 const Login = () => {
@@ -47,8 +48,8 @@ const Login = () => {
         else if (role === 'teacher') redirectTo = '/teacher';
         else if (role === 'student') redirectTo = '/student';
 
+        toast.success('Đăng nhập thành công!');
         navigate(redirectTo);
-        alert('Đăng nhập thành công!');
       } else {
         throw new Error('No access token in response');
       }

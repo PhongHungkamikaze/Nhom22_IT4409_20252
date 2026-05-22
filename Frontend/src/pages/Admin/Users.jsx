@@ -131,9 +131,11 @@ export default function Users() {
                                                 {user.role}
                                             </span>
                                         </td>
-                                        <td className="action-group">
-                                            <Link to={`/admin/users/edit/${user.id}`} className="text-btn">Sửa</Link>
-                                            <button className="text-btn danger" onClick={() => handleDelete(user.id)}>Xóa</button>
+                                        <td>
+                                            <div className="action-group">
+                                                <Link to={`/admin/users/edit/${user.id}`} className="text-btn">Sửa</Link>
+                                                <button className="text-btn danger" onClick={() => handleDelete(user.id)}>Xóa</button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

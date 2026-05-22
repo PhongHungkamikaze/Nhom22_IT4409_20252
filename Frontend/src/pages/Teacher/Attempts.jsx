@@ -210,10 +210,12 @@ export default function Attempts() {
                                                     {attempt.status || 'Hoàn thành'}
                                                 </span>
                                             </td>
-                                            <td className="action-group">
-                                                <button className="text-btn" onClick={() => setExpanded(expanded === idx ? null : idx)}>
-                                                    {expanded === idx ? 'Ẩn chi tiết' : 'Xem câu trả lời'}
-                                                </button>
+                                            <td>
+                                                <div className="action-group">
+                                                    <button className="text-btn" onClick={() => setExpanded(expanded === idx ? null : idx)}>
+                                                        {expanded === idx ? 'Ẩn chi tiết' : 'Xem câu trả lời'}
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                         {expanded === idx && (

@@ -138,7 +138,7 @@ export default function QuestionBank() {
                         {questions.map((q, idx) => {
                             const canEdit = isAuthor(q);
                             const correctChoices = (q.choices || []).filter(c => c.is_correct);
-                            const wrongChoices  = (q.choices || []).filter(c => !c.is_correct);
+                            const wrongChoices = (q.choices || []).filter(c => !c.is_correct);
                             return (
                                 <div className="qb-card" key={q.id}>
                                     {/* Left accent bar */}

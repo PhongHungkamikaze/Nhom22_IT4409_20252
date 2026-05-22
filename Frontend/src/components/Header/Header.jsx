@@ -2,10 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
-import { 
-  FiUser, FiLogOut, FiSettings, FiChevronDown, 
+import {
+  FiUser, FiLogOut, FiSettings, FiChevronDown,
   FiPieChart, FiHome, FiLayout, FiBookOpen,
-  FiBell, FiClock, FiCheckCircle, FiInfo 
+  FiBell, FiClock, FiCheckCircle, FiInfo
 } from 'react-icons/fi';
 import './Header.css';
 
@@ -14,7 +14,7 @@ const Header = () => {
   const location = useLocation();
   const { user, isAuthenticated, logout, getUserDisplayName } = useAuth();
   const { notifications, unreadCount, markAllRead, markAsRead } = useNotifications();
-  
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -75,6 +75,7 @@ const Header = () => {
       <div className="header-container">
 
         {/* Logo */}
+        {/* Logo Section */}
         <Link to="/" className="logo">
           <div className="logo-badge">Q</div>
           <span className="logo-text">Quiz<span>Master</span></span>
@@ -88,15 +89,26 @@ const Header = () => {
                 <FiHome className="nav-icon" /> Trang chủ
               </Link>
             </li>
+
             {isAuthenticated && (
-              <li>
-                <Link
-                  to={`${roleBasePath}/quizzes`}
-                  className={location.pathname.includes('/quizzes') ? 'active' : ''}
-                >
-                  <FiBookOpen className="nav-icon" /> Bài Quiz
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link
+                    to={roleBasePath}
+                    className={location.pathname === roleBasePath ? 'active' : ''}
+                  >
+                    <FiLayout className="nav-icon" /> Trang của tôi
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={`${roleBasePath}/quizzes`}
+                    className={location.pathname.includes('/quizzes') ? 'active' : ''}
+                  >
+                    <FiBookOpen className="nav-icon" /> Bài Quiz
+                  </Link>
+                </li>
+              </>
             )}
           </ul>
         </nav>
@@ -121,6 +133,7 @@ const Header = () => {
                       <h3>Thông báo</h3>
                       <button onClick={markAllRead}>Đánh dấu đã đọc</button>
                     </div>
+
                     <div className="notif-list">
                       {notifications.length > 0 ? (
                         notifications.map(n => (
@@ -133,6 +146,7 @@ const Header = () => {
                               {n.type === 'EXAM_VIOLATION'
                                 ? <FiInfo style={{ color: '#ef4444' }} />
                                 : <FiBell />}
+                              {n.type === 'EXAM_VIOLATION' ? <FiInfo style={{ color: '#ef4444' }} /> : <FiBell />}
                             </div>
                             <div className="notif-content">
                               <p className="notif-title">{n.title}</p>
@@ -151,6 +165,7 @@ const Header = () => {
                         </div>
                       )}
                     </div>
+
                     <Link to={`${roleBasePath}/notifications`} className="notif-footer">
                       Xem tất cả thông báo
                     </Link>
@@ -184,11 +199,15 @@ const Header = () => {
                       <Link
                         to={
                           user?.role === 'teacher' ? '/teacher' :
-                          user?.role === 'admin'   ? '/admin'   :
-                          '/student'
+                            user?.role === 'admin' ? '/admin' :
+                              '/student'
                         }
                         className="dropdown-item"
-                      >
+                      />
+                      <Link to={`${roleBasePath}/profile`} className="dropdown-item">
+                        <FiUser /> Thông tin cá nhân
+                      </Link>
+                      <Link to={roleBasePath} className="dropdown-item">
                         <FiLayout /> Bảng điều khiển
                       </Link>
 

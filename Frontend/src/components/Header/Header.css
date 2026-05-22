@@ -147,6 +147,10 @@
 }
 
 /* User Profile Button */
+.user-menu {
+  position: relative;
+}
+
 .user-profile-btn {
   display: flex;
   align-items: center;
@@ -340,6 +344,7 @@
     opacity: 0;
     transform: translateY(10px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -351,7 +356,7 @@
   .nav {
     display: none;
   }
-  
+
   .mobile-toggle {
     display: flex;
   }
@@ -378,19 +383,20 @@
   .header-container {
     padding: 0 1rem;
   }
-  
+
   .user-brief {
     display: none;
   }
-  
+
   .user-profile-btn {
     padding: 0.4rem;
   }
-  
+
   .logo-text {
     font-size: 1.25rem;
   }
 }
+
 /* Notification Button & Badge */
 .header-right {
   display: flex;

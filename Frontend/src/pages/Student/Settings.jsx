@@ -35,7 +35,7 @@ export default function Settings() {
     // UPDATE: Change password
     const handleChangePassword = async (e) => {
         e.preventDefault();
-        
+
         if (passwordData.newPassword !== passwordData.confirmPassword) {
             setError('Mật khẩu mới không khớp');
             return;
@@ -47,14 +47,26 @@ export default function Settings() {
         }
 
         try {
+            setError(null);
+            setSuccess(null);
             setLoading(true);
-            await apiService.changePassword(passwordData.oldPassword, passwordData.newPassword);
-            setSuccess('✓ Đổi mật khẩu thành công!');
+            await apiService.changePassword(
+                passwordData.oldPassword,
+                passwordData.newPassword,
+                passwordData.confirmPassword
+            );
+            setSuccess('Đổi mật khẩu thành công!');
             setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Failed to change password:', err);
-            setError('Lỗi khi đổi mật khẩu. Kiểm tra mật khẩu cũ và thử lại.');
+            const fieldMessage =
+                err?.data?.old_password?.[0] ||
+                err?.data?.new_password?.[0] ||
+                err?.data?.confirm_password?.[0];
+            const detailMessage = err?.data?.detail;
+            const fallbackMessage = 'Lỗi khi đổi mật khẩu. Kiểm tra mật khẩu cũ và thử lại.';
+            setError(fieldMessage || detailMessage || fallbackMessage);
         } finally {
             setLoading(false);
         }
@@ -64,13 +76,13 @@ export default function Settings() {
     const handlePreferenceChange = (key, value) => {
         const newPrefs = { ...preferences, [key]: value };
         setPreferences(newPrefs);
-        
+
         // Save to localStorage
         if (key === 'theme') localStorage.setItem('theme', value);
         if (key === 'notifications') localStorage.setItem('notifications', value);
         if (key === 'language') localStorage.setItem('language', value);
-        
-        setSuccess(`✓ Cập nhật ${key} thành công!`);
+
+        setSuccess(`Cập nhật ${key} thành công!`);
         setTimeout(() => setSuccess(null), 2000);
     };
 
@@ -80,7 +92,7 @@ export default function Settings() {
             <section className="stu-hero">
                 <div className="stu-hero-content">
                     <div className="stu-hero-text">
-                        <h1>⚙️ Cài Đặt</h1>
+                        <h1>Cài Đặt</h1>
                         <p>Quản lý các cài đặt tài khoản của bạn</p>
                     </div>
                 </div>
@@ -89,43 +101,19 @@ export default function Settings() {
             {/* Settings Content */}
             <section className="stu-quizzes-section">
                 <div className="stu-container">
-                    <div style={{
-                        maxWidth: '900px',
-                        margin: '0 auto',
-                        display: 'grid',
-                        gridTemplateColumns: '250px 1fr',
-                        gap: '2rem'
-                    }}>
+                    <div className="stu-settings-grid">
                         {/* Sidebar Tabs */}
-                        <div style={{
-                            backgroundColor: 'white',
-                            borderRadius: '8px',
-                            padding: '1rem',
-                            height: 'fit-content',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                        }}>
-                            <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>Menu</h3>
+                        <div className="stu-settings-sidebar">
+                            <h3 className="stu-settings-menu-title">Menu</h3>
                             {[
-                                { id: 'security', label: '🔒 Bảo mật', icon: '🔒' },
-                                { id: 'preferences', label: '⚙️ Tùy chọn', icon: '⚙️' },
-                                { id: 'account', label: '📱 Tài khoản', icon: '📱' },
+                                { id: 'security', label: 'Bảo mật' },
+                                { id: 'preferences', label: 'Tùy chọn' },
+                                { id: 'account', label: 'Tài khoản' },
                             ].map(tab => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '12px 16px',
-                                        marginBottom: '0.5rem',
-                                        backgroundColor: activeTab === tab.id ? '#007bff' : 'transparent',
-                                        color: activeTab === tab.id ? 'white' : '#333',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                        textAlign: 'left',
-                                        fontWeight: activeTab === tab.id ? 'bold' : 'normal',
-                                        transition: 'all 0.2s'
-                                    }}
+                                    className={`stu-settings-tab${activeTab === tab.id ? ' is-active' : ''}`}
                                 >
                                     {tab.label}
                                 </button>
@@ -133,51 +121,29 @@ export default function Settings() {
                         </div>
 
                         {/* Main Content */}
-                        <div style={{
-                            backgroundColor: 'white',
-                            borderRadius: '8px',
-                            padding: '2rem',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                        }}>
+                        <div className="stu-settings-panel">
                             {/* Error Message */}
                             {error && (
-                                <div style={{
-                                    padding: '12px 16px',
-                                    backgroundColor: '#fee',
-                                    color: '#c33',
-                                    borderRadius: '8px',
-                                    marginBottom: '1rem'
-                                }}>
+                                <div className="stu-settings-alert is-error">
                                     {error}
                                 </div>
                             )}
 
                             {/* Success Message */}
                             {success && (
-                                <div style={{
-                                    padding: '12px 16px',
-                                    backgroundColor: '#efe',
-                                    color: '#3c3',
-                                    borderRadius: '8px',
-                                    marginBottom: '1rem'
-                                }}>
+                                <div className="stu-settings-alert is-success">
                                     {success}
                                 </div>
                             )}
 
                             {/* Security Tab */}
                             {activeTab === 'security' && (
-                                <div>
-                                    <h2 style={{ marginTop: 0 }}>🔒 Bảo Mật</h2>
+                                <div className="stu-settings-section">
+                                    <h2 className="stu-settings-title">Bảo mật</h2>
                                     <form onSubmit={handleChangePassword}>
                                         {/* Old Password */}
-                                        <div style={{ marginBottom: '1.5rem' }}>
-                                            <label style={{
-                                                display: 'block',
-                                                fontWeight: 'bold',
-                                                marginBottom: '0.5rem',
-                                                color: '#333'
-                                            }}>
+                                        <div className="stu-settings-field">
+                                            <label className="stu-label">
                                                 Mật khẩu hiện tại
                                             </label>
                                             <input
@@ -186,25 +152,13 @@ export default function Settings() {
                                                 value={passwordData.oldPassword}
                                                 onChange={handlePasswordChange}
                                                 placeholder="Nhập mật khẩu hiện tại"
-                                                style={{
-                                                    width: '100%',
-                                                    padding: '10px 12px',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #ddd',
-                                                    fontFamily: 'inherit',
-                                                    boxSizing: 'border-box'
-                                                }}
+                                                className="stu-input"
                                             />
                                         </div>
 
                                         {/* New Password */}
-                                        <div style={{ marginBottom: '1.5rem' }}>
-                                            <label style={{
-                                                display: 'block',
-                                                fontWeight: 'bold',
-                                                marginBottom: '0.5rem',
-                                                color: '#333'
-                                            }}>
+                                        <div className="stu-settings-field">
+                                            <label className="stu-label">
                                                 Mật khẩu mới
                                             </label>
                                             <input
@@ -213,25 +167,13 @@ export default function Settings() {
                                                 value={passwordData.newPassword}
                                                 onChange={handlePasswordChange}
                                                 placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
-                                                style={{
-                                                    width: '100%',
-                                                    padding: '10px 12px',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #ddd',
-                                                    fontFamily: 'inherit',
-                                                    boxSizing: 'border-box'
-                                                }}
+                                                className="stu-input"
                                             />
                                         </div>
 
                                         {/* Confirm Password */}
-                                        <div style={{ marginBottom: '2rem' }}>
-                                            <label style={{
-                                                display: 'block',
-                                                fontWeight: 'bold',
-                                                marginBottom: '0.5rem',
-                                                color: '#333'
-                                            }}>
+                                        <div className="stu-settings-field is-last">
+                                            <label className="stu-label">
                                                 Xác nhận mật khẩu mới
                                             </label>
                                             <input
@@ -240,31 +182,16 @@ export default function Settings() {
                                                 value={passwordData.confirmPassword}
                                                 onChange={handlePasswordChange}
                                                 placeholder="Nhập lại mật khẩu mới"
-                                                style={{
-                                                    width: '100%',
-                                                    padding: '10px 12px',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #ddd',
-                                                    fontFamily: 'inherit',
-                                                    boxSizing: 'border-box'
-                                                }}
+                                                className="stu-input"
                                             />
                                         </div>
 
                                         <button
                                             type="submit"
                                             disabled={loading}
-                                            style={{
-                                                padding: '10px 30px',
-                                                backgroundColor: loading ? '#ccc' : '#28a745',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                cursor: loading ? 'not-allowed' : 'pointer',
-                                                fontWeight: 'bold'
-                                            }}
+                                            className={`stu-action-btn stu-action-btn-primary${loading ? ' is-disabled' : ''}`}
                                         >
-                                            {loading ? '⏳ Đang cập nhật...' : '✓ Đổi mật khẩu'}
+                                            {loading ? 'Đang cập nhật...' : 'Đổi mật khẩu'}
                                         </button>
                                     </form>
                                 </div>
@@ -272,56 +199,30 @@ export default function Settings() {
 
                             {/* Preferences Tab */}
                             {activeTab === 'preferences' && (
-                                <div>
-                                    <h2 style={{ marginTop: 0 }}>⚙️ Tùy Chọn</h2>
+                                <div className="stu-settings-section">
+                                    <h2 className="stu-settings-title">Tùy chọn</h2>
 
                                     {/* Theme */}
-                                    <div style={{ marginBottom: '2rem' }}>
-                                        <label style={{
-                                            display: 'block',
-                                            fontWeight: 'bold',
-                                            marginBottom: '0.5rem',
-                                            color: '#333'
-                                        }}>
-                                            🎨 Chủ đề
-                                        </label>
+                                    <div className="stu-settings-field">
+                                        <label className="stu-label">Chủ đề</label>
                                         <select
                                             value={preferences.theme}
                                             onChange={(e) => handlePreferenceChange('theme', e.target.value)}
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderRadius: '6px',
-                                                border: '1px solid #ddd',
-                                                fontFamily: 'inherit',
-                                                cursor: 'pointer'
-                                            }}
+                                            className="stu-settings-select"
                                         >
-                                            <option value="light">☀️ Sáng</option>
-                                            <option value="dark">🌙 Tối</option>
-                                            <option value="auto">🔄 Tự động</option>
+                                            <option value="light">Sáng</option>
+                                            <option value="dark">Tối</option>
+                                            <option value="auto">Tự động</option>
                                         </select>
                                     </div>
 
                                     {/* Language */}
-                                    <div style={{ marginBottom: '2rem' }}>
-                                        <label style={{
-                                            display: 'block',
-                                            fontWeight: 'bold',
-                                            marginBottom: '0.5rem',
-                                            color: '#333'
-                                        }}>
-                                            🌐 Ngôn ngữ
-                                        </label>
+                                    <div className="stu-settings-field">
+                                        <label className="stu-label">Ngôn ngữ</label>
                                         <select
                                             value={preferences.language}
                                             onChange={(e) => handlePreferenceChange('language', e.target.value)}
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderRadius: '6px',
-                                                border: '1px solid #ddd',
-                                                fontFamily: 'inherit',
-                                                cursor: 'pointer'
-                                            }}
+                                            className="stu-settings-select"
                                         >
                                             <option value="vi">Tiếng Việt</option>
                                             <option value="en">English</option>
@@ -329,24 +230,18 @@ export default function Settings() {
                                     </div>
 
                                     {/* Notifications */}
-                                    <div style={{ marginBottom: '2rem' }}>
-                                        <label style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            cursor: 'pointer'
-                                        }}>
+                                    <div className="stu-settings-field">
+                                        <label className="stu-settings-checkbox">
                                             <input
                                                 type="checkbox"
                                                 checked={preferences.notifications}
                                                 onChange={(e) => handlePreferenceChange('notifications', e.target.checked)}
-                                                style={{ marginRight: '10px', width: '18px', height: '18px', cursor: 'pointer' }}
+                                                className="stu-settings-checkbox-input"
                                             />
-                                            <span style={{ fontWeight: 'bold', color: '#333' }}>
-                                                🔔 Nhận thông báo
-                                            </span>
+                                            <span className="stu-settings-checkbox-text">Nhận thông báo</span>
                                         </label>
-                                        <p style={{ fontSize: '0.9rem', color: '#999', margin: '0.5rem 0 0 28px' }}>
-                                            Nhập thông báo về kết quả bài quiz
+                                        <p className="stu-settings-help">
+                                            Nhận thông báo về kết quả bài quiz
                                         </p>
                                     </div>
                                 </div>
@@ -354,96 +249,61 @@ export default function Settings() {
 
                             {/* Account Tab */}
                             {activeTab === 'account' && (
-                                <div>
-                                    <h2 style={{ marginTop: 0 }}>📱 Tài Khoản</h2>
+                                <div className="stu-settings-section">
+                                    <h2 className="stu-settings-title">Tài khoản</h2>
 
-                                    <div style={{
-                                        padding: '1rem',
-                                        backgroundColor: '#f9f9f9',
-                                        borderRadius: '6px',
-                                        marginBottom: '2rem',
-                                        borderLeft: '4px solid #dc3545'
-                                    }}>
-                                        <h3 style={{ marginTop: 0, color: '#dc3545' }}>⚠️ Khu vực Nguy Hiểm</h3>
-                                        <p style={{ color: '#666', marginBottom: '1rem' }}>
+                                    <div className="stu-settings-card is-danger">
+                                        <h3 className="stu-settings-card-title is-danger">Khu vực nguy hiểm</h3>
+                                        <p className="stu-settings-card-text">
                                             Những hành động này không thể được hoàn tác
                                         </p>
 
-                                        <button
-                                            onClick={() => {
-                                                if (window.confirm('Bạn chắc chắn muốn đăng xuất?')) {
-                                                    logout();
-                                                    navigate('/login');
-                                                }
-                                            }}
-                                            style={{
-                                                padding: '10px 30px',
-                                                backgroundColor: '#ffc107',
-                                                color: '#333',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                cursor: 'pointer',
-                                                fontWeight: 'bold',
-                                                marginRight: '1rem'
-                                            }}
-                                        >
-                                            🚪 Đăng xuất
-                                        </button>
+                                        <div className="stu-settings-actions">
+                                            <button
+                                                onClick={() => {
+                                                    if (window.confirm('Bạn chắc chắn muốn đăng xuất?')) {
+                                                        logout();
+                                                        navigate('/login');
+                                                    }
+                                                }}
+                                                className="stu-action-btn stu-action-btn-secondary"
+                                            >
+                                                Đăng xuất
+                                            </button>
 
-                                        <button
-                                            onClick={() => {
-                                                if (window.confirm('Bạn chắc chắn muốn xóa tài khoản? Tất cả dữ liệu sẽ bị mất!')) {
-                                                    alert('Chức năng này sẽ được cập nhật. Vui lòng liên hệ support để xóa tài khoản.');
-                                                }
-                                            }}
-                                            style={{
-                                                padding: '10px 30px',
-                                                backgroundColor: '#dc3545',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                cursor: 'pointer',
-                                                fontWeight: 'bold'
-                                            }}
-                                        >
-                                            🗑️ Xóa Tài Khoản
-                                        </button>
+                                            <button
+                                                onClick={() => {
+                                                    if (window.confirm('Bạn chắc chắn muốn xóa tài khoản? Tất cả dữ liệu sẽ bị mất!')) {
+                                                        alert('Chức năng này sẽ được cập nhật. Vui lòng liên hệ support để xóa tài khoản.');
+                                                    }
+                                                }}
+                                                className="stu-action-btn stu-settings-danger-btn"
+                                            >
+                                                Xóa tài khoản
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <div style={{
-                                        padding: '1rem',
-                                        backgroundColor: '#f0f7ff',
-                                        borderRadius: '6px',
-                                        borderLeft: '4px solid #007bff'
-                                    }}>
-                                        <h3 style={{ marginTop: 0, color: '#007bff' }}>ℹ️ Thông Tin Hỗ Trợ</h3>
-                                        <p style={{ color: '#666' }}>
+                                    <div className="stu-settings-card is-info">
+                                        <h3 className="stu-settings-card-title is-info">Thông tin hỗ trợ</h3>
+                                        <p className="stu-settings-card-text">
                                             Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ:
                                         </p>
-                                        <ul style={{ color: '#666' }}>
-                                            <li>📧 Email: support@quizmaster.com</li>
-                                            <li>📞 Điện thoại: 1900-xxxx</li>
-                                            <li>💬 Chat: Trên trang web</li>
+                                        <ul className="stu-settings-list">
+                                            <li>Email: support@quizmaster.com</li>
+                                            <li>Điện thoại: 1900-xxxx</li>
                                         </ul>
                                     </div>
                                 </div>
                             )}
 
                             {/* Back Button */}
-                            <div style={{ marginTop: '2rem' }}>
+                            <div className="stu-settings-footer">
                                 <button
                                     onClick={() => navigate('/student')}
-                                    style={{
-                                        padding: '10px 30px',
-                                        backgroundColor: '#e0e0e0',
-                                        color: '#333',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                        fontWeight: 'bold'
-                                    }}
+                                    className="stu-action-btn stu-action-btn-secondary"
                                 >
-                                    ← Quay lại
+                                    Quay lại
                                 </button>
                             </div>
                         </div>

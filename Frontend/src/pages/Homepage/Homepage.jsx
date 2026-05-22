@@ -1,23 +1,18 @@
 import { useState, useEffect } from 'react';
 import apiService from '../../services/api';
+import { FiBookOpen, FiActivity, FiClock } from 'react-icons/fi';
 import './Homepage.css';
 
 const Homepage = () => {
   const [stats, setStats] = useState({
-    totalQuizzes: 0,
-    totalUsers: 0,
-    completedTests: 0
+    total_quizzes: 0,
+    total_users: 0,
+    completed_attempts: 0
   });
 
-  const [featuredQuizzes, setFeaturedQuizzes] = useState([]);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    // Fetch stats and quizzes from API
-    Promise.all([
-      fetchStats(),
-      fetchFeaturedQuizzes()
-    ]).finally(() => setLoading(false));
+    // Fetch stats from API
+    fetchStats();
   }, []);
 
   const fetchStats = async () => {
@@ -35,34 +30,6 @@ const Homepage = () => {
     }
   };
 
-  const fetchFeaturedQuizzes = async () => {
-    try {
-      const data = await apiService.getQuizzes(); // Gọi API thật
-      // Kiểm tra nếu data là array, nếu không thì dùng empty array
-      if (Array.isArray(data)) {
-        setFeaturedQuizzes(data);
-      } else if (data && Array.isArray(data.results)) {
-        // Nếu API trả về object với key "results" (pagination)
-        setFeaturedQuizzes(data.results);
-      } else {
-        console.warn('API trả về dữ liệu không đúng format:', data);
-        setFeaturedQuizzes([]); // Set empty array để tránh crash
-      }
-    } catch (error) {
-      console.error('Lỗi khi lấy danh sách quiz:', error);
-      setFeaturedQuizzes([]); // Set empty array khi có lỗi
-    }
-  };
-
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 'Dễ': return '#4CAF50';
-      case 'Trung bình': return '#FF9800';
-      case 'Khó': return '#F44336';
-      default: return '#2196F3';
-    }
-  };
-
   return (
     <div className="homepage">
       {/* Hero Section */}
@@ -71,16 +38,18 @@ const Homepage = () => {
           <div className="hero-text">
             <h1>Nền tảng thi trực tuyến <span className="highlight">hàng đầu</span></h1>
             <p>Trải nghiệm làm bài thi trực tuyến mượt mà, đánh giá năng lực chính xác và kết quả tức thì</p>
-            <div className="hero-buttons">
-              <button className="btn-hero-primary">Bắt đầu làm bài</button>
-              <button className="btn-hero-secondary">Tạo bài quiz</button>
-            </div>
           </div>
           <div className="hero-image">
             <div className="floating-cards">
-              <div className="card card-1">📊 Dashboard</div>
-              <div className="card card-2">🎯 Quiz</div>
-              <div className="card card-3">⭐ Results</div>
+              <div className="card card-1">
+                <FiActivity className="card-icon" /> Dashboard
+              </div>
+              <div className="card card-2">
+                <FiBookOpen className="card-icon" /> Quiz
+              </div>
+              <div className="card card-3">
+                <FiClock className="card-icon" /> Results
+              </div>
             </div>
           </div>
         </div>
@@ -91,59 +60,18 @@ const Homepage = () => {
         <div className="container">
           <div className="stats-grid">
             <div className="stat-item">
-              <div className="stat-number">{stats.totalQuizzes}+</div>
+              <div className="stat-number">{stats.total_quizzes}+</div>
               <div className="stat-label">Bài quiz</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">{stats.totalUsers}+</div>
+              <div className="stat-number">{stats.total_users}+</div>
               <div className="stat-label">Người dùng</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">{stats.completedTests}+</div>
+              <div className="stat-number">{stats.completed_attempts}+</div>
               <div className="stat-label">Bài thi hoàn thành</div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Featured Quizzes */}
-      <section className="featured-quizzes">
-        <div className="container">
-          <h2 className="section-title">Bài quiz nổi bật</h2>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p>Đang tải dữ liệu...</p>
-            </div>
-          ) : featuredQuizzes.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p>Chưa có bài quiz nào. Hãy tạo bài quiz đầu tiên!</p>
-            </div>
-          ) : (
-            <div className="quizzes-grid">
-              {featuredQuizzes.map(quiz => (
-                <div key={quiz.id} className="quiz-card">
-                  <div className="quiz-header">
-                    <h3>{quiz.title}</h3>
-                    <span
-                      className="difficulty-badge"
-                      style={{ backgroundColor: getDifficultyColor(quiz.difficulty) }}
-                    >
-                      {quiz.difficulty}
-                    </span>
-                  </div>
-                  <p className="quiz-description">{quiz.description}</p>
-                  <div className="quiz-details">
-                    <div className="quiz-info">
-                      <span>📝 {quiz.questions_count} câu hỏi</span>
-                      <span>⏱️ {quiz.time_limit} phút</span>
-                    </div>
-                    <div className="quiz-author">Bởi: {quiz.author}</div>
-                  </div>
-                  <button className="quiz-start-btn">Bắt đầu làm bài</button>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
@@ -153,24 +81,32 @@ const Homepage = () => {
           <h2 className="section-title">Tính năng nổi bật</h2>
           <div className="features-grid">
             <div className="feature-item">
-              <div className="feature-icon">⚡</div>
-              <h3>Nhanh chóng</h3>
-              <p>Giao diện tối ưu, tải nhanh, trải nghiệm mượt mà</p>
+              <span className="feature-icon" aria-hidden="true"></span>
+              <div className="feature-content">
+                <h3>Nhanh chóng</h3>
+                <p>Giao diện tối ưu, tải nhanh, trải nghiệm mượt mà</p>
+              </div>
             </div>
             <div className="feature-item">
-              <div className="feature-icon">🔒</div>
-              <h3>Bảo mật</h3>
-              <p>Dữ liệu được mã hóa và bảo vệ tuyệt đối</p>
+              <span className="feature-icon" aria-hidden="true"></span>
+              <div className="feature-content">
+                <h3>Bảo mật</h3>
+                <p>Dữ liệu được mã hóa và bảo vệ tuyệt đối</p>
+              </div>
             </div>
             <div className="feature-item">
-              <div className="feature-icon">📊</div>
-              <h3>Phân tích chi tiết</h3>
-              <p>Báo cáo kết quả chi tiết và thống kê tiến bộ</p>
+              <span className="feature-icon" aria-hidden="true"></span>
+              <div className="feature-content">
+                <h3>Phân tích chi tiết</h3>
+                <p>Báo cáo kết quả chi tiết và thống kê tiến bộ</p>
+              </div>
             </div>
             <div className="feature-item">
-              <div className="feature-icon">🎯</div>
-              <h3>Đa dạng</h3>
-              <p>Nhiều loại câu hỏi và định dạng bài thi</p>
+              <span className="feature-icon" aria-hidden="true"></span>
+              <div className="feature-content">
+                <h3>Đa dạng</h3>
+                <p>Nhiều loại câu hỏi và định dạng bài thi</p>
+              </div>
             </div>
           </div>
         </div>

@@ -15,10 +15,14 @@ export async function register(userData) {
     });
 }
 
-export async function changePassword(oldPassword, newPassword) {
+export async function changePassword(oldPassword, newPassword, confirmPassword) {
     return apiClient.request('/auth/change-password/', {
         method: 'POST',
-        body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+        body: JSON.stringify({
+            old_password: oldPassword,
+            new_password: newPassword,
+            confirm_password: confirmPassword,
+        }),
     });
 }
 

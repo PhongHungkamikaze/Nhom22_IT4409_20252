@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { FiHome, FiBookOpen } from 'react-icons/fi';
 import './Student.css';
 
 export default function History() {
@@ -258,10 +259,16 @@ export default function History() {
                 <div className="stu-container">
                     <div className="stu-nav-grid">
                         <Link to="/student" className="stu-nav-card">
+                            <div className="stu-nav-icon-wrap">
+                                <FiHome className="stu-nav-icon" />
+                            </div>
                             <h3>Trang chủ</h3>
                             <p>Quay lại trang chủ</p>
                         </Link>
                         <Link to="/student/quizzes" className="stu-nav-card">
+                            <div className="stu-nav-icon-wrap">
+                                <FiBookOpen className="stu-nav-icon" />
+                            </div>
                             <h3>Danh sách Quiz</h3>
                             <p>Làm bài quiz mới</p>
                         </Link>

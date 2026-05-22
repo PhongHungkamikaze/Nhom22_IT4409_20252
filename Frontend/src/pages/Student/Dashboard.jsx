@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import apiService from '../../services/api';
+import { FiPlay, FiActivity, FiBookOpen, FiHelpCircle, FiClock, FiPieChart } from 'react-icons/fi';
 import './Student.css';
 
 export default function Dashboard() {
@@ -34,18 +35,28 @@ export default function Dashboard() {
             <section className="stu-hero">
                 <div className="stu-hero-content">
                     <div className="stu-hero-text">
-                        <h1>Xin chào, <span className="stu-highlight">{displayName}</span>! 👋</h1>
+                        <h1>Xin chào, <span className="stu-highlight">{displayName}</span>!</h1>
                         <p>Sẵn sàng chinh phục kiến thức mới? Hãy chọn một bài quiz và bắt đầu ngay thôi!</p>
                         <div className="stu-hero-buttons">
-                            <Link to="/student/quizzes" className="stu-btn-primary">🚀 Làm bài ngay</Link>
-                            <Link to="/student/history" className="stu-btn-secondary">📊 Xem lịch sử</Link>
+                            <Link to="/student/quizzes" className="stu-btn-primary">
+                                <FiPlay className="stu-btn-icon" /> Làm bài ngay
+                            </Link>
+                            <Link to="/student/history" className="stu-btn-secondary">
+                                <FiActivity className="stu-btn-icon" /> Xem lịch sử
+                            </Link>
                         </div>
                     </div>
                     <div className="stu-hero-visual">
                         <div className="stu-floating-cards">
-                            <div className="stu-float-card stu-fc-1">📚 Quiz</div>
-                            <div className="stu-float-card stu-fc-2">🎯 Kết quả</div>
-                            <div className="stu-float-card stu-fc-3">⭐ Thành tích</div>
+                            <div className="stu-card-floating stu-card-floating-1">
+                                <FiActivity className="stu-card-floating-icon" /> Dashboard
+                            </div>
+                            <div className="stu-card-floating stu-card-floating-2">
+                                <FiBookOpen className="stu-card-floating-icon" /> Quiz
+                            </div>
+                            <div className="stu-card-floating stu-card-floating-3">
+                                <FiClock className="stu-card-floating-icon" /> Results
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -86,7 +97,9 @@ export default function Dashboard() {
                         </div>
                     ) : quizzes.length === 0 ? (
                         <div className="stu-empty">
-                            <span className="stu-empty-icon">📭</span>
+                            <div className="stu-empty-icon-wrap">
+                                <FiBookOpen size={40} className="stu-empty-icon" />
+                            </div>
                             <p>Chưa có bài quiz nào. Hãy quay lại sau nhé!</p>
                         </div>
                     ) : (
@@ -105,8 +118,12 @@ export default function Dashboard() {
                                         {quiz.description || 'Hãy thử sức với bài quiz này!'}
                                     </p>
                                     <div className="stu-quiz-info">
-                                        <span>📝 {quiz.questions_count || quiz.question_count || '?'} câu hỏi</span>
-                                        <span>⏱️ {quiz.time_limit || quiz.duration || '30'} phút</span>
+                                        <span>
+                                            <FiHelpCircle className="stu-quiz-info-icon" /> {quiz.questions_count || quiz.question_count || '?'} câu hỏi
+                                        </span>
+                                        <span>
+                                            <FiClock className="stu-quiz-info-icon" /> {quiz.time_limit || quiz.duration || '30'} phút
+                                        </span>
                                     </div>
                                     <div className="stu-quiz-footer">
                                         <span className="stu-quiz-author">
@@ -129,12 +146,16 @@ export default function Dashboard() {
                     <h2 className="stu-section-title">Truy cập nhanh</h2>
                     <div className="stu-nav-grid">
                         <Link to="/student/quizzes" className="stu-nav-card">
-                            <div className="stu-nav-icon">📚</div>
+                            <div className="stu-nav-icon-wrap">
+                                <FiBookOpen className="stu-nav-icon" />
+                            </div>
                             <h3>Danh sách Quiz</h3>
                             <p>Xem tất cả bài quiz có sẵn</p>
                         </Link>
                         <Link to="/student/history" className="stu-nav-card">
-                            <div className="stu-nav-icon">📊</div>
+                            <div className="stu-nav-icon-wrap">
+                                <FiPieChart className="stu-nav-icon" />
+                            </div>
                             <h3>Lịch sử làm bài</h3>
                             <p>Xem kết quả các bài đã làm</p>
                         </Link>

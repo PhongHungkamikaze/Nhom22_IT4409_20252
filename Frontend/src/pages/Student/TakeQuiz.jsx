@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import apiService from '../../services/api';
 import { getUserIdFromToken } from '../../utils/jwt';
+import { FiClock, FiCheckCircle, FiAlertTriangle, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import './TakeQuiz.css';
 
 export default function TakeQuiz() {
@@ -243,11 +243,13 @@ export default function TakeQuiz() {
             <header className="exam-header">
                 <div className="stu-container exam-header-content">
                     <div className="exam-title-section">
-                        <button onClick={handleExit} className="exit-btn">✕ Thoát</button>
+                        <button onClick={handleExit} className="exit-btn">
+                            <FiX style={{ marginRight: '6px' }} /> Thoát
+                        </button>
                         <h2>{attempt?.quiz_title}</h2>
                     </div>
                     <div className="timer-card">
-                        <span>⏱️</span>
+                        <FiClock style={{ color: '#6366f1', fontSize: '1.2rem' }} />
                         <span className={timeLeft < 60 ? 'timer-warning' : ''}>{formatTime(timeLeft)}</span>
                     </div>
                 </div>
@@ -261,7 +263,7 @@ export default function TakeQuiz() {
                 <aside className="exam-sidebar">
                     <div className="sidebar-title">
                         <span>Tiến độ</span>
-                        <span style={{ color: '#6366f1' }}>{progress}%</span>
+                        <span style={{ color: '#6366f1', fontWeight: '800' }}>{progress}%</span>
                     </div>
                     <div className="question-grid">
                         {questions.map((q, idx) => (
@@ -294,9 +296,19 @@ export default function TakeQuiz() {
                         </div>
                         <div className="save-action-section">
                             <div>
-                                {saveSuccess[currentQuestion.id] ? <span className="status-text status-saved">✅ Đã lưu</span> :
-                                    dirty[currentQuestion.id] ? <span className="status-text status-dirty">⚠️ Chưa lưu</span> :
-                                        savedAnswers[currentQuestion.id]?.length > 0 ? <span className="status-text status-saved" style={{ opacity: 0.7 }}>✓ Đã lưu</span> : ''}
+                                {saveSuccess[currentQuestion.id] ? (
+                                    <span className="status-text status-saved">
+                                        <FiCheckCircle style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Đã lưu
+                                    </span>
+                                ) : dirty[currentQuestion.id] ? (
+                                    <span className="status-text status-dirty">
+                                        <FiAlertTriangle style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Chưa lưu
+                                    </span>
+                                ) : savedAnswers[currentQuestion.id]?.length > 0 ? (
+                                    <span className="status-text status-saved" style={{ opacity: 0.7 }}>
+                                        <FiCheckCircle style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Đã lưu
+                                    </span>
+                                ) : ''}
                             </div>
                             <button className="save-btn" disabled={saving[currentQuestion.id] || !dirty[currentQuestion.id]} onClick={() => handleSaveAnswer(currentQuestion.id)}>
                                 {saving[currentQuestion.id] ? 'Đang lưu...' : 'Lưu câu trả lời'}
@@ -309,8 +321,12 @@ export default function TakeQuiz() {
             <footer className="exam-action-bar">
                 <div className="stu-container action-bar-content">
                     <div className="nav-group">
-                        <button className="nav-btn" disabled={currentQuestionIndex === 0} onClick={() => setCurrentQuestionIndex(p => p - 1)}>← Quay lại</button>
-                        <button className="nav-btn" disabled={currentQuestionIndex === questions.length - 1} onClick={() => setCurrentQuestionIndex(p => p + 1)}>Tiếp theo →</button>
+                        <button className="nav-btn" disabled={currentQuestionIndex === 0} onClick={() => setCurrentQuestionIndex(p => p - 1)}>
+                            <FiChevronLeft style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Quay lại
+                        </button>
+                        <button className="nav-btn" disabled={currentQuestionIndex === questions.length - 1} onClick={() => setCurrentQuestionIndex(p => p + 1)}>
+                            Tiếp theo <FiChevronRight style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                        </button>
                     </div>
                     <button className="submit-btn" disabled={submitting} onClick={() => handleSubmitQuiz()}>
                         {submitting ? 'Đang nộp...' : 'Nộp bài thi'}

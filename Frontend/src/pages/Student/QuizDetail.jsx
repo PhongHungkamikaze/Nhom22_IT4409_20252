@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
+import { FiFileText, FiClock, FiUser, FiActivity, FiArrowLeft, FiPlay, FiAlertTriangle } from 'react-icons/fi';
 import './Student.css';
 
 export default function QuizDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [quiz, setQuiz] = useState(null);
-    const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [starting, setStarting] = useState(false);
     const [error, setError] = useState(null);
@@ -62,7 +62,6 @@ export default function QuizDetail() {
     };
 
     if (loading) {
-
         return (
             <div className="student-page">
                 <section className="stu-hero">
@@ -83,12 +82,16 @@ export default function QuizDetail() {
                         <div style={{
                             padding: '2rem',
                             textAlign: 'center',
-                            backgroundColor: '#fee',
-                            borderRadius: '8px',
-                            borderLeft: '4px solid #dc3545'
+                            backgroundColor: '#fee2e2',
+                            borderRadius: '12px',
+                            border: '1px solid #fecaca',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center'
                         }}>
-                            <h2 style={{ marginTop: 0, color: '#dc3545' }}>⚠️ Lỗi</h2>
-                            <p style={{ color: '#666', marginBottom: '1.5rem' }}>
+                            <FiAlertTriangle size={48} style={{ color: '#ef4444', marginBottom: '1rem' }} />
+                            <h2 style={{ marginTop: 0, color: '#ef4444' }}>Lỗi</h2>
+                            <p style={{ color: '#475569', marginBottom: '1.5rem' }}>
                                 {error || 'Bài quiz không tồn tại hoặc chưa được publish'}
                             </p>
                             <button
@@ -99,17 +102,21 @@ export default function QuizDetail() {
                                 style={{
                                     marginTop: '0.5rem',
                                     padding: '12px 30px',
-                                    backgroundColor: '#007bff',
+                                    backgroundColor: '#4f46e5',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '5px',
+                                    borderRadius: '8px',
                                     cursor: 'pointer',
                                     fontSize: '1rem',
                                     fontWeight: 'bold',
-                                    pointerEvents: 'auto'
+                                    pointerEvents: 'auto',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)'
                                 }}
                             >
-                                ← Quay lại danh sách
+                                <FiArrowLeft /> Quay lại danh sách
                             </button>
                         </div>
                     </div>
@@ -124,24 +131,19 @@ export default function QuizDetail() {
             <section className="stu-hero">
                 <div className="stu-container">
                     <div style={{
-                        backgroundColor: '#f8f9fa',
-                        padding: '2rem',
-                        borderRadius: '12px',
-                        borderLeft: '5px solid #007bff'
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        backdropFilter: 'blur(10px)',
+                        padding: '2.5rem',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(255, 255, 255, 0.15)'
                     }}>
-                        <h1 style={{ marginBottom: '1rem' }}>{quiz.title}</h1>
+                        <h1 style={{ marginBottom: '1rem', color: '#fff' }}>{quiz.title}</h1>
                         {quiz.difficulty && (
-                            <span style={{
-                                padding: '5px 12px',
-                                backgroundColor: '#e0e0e0',
-                                borderRadius: '20px',
-                                fontSize: '0.9rem',
-                                marginRight: '1rem'
-                            }}>
+                            <span className={`stu-difficulty stu-diff-${(quiz.difficulty || '').toLowerCase()}`} style={{ marginLeft: 0 }}>
                                 {quiz.difficulty}
                             </span>
                         )}
-                        <p style={{ marginTop: '1rem', color: '#666', lineHeight: '1.6' }}>
+                        <p style={{ marginTop: '1.5rem', color: 'rgba(255, 255, 255, 0.8)', lineHeight: '1.6', fontSize: '1.05rem' }}>
                             {quiz.description || 'Hãy thử sức với bài quiz này!'}
                         </p>
                     </div>
@@ -155,60 +157,76 @@ export default function QuizDetail() {
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                         gap: '1.5rem',
-                        marginBottom: '2rem'
+                        marginBottom: '2.5rem'
                     }}>
                         {/* Info Cards */}
                         <div style={{
                             padding: '1.5rem',
-                            backgroundColor: '#f0f7ff',
-                            borderRadius: '8px',
-                            textAlign: 'center'
+                            backgroundColor: '#f8fafc',
+                            borderRadius: '12px',
+                            border: '1px solid #e2e8f0',
+                            textAlign: 'center',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center'
                         }}>
-                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📝</div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#007bff' }}>
+                            <FiFileText size={28} style={{ color: '#4f46e5', marginBottom: '0.75rem' }} />
+                            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: '#0f172a' }}>
                                 {quiz.question_count || '0'}
                             </div>
-                            <div style={{ color: '#666', marginTop: '0.5rem' }}>Số câu hỏi</div>
+                            <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600, marginTop: '0.25rem' }}>Số câu hỏi</div>
                         </div>
 
                         <div style={{
                             padding: '1.5rem',
-                            backgroundColor: '#fff0f7',
-                            borderRadius: '8px',
-                            textAlign: 'center'
+                            backgroundColor: '#f8fafc',
+                            borderRadius: '12px',
+                            border: '1px solid #e2e8f0',
+                            textAlign: 'center',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center'
                         }}>
-                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⏱️</div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#d946a6' }}>
+                            <FiClock size={28} style={{ color: '#ec4899', marginBottom: '0.75rem' }} />
+                            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: '#0f172a' }}>
                                 {quiz.time_limit || '30'}
                             </div>
-                            <div style={{ color: '#666', marginTop: '0.5rem' }}>Phút</div>
+                            <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600, marginTop: '0.25rem' }}>Phút làm bài</div>
                         </div>
 
                         <div style={{
                             padding: '1.5rem',
-                            backgroundColor: '#f0fff4',
-                            borderRadius: '8px',
-                            textAlign: 'center'
+                            backgroundColor: '#f8fafc',
+                            borderRadius: '12px',
+                            border: '1px solid #e2e8f0',
+                            textAlign: 'center',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center'
                         }}>
-                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>👤</div>
-                            <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#059669' }}>
+                            <FiUser size={28} style={{ color: '#10b981', marginBottom: '0.75rem' }} />
+                            <div style={{ fontSize: '1.1rem', fontWeight: '800', color: '#0f172a', margin: '0.35rem 0' }}>
                                 {quiz.author_name || 'Giáo viên'}
                             </div>
-                            <div style={{ color: '#666', marginTop: '0.5rem' }}>Người tạo</div>
+                            <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600, marginTop: '0.25rem' }}>Người tạo</div>
                         </div>
 
                         {quiz.max_attempts && (
                             <div style={{
                                 padding: '1.5rem',
-                                backgroundColor: '#fef3c7',
-                                borderRadius: '8px',
-                                textAlign: 'center'
+                                backgroundColor: '#f8fafc',
+                                borderRadius: '12px',
+                                border: '1px solid #e2e8f0',
+                                textAlign: 'center',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center'
                             }}>
-                                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔄</div>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#d97706' }}>
+                                <FiActivity size={28} style={{ color: '#f59e0b', marginBottom: '0.75rem' }} />
+                                <div style={{ fontSize: '1.6rem', fontWeight: '800', color: '#0f172a' }}>
                                     {quiz.max_attempts}
                                 </div>
-                                <div style={{ color: '#666', marginTop: '0.5rem' }}>Lần làm tối đa</div>
+                                <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600, marginTop: '0.25rem' }}>Lần làm tối đa</div>
                             </div>
                         )}
                     </div>
@@ -217,10 +235,11 @@ export default function QuizDetail() {
                     {error && (
                         <div style={{
                             padding: '12px 16px',
-                            backgroundColor: '#fee',
-                            color: '#c33',
+                            backgroundColor: '#fee2e2',
+                            color: '#ef4444',
                             borderRadius: '8px',
-                            marginBottom: '1rem'
+                            marginBottom: '1.5rem',
+                            border: '1px solid #fecaca'
                         }}>
                             {error}
                         </div>
@@ -232,35 +251,45 @@ export default function QuizDetail() {
                             onClick={handleGoBack}
                             style={{
                                 padding: '12px 30px',
-                                backgroundColor: '#e0e0e0',
-                                color: '#333',
+                                backgroundColor: '#e2e8f0',
+                                color: '#334155',
                                 border: 'none',
                                 borderRadius: '8px',
                                 fontSize: '1rem',
                                 cursor: 'pointer',
-                                fontWeight: 'bold',
-                                transition: 'all 0.2s'
+                                fontWeight: '700',
+                                transition: 'all 0.2s',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
                             }}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#d0d0d0'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#e0e0e0'}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#cbd5e1'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
                         >
-                            ← Quay lại
+                            <FiArrowLeft /> Quay lại
                         </button>
                         <button
                             onClick={handleStartQuiz}
                             disabled={starting}
                             style={{
                                 padding: '12px 40px',
-                                backgroundColor: starting ? '#ccc' : '#007bff',
+                                backgroundColor: starting ? '#cbd5e1' : '#4f46e5',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '8px',
                                 fontSize: '1rem',
                                 cursor: starting ? 'not-allowed' : 'pointer',
-                                fontWeight: 'bold'
+                                fontWeight: '700',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                boxShadow: starting ? 'none' : '0 4px 14px rgba(79, 70, 229, 0.25)',
+                                transition: 'all 0.2s'
                             }}
+                            onMouseOver={(e) => { if(!starting) e.currentTarget.style.backgroundColor = '#4338ca'; }}
+                            onMouseOut={(e) => { if(!starting) e.currentTarget.style.backgroundColor = '#4f46e5'; }}
                         >
-                            {starting ? '⏳ Đang tạo phiên...' : '🚀 Bắt đầu bài quiz'}
+                            {starting ? 'Đang tạo phiên...' : <><FiPlay /> Bắt đầu bài quiz</>}
                         </button>
                     </div>
                 </div>

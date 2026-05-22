@@ -73,7 +73,7 @@ export default function PersonalInfo() {
             const updatedUser = { ...user, ...updateData };
             login(updatedUser, localStorage.getItem('accessToken'), localStorage.getItem('refreshToken'));
 
-            setSuccess('✓ Cập nhật thành công!');
+            setSuccess('Cập nhật thành công!');
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Failed to save profile - Full error:', err); // DEBUG

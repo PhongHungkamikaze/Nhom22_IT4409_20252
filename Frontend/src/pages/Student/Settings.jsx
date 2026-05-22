@@ -35,7 +35,7 @@ export default function Settings() {
     // UPDATE: Change password
     const handleChangePassword = async (e) => {
         e.preventDefault();
-        
+
         if (passwordData.newPassword !== passwordData.confirmPassword) {
             setError('Mật khẩu mới không khớp');
             return;
@@ -76,12 +76,12 @@ export default function Settings() {
     const handlePreferenceChange = (key, value) => {
         const newPrefs = { ...preferences, [key]: value };
         setPreferences(newPrefs);
-        
+
         // Save to localStorage
         if (key === 'theme') localStorage.setItem('theme', value);
         if (key === 'notifications') localStorage.setItem('notifications', value);
         if (key === 'language') localStorage.setItem('language', value);
-        
+
         setSuccess(`Cập nhật ${key} thành công!`);
         setTimeout(() => setSuccess(null), 2000);
     };
@@ -292,7 +292,6 @@ export default function Settings() {
                                         <ul className="stu-settings-list">
                                             <li>Email: support@quizmaster.com</li>
                                             <li>Điện thoại: 1900-xxxx</li>
-                                            <li>Chat: Trên trang web</li>
                                         </ul>
                                     </div>
                                 </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import apiService from '../../services/api';
+import { FiBookOpen, FiActivity, FiClock } from 'react-icons/fi';
 import './Homepage.css';
 
 const Homepage = () => {
@@ -40,9 +41,15 @@ const Homepage = () => {
           </div>
           <div className="hero-image">
             <div className="floating-cards">
-              <div className="card card-1"> Dashboard</div>
-              <div className="card card-2"> Quiz</div>
-              <div className="card card-3"> Results</div>
+              <div className="card card-1">
+                <FiActivity className="card-icon" /> Dashboard
+              </div>
+              <div className="card card-2">
+                <FiBookOpen className="card-icon" /> Quiz
+              </div>
+              <div className="card card-3">
+                <FiClock className="card-icon" /> Results
+              </div>
             </div>
           </div>
         </div>

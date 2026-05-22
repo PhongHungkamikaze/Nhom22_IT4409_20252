@@ -19,22 +19,33 @@
 .stu-hero {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 4rem 0;
+    padding: 5rem 0;
     position: relative;
     overflow: hidden;
     width: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .stu-hero::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    animation: stuFloat 20s ease-in-out infinite;
+}
+
+@keyframes stuFloat {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
 }
 
 .stu-hero-content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.2fr 0.8fr;
     gap: 4rem;
     align-items: center;
     position: relative;
@@ -45,10 +56,11 @@
 }
 
 .stu-hero-text h1 {
-    font-size: 2.8rem;
+    font-size: 3rem;
     margin-bottom: 1.2rem;
     font-weight: 800;
-    line-height: 1.2;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
 }
 
 .stu-highlight {
@@ -60,9 +72,9 @@
 }
 
 .stu-hero-text p {
-    font-size: 1.15rem;
-    margin-bottom: 2rem;
-    opacity: 0.9;
+    font-size: 1.2rem;
+    margin-bottom: 2.2rem;
+    color: rgba(255, 255, 255, 0.9);
     line-height: 1.6;
 }
 
@@ -76,91 +88,110 @@
 .stu-btn-secondary {
     padding: 0.9rem 1.8rem;
     border: none;
-    border-radius: 50px;
+    border-radius: 10px;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     text-decoration: none;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stu-btn-icon {
+    margin-right: 8px;
+    font-size: 1.1rem;
 }
 
 .stu-btn-primary {
-    background: linear-gradient(45deg, #ff6b6b, #ffa726);
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
     color: white;
-    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
 }
 
 .stu-btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(255, 107, 107, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
+    background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
 }
 
 .stu-btn-secondary {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
     color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
 }
 
 .stu-btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: white;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
 }
 
-/* Floating visual cards */
+/* Premium Decorative Floating Cards on right side of Hero */
 .stu-hero-visual {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
 }
 
 .stu-floating-cards {
     position: relative;
-    width: 280px;
-    height: 280px;
+    width: 300px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.stu-float-card {
+.stu-card-floating {
     position: absolute;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 15px;
-    padding: 1.3rem;
+    padding: 1.2rem 1.6rem;
     color: white;
-    font-weight: 600;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    font-weight: 700;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     animation: stuCardFloat 6s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    white-space: nowrap;
 }
 
-.stu-fc-1 {
-    top: 10px;
-    left: 10px;
+.stu-card-floating-icon {
+    font-size: 1.2rem;
+    color: #ffa726;
+}
+
+.stu-card-floating-1 {
+    top: 20px;
+    left: 20px;
     animation-delay: 0s;
 }
 
-.stu-fc-2 {
-    top: 90px;
+.stu-card-floating-2 {
+    top: 110px;
     right: 10px;
     animation-delay: 2s;
 }
 
-.stu-fc-3 {
-    bottom: 10px;
-    left: 40px;
+.stu-card-floating-3 {
+    bottom: 20px;
+    left: 50px;
     animation-delay: 4s;
 }
 
 @keyframes stuCardFloat {
-
-    0%,
-    100% {
-        transform: translateY(0) rotate(0deg);
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
     }
-
     50% {
-        transform: translateY(-12px) rotate(2deg);
+        transform: translateY(-15px) rotate(2deg);
     }
 }
 
@@ -181,26 +212,29 @@
 }
 
 .stu-stat-item {
-    background: white;
+    background: #ffffff;
     padding: 2rem;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.25s ease;
 }
 
 .stu-stat-item:hover {
-    transform: translateY(-5px);
+    transform: translateY(-2px);
+    border-color: #818cf8;
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.06);
 }
 
 .stu-stat-number {
     font-size: 2.5rem;
     font-weight: 800;
-    color: #667eea;
+    color: #4f46e5;
     margin-bottom: 0.4rem;
 }
 
 .stu-stat-label {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: #64748b;
     font-weight: 600;
 }
@@ -397,18 +431,19 @@
 
 .stu-quiz-card {
     background: white;
-    border-radius: 20px;
+    border-radius: 12px;
     padding: 1.8rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    transition: all 0.25s ease;
     border: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
 }
 
 .stu-quiz-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+    transform: translateY(-3px);
+    border-color: #cbd5e1;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
 }
 
 .stu-quiz-header {
@@ -539,14 +574,28 @@
     color: #64748b;
 }
 
+.stu-empty-icon-wrap {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #4f46e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+}
+
 .stu-empty-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: 2rem;
+    color: #4f46e5;
 }
 
 .stu-empty p {
     font-size: 1.05rem;
     margin: 0;
+    font-weight: 500;
 }
 
 /* ========== Settings Page ========== */
@@ -928,37 +977,61 @@
 
 .stu-nav-card {
     text-align: center;
-    padding: 2.5rem 2rem;
+    padding: 2rem 1.8rem;
     background: white;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    transition: all 0.25s ease;
     text-decoration: none;
     color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .stu-nav-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+    transform: translateY(-3px);
+    border-color: #818cf8;
+    box-shadow: 0 12px 24px rgba(99, 102, 241, 0.06);
+}
+
+.stu-nav-icon-wrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.08);
+    color: #4f46e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+    transition: all 0.25s ease;
+}
+
+.stu-nav-card:hover .stu-nav-icon-wrap {
+    background: #4f46e5;
+    color: #ffffff;
+    transform: scale(1.05);
 }
 
 .stu-nav-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+    font-size: 1.5rem;
     display: block;
 }
 
 .stu-nav-card h3 {
-    color: #2d3748;
+    color: #1f2937;
     margin: 0 0 0.5rem 0;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
+    font-weight: 700;
 }
 
 .stu-nav-card p {
     color: #64748b;
     margin: 0;
     line-height: 1.5;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
 /* ========== Responsive ========== */

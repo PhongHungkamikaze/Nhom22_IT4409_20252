@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
+import { FiBookOpen, FiHelpCircle, FiClock, FiInbox, FiSearch } from 'react-icons/fi';
 import './Student.css';
 
 export default function QuizList() {
@@ -8,8 +9,6 @@ export default function QuizList() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredQuizzes, setFilteredQuizzes] = useState([]);
-
     const [ordering, setOrdering] = useState('-created_at');
 
     const fetchQuizzes = async () => {
@@ -45,7 +44,7 @@ export default function QuizList() {
             <section className="stu-hero">
                 <div className="stu-hero-content">
                     <div className="stu-hero-text">
-                        <h1>📚 Danh Sách Bài Quiz</h1>
+                        <h1>Danh Sách Bài Quiz</h1>
                         <p>Chọn một bài quiz để bắt đầu thử sức</p>
                     </div>
                 </div>
@@ -54,21 +53,34 @@ export default function QuizList() {
             {/* Search Bar */}
             <section className="stu-quizzes-section">
                 <div className="stu-container">
-                    <div className="stu-search-container" style={{ marginBottom: '2rem' }}>
+                    <div className="stu-search-container-wrap" style={{ marginBottom: '2rem', position: 'relative' }}>
+                        <FiSearch style={{
+                            position: 'absolute',
+                            left: '16px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: '#94a3b8',
+                            fontSize: '1.2rem'
+                        }} />
                         <input
                             type="text"
-                            placeholder="🔍 Tìm kiếm bài quiz..."
+                            placeholder="Tìm kiếm bài quiz..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="stu-search-input"
                             style={{
                                 width: '100%',
-                                padding: '12px 16px',
+                                padding: '12px 16px 12px 48px',
                                 fontSize: '1rem',
-                                border: '2px solid #e0e0e0',
-                                borderRadius: '8px',
-                                fontFamily: 'inherit'
+                                border: '2px solid #e2e8f0',
+                                borderRadius: '10px',
+                                fontFamily: 'inherit',
+                                outline: 'none',
+                                transition: 'border-color 0.2s',
+                                boxSizing: 'border-box'
                             }}
+                            onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                            onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                         />
                     </div>
 
@@ -76,10 +88,11 @@ export default function QuizList() {
                     {error && (
                         <div style={{
                             padding: '12px 16px',
-                            backgroundColor: '#fee',
-                            color: '#c33',
+                            backgroundColor: '#fee2e2',
+                            color: '#ef4444',
                             borderRadius: '8px',
-                            marginBottom: '1rem'
+                            marginBottom: '1rem',
+                            border: '1px solid #fecaca'
                         }}>
                             {error}
                         </div>
@@ -93,12 +106,14 @@ export default function QuizList() {
                         </div>
                     ) : quizzes.length === 0 ? (
                         <div className="stu-empty">
-                            <span className="stu-empty-icon">📭</span>
+                            <div className="stu-empty-icon-wrap">
+                                <FiInbox size={40} className="stu-empty-icon" />
+                            </div>
                             <p>{searchTerm ? 'Không tìm thấy bài quiz nào' : 'Chưa có bài quiz nào khả dụng'}</p>
                         </div>
                     ) : (
                         <>
-                            <div style={{ marginBottom: '1rem', color: '#666' }}>
+                            <div style={{ marginBottom: '1rem', color: '#64748b', fontSize: '0.95rem', fontWeight: 500 }}>
                                 Tìm thấy {quizzes.length} bài quiz
                             </div>
                             <div className="stu-quizzes-grid">
@@ -116,8 +131,12 @@ export default function QuizList() {
                                             {quiz.description || 'Hãy thử sức với bài quiz này!'}
                                         </p>
                                         <div className="stu-quiz-info">
-                                            <span>📝 {quiz.questions_count || quiz.question_count || '?'} câu hỏi</span>
-                                            <span>⏱️ {quiz.time_limit || quiz.duration || '30'} phút</span>
+                                            <span>
+                                                <FiHelpCircle className="stu-quiz-info-icon" /> {quiz.questions_count || quiz.question_count || '?'} câu hỏi
+                                            </span>
+                                            <span>
+                                                <FiClock className="stu-quiz-info-icon" /> {quiz.time_limit || quiz.duration || '30'} phút
+                                            </span>
                                         </div>
                                         <div className="stu-quiz-footer">
                                             <span className="stu-quiz-author">

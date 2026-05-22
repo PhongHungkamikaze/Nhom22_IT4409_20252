@@ -42,6 +42,7 @@ export async function bulkImportQuestions(file, subjectId) {
     return apiClient.request('/questions/bulk-import/', {
         method: 'POST',
         body: formData,
+        isFormData: true,
     });
 }
 

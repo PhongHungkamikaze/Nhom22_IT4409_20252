@@ -28,7 +28,8 @@ class ApiClient {
 
         const config = {
             headers: {
-                'Content-Type': 'application/json',
+                // Chỉ set Content-Type nếu body KHÔNG phải FormData
+                ...(!(options.body instanceof FormData) && { 'Content-Type': 'application/json' }),
                 ...options.headers,
             },
             ...options,

@@ -14,6 +14,7 @@ from .attempt import AttemptViewSet
 from .user import UserViewSet
 from .subject import SubjectViewSet
 from .notification import NotificationViewSet
+from .stats import StatsView
 
 __all__ = [
     "LoginView",
@@ -30,4 +31,5 @@ __all__ = [
     "UserViewSet",
     "SubjectViewSet",
     "NotificationViewSet",
+    "StatsView",
 ]

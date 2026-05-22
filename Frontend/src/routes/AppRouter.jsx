@@ -99,6 +99,7 @@ const AppRouter = () => {
             <Route path="/student/result/:attemptId" element={<StudentRoute><StudentResult /></StudentRoute>} />
             <Route path="/student/profile" element={<StudentRoute><StudentPersonalInfo /></StudentRoute>} />
             <Route path="/student/settings" element={<StudentRoute><StudentSettings /></StudentRoute>} />
+            <Route path="/student/notifications" element={<StudentRoute><NotificationManagement role="student" /></StudentRoute>} />
 
             {/* Example of protecting any route with generic auth check */}
             <Route path="/protected-example" element={<ProtectedRoute><div>Protected content</div></ProtectedRoute>} />

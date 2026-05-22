@@ -305,66 +305,6 @@ export default function TeacherQuizEdit() {
 
 
                 </section>
-
-                <section style={{ marginTop: 20 }}>
-                    <h3>Available questions (Question bank)</h3>
-                    <div style={{ marginBottom: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <button className="secondary-btn" type="button" onClick={reloadAvailable} disabled={loadingAvailable}>Reload</button>
-                        <button className="primary-btn" type="button" onClick={handleAddSelected} disabled={addingExisting || availableQuestions.filter(q => q.is_ready).length === 0}>{addingExisting ? 'Adding...' : 'Add selected'}</button>
-                        {loadingAvailable && <span style={{ marginLeft: 8 }}>Loading available questions...</span>}
-                    </div>
-
-                    <div>
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th style={{ width: 60 }}>Select</th>
-                                    <th>Question</th>
-                                    <th>Choices</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {availableQuestions.map(q => {
-                                    const qId = q.id || q.pk || q.question_id;
-                                    const qContent = q.content || q.question || q.title || '';
-                                    const qChoices = q.choices || q.choice_set || q.answers || [];
-                                    return (
-                                        <tr key={qId || Math.random()}>
-                                            <td>
-                                                <input type="checkbox" checked={Boolean(q.is_ready)} onChange={() => toggleAvailableReady(qId)} />
-                                            </td>
-                                            <td>{qContent}</td>
-                                            <td>
-                                                <ul>
-                                                    {(Array.isArray(qChoices) ? qChoices : []).map((c, idx) => (
-                                                        <li key={c.id || c.pk || idx}>{c.content || c.text || c.choice || String(c)}</li>
-                                                    ))}
-                                                </ul>
-                                            </td>
-                                            <td>
-                                                <div className="action-group">
-                                                    <button className="text-btn" onClick={() => {
-                                                        setAvailableQuestions(prev => prev.map(item => {
-                                                            const id = item.id || item.pk || item.question_id;
-                                                            if (String(id) === String(qId)) return { ...item, is_ready: true };
-                                                            return item;
-                                                        }));
-                                                        setTimeout(() => handleAddSelected(), 50);
-                                                    }}>Add</button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                                {availableQuestions.length === 0 && (
-                                    <tr><td colSpan="4">No available questions found.</td></tr>
-                                )}
-                            </tbody >
-                        </table >
-                    </div >
-                </section >
-
                 {/* ── Available questions ── */}
                 < section style={{ marginTop: 28 }
                 }>

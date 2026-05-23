@@ -28,7 +28,7 @@ function AdminThemeWrapper({ children }) {
 
   useEffect(() => {
     const role = user && user.role ? String(user.role).toLowerCase() : '';
-    if (isAuthenticated && role === 'admin') {
+    if (isAuthenticated && (role === 'admin' || role === 'teacher')) {
       document.body.classList.add('admin-theme');
     } else {
       document.body.classList.remove('admin-theme');

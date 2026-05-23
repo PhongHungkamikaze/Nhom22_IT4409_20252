@@ -63,6 +63,20 @@ export default function Questions() {
         return () => clearTimeout(timeoutId);
     }, [searchTerm, typeFilter, subjectFilter, teacherFilter, ordering]);
 
+    const handleDelete = async (id) => {
+        if (!window.confirm('Xác nhận xóa câu hỏi này?')) return;
+        try {
+            await apiService.deleteQuestion(id);
+            setQuestions(prev => prev.filter(q => q.id !== id));
+        } catch (err) {
+            console.error('Delete question failed', err);
+            alert('Không thể xóa câu hỏi.');
+        }
+    };
+
+    const typeLabel = (t) => t === 'single' ? 'Một lựa chọn' : t === 'multiple' ? 'Nhiều lựa chọn' : t;
+    const typeColor = (t) => t === 'single' ? 'qb-badge--single' : 'qb-badge--multiple';
+
     return (
         <div className="admin-container">
             <QuickSystem />
@@ -71,9 +85,6 @@ export default function Questions() {
                     <h1 className="admin-title">Ngân hàng câu hỏi</h1>
                     <p className="admin-subtitle">Quản lý kho câu hỏi hệ thống.</p>
                 </div>
-                <button className="primary-btn">
-                    <span className="btn-icon">📝</span> Thêm câu hỏi
-                </button>
             </header>
 
             <div className="admin-card">
@@ -113,43 +124,87 @@ export default function Questions() {
                     </div>
                 </div>
 
-                <div className="table-responsive">
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th style={{ width: '40%' }}>Nội dung câu hỏi</th>
-                                <th>Giáo viên</th>
-                                <th>Loại</th>
-                                <th>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
-                                <tr><td colSpan="4">Đang tải câu hỏi...</td></tr>
-                            ) : error ? (
-                                <tr><td colSpan="4" style={{ color: 'red' }}>Lỗi: {error}</td></tr>
-                            ) : questions.length > 0 ? (
-                                questions.map(q => (
-                                    <tr key={q.id}>
-                                        <td>
-                                            <div className="question-text">{q.content}</div>
-                                        </td>
-                                        <td>{q.author_name || q.author || '-'}</td>
-                                        <td>{q.type}</td>
-                                        <td>
-                                            <div className="action-group">
-                                                <button className="text-btn">Chi tiết</button>
-                                                <button className="text-btn danger">Xóa</button>
+                {loading ? (
+                    <div className="qb-state">
+                        <div className="qb-spinner" />
+                        <p>Đang tải câu hỏi...</p>
+                    </div>
+                ) : error ? (
+                    <div className="qb-state qb-state--error">❌ {error}</div>
+                ) : questions.length === 0 ? (
+                    <div className="qb-state">
+                        <div style={{ fontSize: '3rem', marginBottom: 12 }}>📭</div>
+                        <p>Không tìm thấy câu hỏi nào.</p>
+                    </div>
+                ) : (
+                    <div className="qb-list">
+                        {questions.map((q, idx) => {
+                            const correctChoices = (q.choices || []).filter(c => c.is_correct);
+                            const wrongChoices = (q.choices || []).filter(c => !c.is_correct);
+                            return (
+                                <div className="qb-card" key={q.id}>
+                                    {/* Left accent bar */}
+                                    <div className={`qb-card__accent ${typeColor(q.type)}`} />
+
+                                    <div className="qb-card__body">
+                                        {/* Top row */}
+                                        <div className="qb-card__top">
+                                            <div className="qb-card__meta">
+                                                <span className="qb-index">#{idx + 1}</span>
+                                                <span className={`qb-badge ${typeColor(q.type)}`}>
+                                                    {q.type === 'single' ? '◉' : '☑'} {typeLabel(q.type)}
+                                                </span>
+                                                {q.subject_name && (
+                                                    <span className="qb-subject">📖 {q.subject_name}</span>
+                                                )}
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr><td colSpan="4">Không tìm thấy câu hỏi nào.</td></tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                            <div className="qb-card__actions">
+                                                <Link to={`/admin/questions/${q.id}`} className="qb-btn qb-btn--detail">
+                                                    Chi tiết
+                                                </Link>
+                                                <button className="qb-btn qb-btn--delete" onClick={() => handleDelete(q.id)}>
+                                                    Xóa
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Question content */}
+                                        <p className="qb-card__content">{q.content}</p>
+
+                                        {/* Choices */}
+                                        {q.choices && q.choices.length > 0 && (
+                                            <div className="qb-choices">
+                                                {q.choices.map((c, ci) => (
+                                                    <div
+                                                        key={c.id}
+                                                        className={`qb-choice ${c.is_correct ? 'qb-choice--correct' : 'qb-choice--wrong'}`}
+                                                    >
+                                                        <span className="qb-choice__letter">
+                                                            {String.fromCharCode(65 + ci)}
+                                                        </span>
+                                                        <span className="qb-choice__text">{c.content}</span>
+                                                        {c.is_correct && <span className="qb-choice__tick">✓</span>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Footer */}
+                                        <div className="qb-card__footer">
+                                            <span className="qb-author">
+                                                👤 {q.author_name || q.author_username || 'Ẩn danh'}
+                                            </span>
+                                            <span className="qb-stats">
+                                                <span className="qb-stat qb-stat--correct">✓ {correctChoices.length} đúng</span>
+                                                <span className="qb-stat qb-stat--wrong">✗ {wrongChoices.length} sai</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
 
                 <div className="pagination">
                     <span className="pagination-info">Hiển thị {questions.length} câu hỏi</span>

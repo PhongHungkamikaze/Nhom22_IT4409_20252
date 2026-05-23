@@ -12,13 +12,13 @@
     color: #111827;
 }
 
-.actions-grid {
+.quick-actions .actions-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(3, 1fr); /* 3 columns layout looks very balanced for 6 items */
+    gap: 12px;
 }
 
-.action-btn {
+.quick-actions .action-btn {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -31,13 +31,13 @@
     transition: transform 120ms ease, box-shadow 120ms ease;
 }
 
-.action-btn:hover {
+.quick-actions .action-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 20px rgba(2, 6, 23, 0.06);
     background: #ffffff;
 }
 
-.action-icon {
+.quick-actions .action-icon {
     width: 36px;
     height: 36px;
     display: inline-flex;
@@ -49,13 +49,13 @@
 }
 
 @media (max-width: 900px) {
-    .actions-grid {
+    .quick-actions .actions-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 520px) {
-    .actions-grid {
+    .quick-actions .actions-grid {
         grid-template-columns: 1fr;
     }
 }

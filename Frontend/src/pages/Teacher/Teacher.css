@@ -1887,6 +1887,277 @@
     color: #374151;
     padding: 10px 16px;
     border-radius: 8px;
+<<<<<<< Updated upstream
+=======
+    padding: 12px 16px;
+    margin-top: 12px;
+}
+
+.qs-empty {
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.9rem;
+    padding: 40px 0;
+    background: #f9fafb;
+    border-radius: 10px;
+    margin-top: 16px;
+}
+
+
+/* ============================================================
+   PATCH: Dán đè vào cuối Teacher.css (sau phần QuizStats)
+   ============================================================ */
+
+/* Fix container: full width, đúng chiều cao, bỏ max-width cứng */
+.admin-container {
+    padding: 28px 32px;
+    max-width: 100%;
+    /* bỏ giới hạn 1400px */
+    width: 100%;
+    margin: 0;
+    /* bỏ auto center */
+    min-height: calc(100vh - 80px);
+    /* header cao 80px */
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    box-sizing: border-box;
+}
+
+/* Card, header, stats, and grids align to the same max-width and center */
+.admin-card,
+.admin-header,
+.stats-container,
+.db-grid,
+.dashboard-grid,
+.dashboard-main {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* QuizStats wrapper không cần thêm max-width vì admin-card đã lo */
+.qs-wrapper {
+    padding: 0;
+    overflow: hidden;
+}
+
+/* ── Responsive patches ─────────────────────────────────── */
+
+@media (max-width: 1024px) {
+    .admin-container {
+        padding: 20px 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 16px 12px;
+        min-height: calc(100vh - 80px);
+    }
+
+    /* QuizStats tabs cuộn ngang thay vì wrap */
+    .qs-tabs {
+        padding: 0 16px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .qs-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .qs-tab {
+        white-space: nowrap;
+        padding: 12px 14px;
+        font-size: 0.82rem;
+    }
+
+    .qs-header {
+        padding: 16px 16px 14px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .qs-content {
+        padding: 16px;
+    }
+
+    /* Stat cards: 2 cột trên mobile */
+    .qs-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .qs-stat-value {
+        font-size: 1.5rem;
+    }
+
+    /* Analysis meta xếp dọc */
+    .qs-analysis-meta {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    /* Export full width */
+    .qs-export {
+        max-width: 100%;
+    }
+
+    .qs-export-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .qs-export-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-container {
+        padding: 12px 8px;
+    }
+
+    .admin-card {
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    /* Stat cards: 1 cột trên màn hình rất nhỏ */
+    .qs-stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .qs-hard-card {
+        padding: 12px 14px;
+    }
+}
+
+
+/* ============================================================
+   QUESTION BANK CARD LAYOUT — thêm vào cuối Teacher.css
+   ============================================================ */
+
+/* List wrapper */
+.qb-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 4px;
+}
+
+/* Card */
+.qb-card {
+    display: flex;
+    border: 1px solid var(--gray-200);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.qb-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+/* Accent bar bên trái */
+.qb-card__accent {
+    width: 5px;
+    flex-shrink: 0;
+}
+
+.qb-card__accent.qb-badge--single {
+    background: #6366f1;
+}
+
+.qb-card__accent.qb-badge--multiple {
+    background: #10b981;
+}
+
+/* Body */
+.qb-card__body {
+    flex: 1;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Top row: meta + actions */
+.qb-card__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.qb-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Index number */
+.qb-index {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    padding: 2px 8px;
+    border-radius: 99px;
+}
+
+/* Type badge */
+.qb-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 99px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.qb-badge.qb-badge--single {
+    background: rgba(99, 102, 241, 0.1);
+    color: #4338ca;
+}
+
+.qb-badge.qb-badge--multiple {
+    background: rgba(16, 185, 129, 0.1);
+    color: #047857;
+}
+
+/* Subject tag */
+.qb-subject {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    padding: 3px 10px;
+    border-radius: 99px;
+}
+
+/* Action buttons */
+.qb-card__actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.qb-btn {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: none;
+>>>>>>> Stashed changes
     cursor: pointer;
 }
 

@@ -29,7 +29,7 @@ export default function Dashboard() {
                 const completedAttempts = attempts.filter(a => a.status === 'completed');
                 const scores = completedAttempts.map(a => Number(a.score)).filter(s => !isNaN(s));
                 const avgScore = scores.length > 0
-                    ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+                    ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10)
                     : null;
 
                 // Unique students

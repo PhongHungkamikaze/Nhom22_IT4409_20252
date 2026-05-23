@@ -39,41 +39,6 @@ class QuestionViewSet(PermissionMixin, viewsets.ModelViewSet):
             return QuestionAISerializer
         return super().get_serializer_class()
 
-    def perform_create(self, serializer):
-        question = serializer.save(author=self.request.user)
-        # Create notification for all admins
-        admin_ids = list(
-            User.objects.filter(role=UserRole.Admin).values_list("id", flat=True)
-        )
-        create_notifications.delay(
-            recipient_ids=admin_ids,
-            title="Câu hỏi mới",
-            content=f"Người dùng {self.request.user.username} đã tạo câu hỏi mới: {question.content[:50]}...",
-        )
-
-    def perform_update(self, serializer):
-        question = serializer.save()
-        admin_ids = list(
-            User.objects.filter(role=UserRole.Admin).values_list("id", flat=True)
-        )
-        create_notifications.delay(
-            recipient_ids=admin_ids,
-            title="Cập nhật câu hỏi",
-            content=f"Người dùng {self.request.user.username} đã cập nhật câu hỏi: {question.content[:50]}...",
-        )
-
-    def perform_destroy(self, instance):
-        content = instance.content
-        instance.delete()
-        admin_ids = list(
-            User.objects.filter(role=UserRole.Admin).values_list("id", flat=True)
-        )
-        create_notifications.delay(
-            recipient_ids=admin_ids,
-            title="Xóa câu hỏi",
-            content=f"Người dùng {self.request.user.username} đã xóa câu hỏi: {content[:50]}...",
-        )
-
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
@@ -149,10 +114,14 @@ class QuestionViewSet(PermissionMixin, viewsets.ModelViewSet):
                             if pd.isna(choice_text) or str(choice_text).strip() == "":
                                 continue
 
-                            is_correct = (
-                                str(row.get(f"is_correct{i}", "false")).lower()
-                                == "true"
-                            )
+                            value = str(row.get(f"is_correct{i}", "")).strip().lower()
+
+                            is_correct = value in [
+                                "true",
+                                "1",
+                                "yes",
+                                "y",
+                            ]
                             Choice.objects.create(
                                 question=question,
                                 content=str(choice_text).strip(),
@@ -200,7 +169,6 @@ class QuestionViewSet(PermissionMixin, viewsets.ModelViewSet):
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel("gemini-2.5-flash")
 
-
             prompt = f"""
             Dựa trên lĩnh vực sau sau, hãy tạo {num_questions} câu hỏi trắc nghiệm {q_type} choice.
             Yêu cầu mỗi câu hỏi có 4 lựa chọn, trong đó có đúng 1 đáp án chính xác (nếu là single) hoặc ít nhất 1 (nếu là multiple).
@@ -237,9 +205,11 @@ class QuestionViewSet(PermissionMixin, viewsets.ModelViewSet):
                             is_correct=bool(choice_data.get("is_correct", False)),
                         )
                     created_questions.append(question)
-                    
+
             res_serializer = QuestionSerializer(created_questions, many=True)
-            return response.Response(res_serializer.data, status=status.HTTP_201_CREATED)
+            return response.Response(
+                res_serializer.data, status=status.HTTP_201_CREATED
+            )
 
         except Subject.DoesNotExist:
             return response.Response(

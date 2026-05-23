@@ -8,25 +8,47 @@ import './Student.css';
 export default function Dashboard() {
     const { getUserDisplayName } = useAuth();
     const [quizzes, setQuizzes] = useState([]);
+    const [stats, setStats] = useState({ completedCount: 0, averageScore: '--' });
     const [loading, setLoading] = useState(true);
 
     const displayName = getUserDisplayName() || 'Bạn';
 
     useEffect(() => {
-        const fetchQuizzes = async () => {
+        const fetchDashboardData = async () => {
             try {
-                const data = await apiService.getQuizzes();
-                const list = Array.isArray(data.results)
-                    ? data.results
-                    : Array.isArray(data) ? data : [];
-                setQuizzes(list);
+                const [quizzesData, attemptsData] = await Promise.all([
+                    apiService.getQuizzes(),
+                    apiService.getAttempts ? apiService.getAttempts() : apiService.request('/attempts/'),
+                ]);
+
+                const quizList = Array.isArray(quizzesData.results)
+                    ? quizzesData.results
+                    : Array.isArray(quizzesData) ? quizzesData : [];
+                setQuizzes(quizList);
+
+                const attemptList = Array.isArray(attemptsData.results)
+                    ? attemptsData.results
+                    : Array.isArray(attemptsData) ? attemptsData : [];
+
+                const completedAttempts = attemptList.filter(a => a.status === 'completed');
+                const completedCount = completedAttempts.length;
+
+                const scores = completedAttempts.map(a => Number(a.score)).filter(s => !isNaN(s));
+                const averageScore = scores.length > 0
+                    ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
+                    : '--';
+
+                setStats({
+                    completedCount,
+                    averageScore
+                });
             } catch (error) {
-                console.error('Failed to fetch quizzes:', error);
+                console.error('Failed to fetch dashboard data:', error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchQuizzes();
+        fetchDashboardData();
     }, []);
 
     return (
@@ -71,11 +93,11 @@ export default function Dashboard() {
                             <div className="stu-stat-label">Bài quiz khả dụng</div>
                         </div>
                         <div className="stu-stat-item">
-                            <div className="stu-stat-number">0</div>
+                            <div className="stu-stat-number">{stats.completedCount}</div>
                             <div className="stu-stat-label">Đã hoàn thành</div>
                         </div>
                         <div className="stu-stat-item">
-                            <div className="stu-stat-number">--</div>
+                            <div className="stu-stat-number">{stats.averageScore}</div>
                             <div className="stu-stat-label">Điểm trung bình</div>
                         </div>
                     </div>

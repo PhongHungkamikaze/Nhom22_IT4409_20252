@@ -1128,12 +1128,24 @@
     }
 }
 
-/* ========== Student Dashboard Header (Professional & Minimalist) ========== */
+/* ========== Student Dashboard Header (Professional & Premium Gradient) ========== */
 .stu-dashboard-header {
-    background: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 2.5rem 0;
+    background: linear-gradient(135deg, #4f46e5 0%, #764ba2 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 3rem 0;
     width: 100%;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+}
+
+.stu-dashboard-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+    pointer-events: none;
 }
 
 .stu-welcome-row {
@@ -1144,21 +1156,115 @@
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 3rem;
+    position: relative;
+    z-index: 2;
 }
 
-.stu-welcome-left h1 {
-    font-size: 2rem;
-    color: #0f172a;
-    font-weight: 700;
+.stu-welcome-left {
+    max-width: 60%;
+}
+
+.stu-welcome-left h1,
+.stu-header-title {
+    font-size: 2.25rem;
+    color: #ffffff;
+    font-weight: 800;
     margin: 0 0 0.5rem 0;
     letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-.stu-welcome-left p {
-    color: #475569;
-    font-size: 1.05rem;
+.stu-title-icon {
+    color: #ffd700;
+    font-size: 2.25rem;
+    filter: drop-shadow(0 2px 6px rgba(255, 215, 0, 0.3));
+}
+
+.stu-welcome-left p,
+.stu-header-subtitle {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1.1rem;
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.6;
+    font-weight: 400;
+}
+
+.stu-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    padding: 0.4rem 0.9rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.stu-badge-icon {
+    color: #ffd700;
+    font-size: 0.95rem;
+}
+
+.stu-welcome-quote-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 1.4rem 1.6rem;
+    max-width: 360px;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stu-welcome-quote-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.stu-welcome-quote-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #ffd700, #ff8c00);
+}
+
+.stu-quote-icon {
+    font-size: 1.8rem;
+    color: #ffd700;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.stu-quote-content h4 {
+    margin: 0 0 0.3rem 0;
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.stu-quote-content p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.88rem;
+    line-height: 1.45;
 }
 
 .stu-welcome-actions {
@@ -1168,26 +1274,29 @@
 }
 
 .stu-btn-primary-clean {
-    background: #0f172a;
-    color: #ffffff;
+    background: #ffffff;
+    color: #4f46e5;
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.95rem;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    transition: background-color 0.2s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
 }
 
 .stu-btn-primary-clean:hover {
-    background: #1e293b;
+    background: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
 }
 
 .stu-btn-secondary-clean {
-    background: #ffffff;
-    color: #334155;
-    border: 1px solid #cbd5e1;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     font-weight: 600;
@@ -1195,13 +1304,28 @@
     text-decoration: none;
     display: inline-flex;
     align-items: center;
+    backdrop-filter: blur(4px);
     transition: all 0.2s ease;
 }
 
 .stu-btn-secondary-clean:hover {
-    background: #f8fafc;
-    border-color: #94a3b8;
-    color: #0f172a;
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 968px) {
+    .stu-welcome-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.5rem;
+    }
+    .stu-welcome-left {
+        max-width: 100%;
+    }
+    .stu-welcome-quote-card {
+        max-width: 100%;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1211,11 +1335,70 @@
         gap: 1.25rem;
         padding: 0 1.5rem;
     }
+
     .stu-welcome-actions {
         width: 100%;
     }
-    .stu-btn-primary-clean, .stu-btn-secondary-clean {
+
+    .stu-btn-primary-clean,
+    .stu-btn-secondary-clean {
         flex: 1;
         justify-content: center;
     }
+}
+
+/* ========== Student Pagination ========== */
+.stu-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.stu-pagination-info {
+    font-size: 0.95rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.stu-pagination-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.stu-page-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stu-page-btn:hover:not(:disabled):not(.is-active) {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+.stu-page-btn.is-active {
+    background: #0f172a;
+    color: #ffffff;
+    border-color: #0f172a;
+}
+
+.stu-page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: #e2e8f0;
+    background: #f8fafc;
+    color: #94a3b8;
 }

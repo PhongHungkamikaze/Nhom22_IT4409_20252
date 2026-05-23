@@ -286,8 +286,8 @@ export default function QuizDetail() {
                                 boxShadow: starting ? 'none' : '0 4px 14px rgba(79, 70, 229, 0.25)',
                                 transition: 'all 0.2s'
                             }}
-                            onMouseOver={(e) => { if(!starting) e.currentTarget.style.backgroundColor = '#4338ca'; }}
-                            onMouseOut={(e) => { if(!starting) e.currentTarget.style.backgroundColor = '#4f46e5'; }}
+                            onMouseOver={(e) => { if (!starting) e.currentTarget.style.backgroundColor = '#4338ca'; }}
+                            onMouseOut={(e) => { if (!starting) e.currentTarget.style.backgroundColor = '#4f46e5'; }}
                         >
                             {starting ? 'Đang tạo phiên...' : <><FiPlay /> Bắt đầu bài quiz</>}
                         </button>

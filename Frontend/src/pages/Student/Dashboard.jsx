@@ -53,36 +53,25 @@ export default function Dashboard() {
 
     return (
         <div className="student-page">
-            {/* ===== Hero Section ===== */}
-            <section className="stu-hero">
-                <div className="stu-hero-content">
-                    <div className="stu-hero-text">
-                        <h1>Xin chào, <span className="stu-highlight">{displayName}</span>!</h1>
-                        <p>Sẵn sàng chinh phục kiến thức mới? Hãy chọn một bài quiz và bắt đầu ngay thôi!</p>
-                        <div className="stu-hero-buttons">
-                            <Link to="/student/quizzes" className="stu-btn-primary">
+            {/* ===== Compact Welcome Header ===== */}
+            <div className="stu-dashboard-header">
+                <div className="stu-container">
+                    <div className="stu-welcome-row">
+                        <div className="stu-welcome-left">
+                            <h1>Xin chào, {displayName}</h1>
+                            <p>Hôm nay bạn muốn học gì? Dưới đây là tổng quan hoạt động và các bài kiểm tra dành cho bạn.</p>
+                        </div>
+                        <div className="stu-welcome-actions">
+                            <Link to="/student/quizzes" className="stu-btn-primary-clean">
                                 <FiPlay className="stu-btn-icon" /> Làm bài ngay
                             </Link>
-                            <Link to="/student/history" className="stu-btn-secondary">
-                                <FiActivity className="stu-btn-icon" /> Xem lịch sử
+                            <Link to="/student/history" className="stu-btn-secondary-clean">
+                                <FiActivity className="stu-btn-icon" /> Lịch sử làm bài
                             </Link>
-                        </div>
-                    </div>
-                    <div className="stu-hero-visual">
-                        <div className="stu-floating-cards">
-                            <div className="stu-card-floating stu-card-floating-1">
-                                <FiActivity className="stu-card-floating-icon" /> Dashboard
-                            </div>
-                            <div className="stu-card-floating stu-card-floating-2">
-                                <FiBookOpen className="stu-card-floating-icon" /> Quiz
-                            </div>
-                            <div className="stu-card-floating stu-card-floating-3">
-                                <FiClock className="stu-card-floating-icon" /> Results
-                            </div>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
             {/* ===== Stats Section ===== */}
             <section className="stu-stats">
@@ -159,29 +148,6 @@ export default function Dashboard() {
                             ))}
                         </div>
                     )}
-                </div>
-            </section>
-
-            {/* ===== Quick Navigation ===== */}
-            <section className="stu-nav-section">
-                <div className="stu-container">
-                    <h2 className="stu-section-title">Truy cập nhanh</h2>
-                    <div className="stu-nav-grid">
-                        <Link to="/student/quizzes" className="stu-nav-card">
-                            <div className="stu-nav-icon-wrap">
-                                <FiBookOpen className="stu-nav-icon" />
-                            </div>
-                            <h3>Danh sách Quiz</h3>
-                            <p>Xem tất cả bài quiz có sẵn</p>
-                        </Link>
-                        <Link to="/student/history" className="stu-nav-card">
-                            <div className="stu-nav-icon-wrap">
-                                <FiPieChart className="stu-nav-icon" />
-                            </div>
-                            <h3>Lịch sử làm bài</h3>
-                            <p>Xem kết quả các bài đã làm</p>
-                        </Link>
-                    </div>
                 </div>
             </section>
         </div>

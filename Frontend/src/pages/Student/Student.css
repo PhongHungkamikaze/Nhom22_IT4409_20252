@@ -35,9 +35,12 @@
 }
 
 @keyframes stuFloat {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateY(0px);
     }
+
     50% {
         transform: translateY(-20px);
     }
@@ -187,9 +190,12 @@
 }
 
 @keyframes stuCardFloat {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateY(0px) rotate(0deg);
     }
+
     50% {
         transform: translateY(-15px) rotate(2deg);
     }
@@ -1119,5 +1125,97 @@
 
     .stu-history-table-wrap {
         display: none;
+    }
+}
+
+/* ========== Student Dashboard Header (Professional & Minimalist) ========== */
+.stu-dashboard-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 2.5rem 0;
+    width: 100%;
+}
+
+.stu-welcome-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 3rem;
+}
+
+.stu-welcome-left h1 {
+    font-size: 2rem;
+    color: #0f172a;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+}
+
+.stu-welcome-left p {
+    color: #475569;
+    font-size: 1.05rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.stu-welcome-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.stu-btn-primary-clean {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.stu-btn-primary-clean:hover {
+    background: #1e293b;
+}
+
+.stu-btn-secondary-clean {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.stu-btn-secondary-clean:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+@media (max-width: 768px) {
+    .stu-welcome-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.25rem;
+        padding: 0 1.5rem;
+    }
+    .stu-welcome-actions {
+        width: 100%;
+    }
+    .stu-btn-primary-clean, .stu-btn-secondary-clean {
+        flex: 1;
+        justify-content: center;
     }
 }

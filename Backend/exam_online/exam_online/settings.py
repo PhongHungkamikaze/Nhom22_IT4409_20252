@@ -35,11 +35,20 @@ SECRET_KEY = config(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = config(
-    "ALLOWED_HOSTS", default="*", cast=lambda v: [s.strip() for s in v.split(",")]
-)
+ALLOWED_HOSTS = [
+    "nhom22-it4409-20252.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://nhom22-it4409-20252.onrender.com",
+    "https://nhom22-it-4409-20252.vercel.app",
+]
 
+CORS_ALLOWED_ORIGINS = [
+    "https://nhom22-it-4409-20252.vercel.app",
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -213,6 +222,12 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
+
+# Cookie Security (Required for cross-site requests)
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SAMESITE = "None"
 
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL

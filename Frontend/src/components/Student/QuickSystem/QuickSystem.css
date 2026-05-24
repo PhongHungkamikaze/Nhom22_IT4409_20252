@@ -12,13 +12,13 @@
     color: #111827;
 }
 
-.actions-grid {
+.student-quick-actions .actions-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 12px;
 }
 
-.action-btn {
+.student-quick-actions .action-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -32,20 +32,20 @@
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.action-btn:hover {
+.student-quick-actions .action-btn:hover {
     border-color: #cbd5f5;
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
     transform: translateY(-1px);
 }
 
-.action-btn.active {
+.student-quick-actions .action-btn.active {
     border-color: #c7d2fe;
     background: #eef2ff;
     border-left-color: #6366f1;
     box-shadow: 0 8px 22px rgba(99, 102, 241, 0.15);
 }
 
-.action-icon {
+.student-quick-actions .action-icon {
     width: 22px;
     height: 22px;
     display: inline-flex;
@@ -58,7 +58,7 @@
     line-height: 1;
 }
 
-.action-icon::before {
+.student-quick-actions .action-icon::before {
     content: '';
     width: 6px;
     height: 6px;

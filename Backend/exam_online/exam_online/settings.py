@@ -32,7 +32,7 @@ SECRET_KEY = config(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=lambda v: [s.strip() for s in v.split(",")])
 
 
 # Application definition
@@ -185,12 +185,13 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # EMAIL_HOST_PASSWORD = "your-app-password"
 
 # URL frontend dùng trong link reset password (đổi khi deploy production)
-FRONTEND_URL = "http://localhost:5173"
+FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite dev server default port
     "http://127.0.0.1:5173",
+    "https://nhom22-it-4409-20252.vercel.app",
 ]
 
 CORS_ALLOWED_CREDENTIALS = True

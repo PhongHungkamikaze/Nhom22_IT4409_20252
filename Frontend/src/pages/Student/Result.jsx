@@ -1,11 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import apiService from '../../services/api';
-import { FiAward, FiSmile, FiMeh, FiAlertCircle, FiFileText, FiClock, FiCheckCircle, FiPieChart, FiBookOpen, FiHome } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
+import { 
+    FiAward, 
+    FiSmile, 
+    FiMeh, 
+    FiAlertCircle, 
+    FiFileText, 
+    FiClock, 
+    FiCheckCircle, 
+    FiPieChart, 
+    FiBookOpen, 
+    FiHome,
+    FiUser
+} from 'react-icons/fi';
 import './Student.css';
 
 export default function Result() {
     const { attemptId } = useParams();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [attempt, setAttempt] = useState(null);
@@ -36,10 +50,40 @@ export default function Result() {
 
     // Determine result status
     const getResultStatus = (score) => {
-        if (score >= 8) return { label: 'Xuất sắc!', color: '#10b981', icon: <FiAward size={48} /> };
-        if (score >= 7) return { label: 'Tốt', color: '#3b82f6', icon: <FiSmile size={48} /> };
-        if (score >= 5) return { label: 'Bình thường', color: '#f59e0b', icon: <FiMeh size={48} /> };
-        return { label: 'Cần cải thiện', color: '#ef4444', icon: <FiAlertCircle size={48} /> };
+        if (score >= 8) {
+            return { 
+                label: 'Xuất sắc!', 
+                color: '#10b981', 
+                icon: <FiAward className="stu-result-badge-icon" style={{ color: '#10b981' }} />,
+                bgFill: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                message: 'Tuyệt vời! Bạn làm rất tốt. Tiếp tục phát huy nhé!'
+            };
+        }
+        if (score >= 7) {
+            return { 
+                label: 'Khá tốt', 
+                color: '#3b82f6', 
+                icon: <FiSmile className="stu-result-badge-icon" style={{ color: '#3b82f6' }} />,
+                bgFill: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                message: 'Kết quả khá tốt! Bạn hãy ôn tập thêm để đạt điểm tối đa.'
+            };
+        }
+        if (score >= 5) {
+            return { 
+                label: 'Đạt yêu cầu', 
+                color: '#f59e0b', 
+                icon: <FiMeh className="stu-result-badge-icon" style={{ color: '#f59e0b' }} />,
+                bgFill: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                message: 'Bạn đã đạt yêu cầu trung bình. Cần cố gắng ôn tập thêm các câu sai.'
+            };
+        }
+        return { 
+            label: 'Cần cải thiện', 
+            color: '#ef4444', 
+            icon: <FiAlertCircle className="stu-result-badge-icon" style={{ color: '#ef4444' }} />,
+            bgFill: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            message: 'Điểm số chưa đạt yêu cầu. Hãy ôn lại bài và thử lại ở lượt sau nhé!'
+        };
     };
 
     // Format date
@@ -59,7 +103,7 @@ export default function Result() {
             <div className="student-page">
                 <section className="stu-loading">
                     <div className="stu-spinner"></div>
-                    <p>Đang tải kết quả...</p>
+                    <p>Đang tải kết quả bài làm...</p>
                 </section>
             </div>
         );
@@ -68,40 +112,42 @@ export default function Result() {
     if (error || !attempt) {
         return (
             <div className="student-page">
-                <section className="stu-hero">
+                <div className="stu-dashboard-header">
                     <div className="stu-container">
-                        <div style={{
-                            padding: '2rem',
-                            textAlign: 'center',
-                            backgroundColor: '#fee2e2',
-                            borderRadius: '12px',
-                            border: '1px solid #fecaca',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center'
-                        }}>
-                            <FiAlertCircle size={48} style={{ color: '#ef4444', marginBottom: '1rem' }} />
-                            <h2 style={{ color: '#ef4444', marginTop: 0 }}>Lỗi</h2>
-                            <p style={{ color: '#475569', marginBottom: '1.5rem' }}>{error || 'Không thể tải kết quả'}</p>
-                            <button
-                                onClick={() => navigate('/student/history')}
-                                style={{
-                                    marginTop: '1rem',
-                                    padding: '10px 20px',
-                                    backgroundColor: '#4f46e5',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    cursor: 'pointer',
-                                    fontWeight: 'bold',
-                                    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)'
-                                }}
-                            >
-                                ← Quay lại lịch sử
-                            </button>
+                        <div className="stu-welcome-row">
+                            <div className="stu-welcome-left">
+                                <h1>Lỗi hệ thống</h1>
+                                <p>Đã xảy ra sự cố trong quá trình tải dữ liệu điểm số của bài quiz này.</p>
+                            </div>
                         </div>
                     </div>
-                </section>
+                </div>
+
+                <div className="stu-container" style={{ marginTop: '2rem' }}>
+                    <div style={{
+                        padding: '3rem 2rem',
+                        textAlign: 'center',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '20px',
+                        border: '1px solid #fee2e2',
+                        boxShadow: '0 10px 25px rgba(239, 68, 68, 0.05)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        maxWidth: '600px',
+                        margin: '0 auto'
+                    }}>
+                        <FiAlertCircle size={64} style={{ color: '#ef4444', marginBottom: '1.5rem' }} />
+                        <h2 style={{ color: '#0f172a', margin: '0 0 0.5rem 0', fontWeight: 800 }}>Không tìm thấy kết quả</h2>
+                        <p style={{ color: '#64748b', marginBottom: '2rem' }}>{error || 'Mã bài thi không tồn tại hoặc đã bị xóa.'}</p>
+                        <button
+                            onClick={() => navigate('/student/history')}
+                            className="stu-btn-save-premium"
+                        >
+                            Quay lại lịch sử làm bài
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -110,230 +156,130 @@ export default function Result() {
 
     return (
         <div className="student-page">
-            {/* RESULT CARD */}
-            <section className="stu-hero">
+            {/* Header Hero Banner */}
+            <div className="stu-dashboard-header">
                 <div className="stu-container">
-                    <div style={{
-                        backgroundColor: '#f8fafc',
-                        padding: '3rem 2rem',
-                        borderRadius: '16px',
-                        textAlign: 'center',
-                        borderLeft: `6px solid ${resultStatus.color}`,
-                        borderTop: '1px solid #e2e8f0',
-                        borderRight: '1px solid #e2e8f0',
-                        borderBottom: '1px solid #e2e8f0',
-                        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.05)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center'
-                    }}>
-                        {/* Score Display */}
-                        <div style={{ marginBottom: '2rem', width: '100%' }}>
-                            <div style={{
-                                color: resultStatus.color,
-                                marginBottom: '0.75rem',
-                                display: 'flex',
-                                justifyContent: 'center'
-                            }}>
-                                {resultStatus.icon}
+                    <div className="stu-welcome-row">
+                        <div className="stu-welcome-left">
+                            <div className="stu-header-badge">
+                                <FiAward className="stu-badge-icon" />
+                                Kết Quả Bài Thi
                             </div>
-                            <h1 style={{
-                                fontSize: '2.2rem',
-                                marginBottom: '0.5rem',
-                                color: '#0f172a',
-                                fontWeight: 800
-                            }}>
-                                {resultStatus.label}
-                            </h1>
-                            <div style={{
-                                fontSize: '1.2rem',
-                                color: '#475569'
-                            }}>
-                                Bạn đạt được <span style={{
-                                    fontSize: '2rem',
-                                    fontWeight: '900',
-                                    color: resultStatus.color
-                                }}>
-                                    {(attempt.score).toFixed(1)}
-                                </span> / 10 điểm
-                            </div>
+                            <h1>Báo cáo điểm số của bạn</h1>
+                            <p>Chúc mừng bạn đã hoàn thành bài thi! Dưới đây là thông tin chi tiết về điểm số của lượt làm bài này.</p>
                         </div>
+                    </div>
+                </div>
+            </div>
 
-                        {/* Progress Bar */}
-                        <div style={{
-                            width: '100%',
-                            maxWidth: '600px',
-                            height: '24px',
-                            backgroundColor: '#e2e8f0',
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            marginBottom: '2rem'
-                        }}>
-                            <div style={{
-                                height: '100%',
+            <div className="stu-result-container">
+                {/* RESULT PANEL */}
+                <div className="stu-result-panel" style={{ borderLeft: `6px solid ${resultStatus.color}` }}>
+                    
+                    {/* Status Icon */}
+                    {resultStatus.icon}
+
+                    {/* Result Label */}
+                    <h2 className="stu-result-title">{resultStatus.label}</h2>
+                    
+                    {/* Score display */}
+                    <div className="stu-result-subtitle">
+                        Bạn đạt được <span className="stu-result-score-highlight" style={{ color: resultStatus.color }}>
+                            {(attempt.score || 0).toFixed(1)}
+                        </span> / 10 điểm
+                    </div>
+
+                    {/* Progress track */}
+                    <div className="stu-result-progress-track">
+                        <div 
+                            className="stu-result-progress-fill" 
+                            style={{ 
                                 width: `${scorePercentage}%`,
-                                backgroundColor: resultStatus.color,
-                                transition: 'width 0.6s ease',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontWeight: 'bold',
-                                fontSize: '0.85rem'
-                            }}>
-                                {scorePercentage > 10 && `${scorePercentage.toFixed(0)}%`}
-                            </div>
-                        </div>
-
-                        <h2 style={{
-                            color: resultStatus.color,
-                            marginBottom: '1rem',
-                            fontSize: '1.25rem',
-                            fontWeight: '700'
-                        }}>
-                            {resultStatus.label === 'Xuất sắc!' && 'Bạn làm rất tốt! Tiếp tục cố gắng!'}
-                            {resultStatus.label === 'Tốt' && 'Kết quả tốt! Hãy ôn tập thêm.'}
-                            {resultStatus.label === 'Bình thường' && 'Cần ôn tập thêm các phần này.'}
-                            {resultStatus.label === 'Cần cải thiện' && 'Hãy ôn tập lại toàn bộ nội dung.'}
-                        </h2>
-                    </div>
-                </div>
-            </section>
-
-            {/* DETAILS SECTION */}
-            <section className="stu-quizzes-section">
-                <div className="stu-container">
-                    {/* Quiz Info */}
-                    <div style={{
-                        backgroundColor: 'white',
-                        padding: '2rem',
-                        borderRadius: '12px',
-                        marginBottom: '2.5rem',
-                        border: '1px solid #e2e8f0',
-                        boxShadow: '0 8px 30px rgba(0,0,0,0.04)'
-                    }}>
-                        <h2 style={{ marginTop: 0, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.4rem', color: '#0f172a' }}>
-                            <FiFileText style={{ color: '#4f46e5' }} /> Chi tiết bài làm
-                        </h2>
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                            gap: '1.5rem'
-                        }}>
-                            <div>
-                                <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600 }}>Tên bài quiz</div>
-                                <div style={{ fontSize: '1.1rem', fontWeight: '800', marginTop: '0.5rem', color: '#0f172a' }}>
-                                    {attempt.quiz_title || 'Quiz'}
-                                </div>
-                            </div>
-
-                            <div>
-                                <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600 }}>Thời gian làm bài</div>
-                                <div style={{ fontSize: '1.1rem', fontWeight: '800', marginTop: '0.5rem', color: '#0f172a' }}>
-                                    {formatDate(attempt.started_at)}
-                                </div>
-                            </div>
-
-                            <div>
-                                <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600 }}>Trạng thái</div>
-                                <div style={{
-                                    fontSize: '1.1rem',
-                                    fontWeight: '800',
-                                    marginTop: '0.5rem',
-                                    color: '#10b981',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '0.35rem'
-                                }}>
-                                    {attempt.status === 'completed' ? (
-                                        <>
-                                            <FiCheckCircle size={16} /> Hoàn thành
-                                        </>
-                                    ) : attempt.status}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* ACTION BUTTONS */}
-            <section className="stu-quizzes-section" style={{ padding: '0 0 4rem 0' }}>
-                <div className="stu-container">
-                    <div style={{
-                        display: 'flex',
-                        gap: '1rem',
-                        justifyContent: 'center',
-                        flexWrap: 'wrap'
-                    }}>
-                        <button
-                            onClick={() => navigate('/student/history')}
-                            style={{
-                                padding: '12px 30px',
-                                backgroundColor: '#f1f5f9',
-                                color: '#334155',
-                                border: '1px solid #cbd5e1',
-                                borderRadius: '8px',
-                                fontSize: '1rem',
-                                cursor: 'pointer',
-                                fontWeight: '700',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                transition: 'all 0.2s'
+                                background: resultStatus.bgFill 
                             }}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
                         >
-                            <FiPieChart /> Lịch sử làm bài
-                        </button>
-                        <button
-                            onClick={() => navigate('/student/quizzes')}
-                            style={{
-                                padding: '12px 30px',
-                                backgroundColor: '#4f46e5',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                fontSize: '1rem',
-                                cursor: 'pointer',
-                                fontWeight: '700',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                transition: 'all 0.2s',
-                                boxShadow: '0 4px 14px rgba(79, 70, 229, 0.2)'
-                            }}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4338ca'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
+                            {scorePercentage >= 15 && `${scorePercentage.toFixed(0)}%`}
+                        </div>
+                    </div>
+
+                    {/* Encouraging message */}
+                    <p className="stu-result-status-message" style={{ color: resultStatus.color }}>
+                        {resultStatus.message}
+                    </p>
+                </div>
+
+                {/* DETAILS CARD */}
+                <div className="stu-result-details-card">
+                    <h3 className="stu-result-details-title">
+                        <FiFileText style={{ color: '#4f46e5' }} /> Chi tiết lượt làm bài
+                    </h3>
+                    <div className="stu-result-details-grid">
+                        
+                        {/* Quiz Title */}
+                        <div className="stu-result-detail-box">
+                            <div className="stu-result-detail-label">Tên bài thi</div>
+                            <div className="stu-result-detail-value">
+                                {attempt.quiz_title || 'Bài trắc nghiệm'}
+                            </div>
+                        </div>
+
+                        {/* Started Time */}
+                        <div className="stu-result-detail-box">
+                            <div className="stu-result-detail-label">Thời gian bắt đầu</div>
+                            <div className="stu-result-detail-value">
+                                <FiClock style={{ color: '#94a3b8' }} />
+                                {formatDate(attempt.started_at)}
+                            </div>
+                        </div>
+
+                        {/* Status */}
+                        <div className="stu-result-detail-box">
+                            <div className="stu-result-detail-label">Trạng thái</div>
+                            <div className="stu-result-detail-value" style={{ color: '#10b981' }}>
+                                <FiCheckCircle /> 
+                                {attempt.status === 'completed' ? 'Đã nộp bài' : attempt.status}
+                            </div>
+                        </div>
+
+                        {/* Student Account */}
+                        <div className="stu-result-detail-box">
+                            <div className="stu-result-detail-label">Thí sinh</div>
+                            <div className="stu-result-detail-value">
+                                <FiUser style={{ color: '#94a3b8' }} />
+                                {attempt.username || user?.username}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                {/* ACTION BUTTONS */}
+                <div className="stu-result-actions-container">
+                    <div className="stu-result-actions-row">
+                        <Link 
+                            to="/student/history" 
+                            className="stu-btn-action-result stu-btn-action-result-secondary"
+                        >
+                            <FiPieChart /> Xem lịch sử làm bài
+                        </Link>
+                        
+                        <Link 
+                            to="/student/quizzes" 
+                            className="stu-btn-action-result stu-btn-action-result-primary"
                         >
                             <FiBookOpen /> Làm bài quiz khác
-                        </button>
-                        <button
-                            onClick={() => navigate('/student')}
-                            style={{
-                                padding: '12px 30px',
-                                backgroundColor: '#10b981',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                fontSize: '1rem',
-                                cursor: 'pointer',
-                                fontWeight: '700',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                transition: 'all 0.2s',
-                                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.2)'
-                            }}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#059669'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
+                        </Link>
+
+                        <Link 
+                            to="/student" 
+                            className="stu-btn-action-result stu-btn-action-result-success"
                         >
-                            <FiHome /> Trang chủ
-                        </button>
+                            <FiHome /> Quay về Trang chủ
+                        </Link>
                     </div>
                 </div>
-            </section>
+
+            </div>
         </div>
     );
 }

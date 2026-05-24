@@ -195,15 +195,6 @@ const Header = () => {
                     </div>
 
                     <div className="dropdown-section">
-                      {/* Dashboard — trỏ đúng route theo role */}
-                      <Link
-                        to={
-                          user?.role === 'teacher' ? '/teacher' :
-                            user?.role === 'admin' ? '/admin' :
-                              '/student'
-                        }
-                        className="dropdown-item"
-                      />
                       <Link to={`${roleBasePath}/profile`} className="dropdown-item">
                         <FiUser /> Thông tin cá nhân
                       </Link>
@@ -214,9 +205,6 @@ const Header = () => {
                       {/* Student links */}
                       {user?.role === 'student' && (
                         <>
-                          <Link to="/student/profile" className="dropdown-item">
-                            <FiUser /> Thông tin cá nhân
-                          </Link>
                           <Link to="/student/history" className="dropdown-item">
                             <FiPieChart /> Lịch sử hoạt động
                           </Link>

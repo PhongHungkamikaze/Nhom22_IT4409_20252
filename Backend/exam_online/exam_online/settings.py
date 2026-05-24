@@ -14,26 +14,10 @@ from datetime import timedelta
 from pathlib import Path
 from decouple import config
 import os
-import socket
 import dj_database_url
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
 
-def check_redis():
-    try:
-        from urllib.parse import urlparse
-        url = urlparse(REDIS_URL)
-        host = url.hostname or "127.0.0.1"
-        port = url.port or 6379
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(0.2)
-        s.connect((host, port))
-        s.close()
-        return True
-    except Exception:
-        return False
-
-REDIS_RUNNING = check_redis()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -51,7 +35,9 @@ SECRET_KEY = config(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=lambda v: [s.strip() for s in v.split(",")])
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS", default="*", cast=lambda v: [s.strip() for s in v.split(",")]
+)
 
 
 # Application definition
@@ -80,21 +66,14 @@ INSTALLED_APPS = [
 ]
 ASGI_APPLICATION = "exam_online.asgi.application"
 
-if REDIS_RUNNING:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels_redis.core.RedisChannelLayer",
-            "CONFIG": {
-                "hosts": [REDIS_URL],
-            },
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [REDIS_URL],
         },
-    }
-else:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer",
-        },
-    }
+    },
+}
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -237,9 +216,6 @@ CORS_ALLOW_HEADERS = [
 
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
-if not REDIS_RUNNING:
-    CELERY_TASK_ALWAYS_EAGER = True
-    CELERY_TASK_EAGER_PROPAGATES = True
 
 SIMPLE_JWT = {
     # Kéo dài thời gian sống của Access Token (Ví dụ: 60 phút)

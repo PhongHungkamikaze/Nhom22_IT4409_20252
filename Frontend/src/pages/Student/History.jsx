@@ -2,6 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { 
+    FiHome, 
+    FiBookOpen, 
+    FiActivity, 
+    FiAward, 
+    FiCheckCircle, 
+    FiClock, 
+    FiEye, 
+    FiCalendar, 
+    FiFileText 
+} from 'react-icons/fi';
 import './Student.css';
 
 export default function History() {
@@ -42,14 +53,23 @@ export default function History() {
     const getStatusBadge = (status) => {
         switch (status?.toLowerCase()) {
             case 'completed':
-                return { label: '✓ Hoàn thành', color: '#28a745' };
+                return { label: 'Hoàn thành', className: 'is-completed' };
             case 'processing':
-                return { label: '⏳ Đang xử lý', color: '#ffc107' };
+                return { label: 'Đang xử lý', className: 'is-processing' };
             case 'ongoing':
-                return { label: '▶️ Đang làm', color: '#007bff' };
+                return { label: 'Đang làm', className: 'is-ongoing' };
             default:
-                return { label: status || 'Không xác định', color: '#6c757d' };
+                return { label: status || 'Không xác định', className: 'is-unknown' };
         }
+    };
+
+    // Score styling class helper
+    const getScoreClass = (score) => {
+        const numScore = parseFloat(score);
+        if (isNaN(numScore)) return 'stu-score-low';
+        if (numScore >= 8.0) return 'stu-score-high';
+        if (numScore >= 5.0) return 'stu-score-medium';
+        return 'stu-score-low';
     };
 
     // Format date
@@ -67,11 +87,9 @@ export default function History() {
     if (loading) {
         return (
             <div className="student-page">
-                <section className="stu-hero">
-                    <div className="stu-loading">
-                        <div className="stu-spinner"></div>
-                        <p>Đang tải lịch sử làm bài...</p>
-                    </div>
+                <section className="stu-loading">
+                    <div className="stu-spinner"></div>
+                    <p>Đang tải lịch sử làm bài của bạn...</p>
                 </section>
             </div>
         );
@@ -79,141 +97,132 @@ export default function History() {
 
     return (
         <div className="student-page">
-            {/* Header */}
-            <section className="stu-hero">
-                <div className="stu-hero-content">
-                    <div className="stu-hero-text">
-                        <h1>📊 Lịch Sử Làm Bài</h1>
-                        <p>Xem kết quả của tất cả các bài quiz bạn đã làm</p>
+            {/* Header Hero Banner */}
+            <div className="stu-dashboard-header">
+                <div className="stu-container">
+                    <div className="stu-welcome-row">
+                        <div className="stu-welcome-left">
+                            <div className="stu-header-badge">
+                                <FiActivity className="stu-badge-icon" />
+                                Lịch Sử Hoạt Động
+                            </div>
+                            <h1>Lịch sử làm bài của bạn</h1>
+                            <p>Xem lại tất cả kết quả, điểm số và chi tiết các bài kiểm tra trắc nghiệm bạn đã từng làm.</p>
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            {/* Stats Section */}
-            <section className="stu-stats">
+            {/* Stats Dashboard Row */}
+            <section className="stu-stats" style={{ padding: '2rem 0' }}>
                 <div className="stu-container">
                     <div className="stu-stats-grid">
                         <div className="stu-stat-item">
                             <div className="stu-stat-number">{filteredAttempts.length}</div>
                             <div className="stu-stat-label">
-                                {filter === 'all' ? 'Tổng lần làm' : filter === 'completed' ? 'Đã hoàn thành' : 'Đang làm'}
+                                {filter === 'all' ? 'Tổng số lượt làm' : filter === 'completed' ? 'Đã hoàn thành' : 'Đang thực hiện'}
                             </div>
                         </div>
                         <div className="stu-stat-item">
                             <div className="stu-stat-number">
-                                {filteredAttempts.length > 0
+                                {attempts.filter(a => a.status === 'completed').length > 0
                                     ? (
-                                        (filteredAttempts.reduce((sum, a) => sum + (parseFloat(a.score) || 0), 0) / filteredAttempts.length).toFixed(1)
-                                    )
-                                    : '0'}
+                                        (attempts.filter(a => a.status === 'completed').reduce((sum, a) => sum + (parseFloat(a.score) || 0), 0) / attempts.filter(a => a.status === 'completed').length).toFixed(1)
+                                      )
+                                    : '0.0'}
                             </div>
-                            <div className="stu-stat-label">Điểm trung bình</div>
+                            <div className="stu-stat-label">Điểm trung bình tích lũy</div>
                         </div>
                         <div className="stu-stat-item">
                             <div className="stu-stat-number">
-                                {filteredAttempts.filter(a => a.status === 'completed').length}
+                                {attempts.filter(a => a.status === 'completed' && parseFloat(a.score) >= 5.0).length}
                             </div>
-                            <div className="stu-stat-label">Đã nộp bài</div>
+                            <div className="stu-stat-label">Bài đạt yêu cầu (&gt;= 5.0)</div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Filter & Content */}
-            <section className="stu-quizzes-section">
+            {/* Filter & Content Section */}
+            <section className="stu-quizzes-section" style={{ paddingTop: '1.5rem' }}>
                 <div className="stu-container">
-                    {/* Filter Buttons */}
-                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                        {['all', 'completed', 'ongoing'].map(filterOption => (
-                            <button
-                                key={filterOption}
-                                onClick={() => setFilter(filterOption)}
-                                style={{
-                                    padding: '10px 20px',
-                                    backgroundColor: filter === filterOption ? '#007bff' : '#e0e0e0',
-                                    color: filter === filterOption ? 'white' : '#333',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    fontWeight: filter === filterOption ? 'bold' : 'normal'
-                                }}
-                            >
-                                {filterOption === 'all' && '📋 Tất cả'}
-                                {filterOption === 'completed' && '✓ Đã hoàn thành'}
-                                {filterOption === 'ongoing' && '▶️ Đang làm'}
-                            </button>
-                        ))}
+                    
+                    {/* Segmented Controls Filters */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+                        <div className="stu-history-filters-premium">
+                            {['all', 'completed', 'ongoing'].map(filterOption => (
+                                <button
+                                    key={filterOption}
+                                    onClick={() => setFilter(filterOption)}
+                                    className={`stu-filter-btn-premium${filter === filterOption ? ' active' : ''}`}
+                                >
+                                    {filterOption === 'all' && 'Tất cả lượt làm'}
+                                    {filterOption === 'completed' && 'Đã hoàn thành'}
+                                    {filterOption === 'ongoing' && 'Đang làm dở'}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Error Message */}
                     {error && (
-                        <div style={{
-                            padding: '12px 16px',
-                            backgroundColor: '#fee',
-                            color: '#c33',
-                            borderRadius: '8px',
-                            marginBottom: '1rem'
-                        }}>
+                        <div className="stu-alert stu-alert-error">
                             {error}
                         </div>
                     )}
 
-                    {/* Attempts Table/List */}
+                    {/* Attempts Table/List Card */}
                     {filteredAttempts.length === 0 ? (
-                        <div className="stu-empty">
-                            <span className="stu-empty-icon">📭</span>
-                            <p>
+                        <div className="stu-empty" style={{ background: '#ffffff', borderRadius: '20px', padding: '4rem 2rem', border: '1px solid #eef2f6' }}>
+                            <div className="stu-empty-icon-wrap">
+                                <FiFileText size={40} className="stu-empty-icon" />
+                            </div>
+                            <p style={{ fontWeight: 700, fontSize: '1.1rem', color: '#1e293b' }}>
                                 {filter === 'all'
-                                    ? 'Bạn chưa làm bài quiz nào'
+                                    ? 'Bạn chưa từng tham gia làm bài quiz nào.'
                                     : filter === 'completed'
-                                    ? 'Bạn chưa hoàn thành bài quiz nào'
-                                    : 'Không có bài quiz đang làm'}
+                                        ? 'Không có bài quiz nào ở trạng thái đã hoàn thành.'
+                                        : 'Không có bài quiz nào đang thực hiện dở.'}
                             </p>
+                            <Link to="/student/quizzes" className="stu-quiz-start-btn" style={{ marginTop: '1.5rem', display: 'inline-block' }}>
+                                Bắt đầu làm Quiz ngay
+                            </Link>
                         </div>
                     ) : (
-                        <div style={{
-                            backgroundColor: 'white',
-                            borderRadius: '8px',
-                            overflow: 'hidden',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                        }}>
+                        <div className="stu-history-card-premium">
+                            
                             {/* Mobile-friendly list for smaller screens */}
-                            <div style={{ display: 'none' }}>
-                                {filteredAttempts.map((attempt, idx) => {
+                            <div className="stu-history-list-mobile">
+                                {filteredAttempts.map((attempt) => {
                                     const statusBadge = getStatusBadge(attempt.status);
                                     return (
-                                        <div
-                                            key={attempt.id}
-                                            style={{
-                                                padding: '1.5rem',
-                                                borderBottom: idx < filteredAttempts.length - 1 ? '1px solid #eee' : 'none',
-                                                backgroundColor: idx % 2 === 0 ? '#fafafa' : 'white'
-                                            }}
-                                        >
-                                            <div style={{ marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                                                {attempt.quiz_title || attempt.quiz}
-                                            </div>
-                                            <div style={{ color: '#666', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-                                                📅 {formatDate(attempt.started_at)}
-                                            </div>
-                                            <div style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center'
-                                            }}>
-                                                <span style={{
-                                                    padding: '4px 12px',
-                                                    backgroundColor: statusBadge.color,
-                                                    color: 'white',
-                                                    borderRadius: '20px',
-                                                    fontSize: '0.9rem'
-                                                }}>
+                                        <div key={attempt.id} className="stu-history-item-mobile">
+                                            <div className="stu-history-item-mobile-header">
+                                                <div className="stu-history-item-mobile-title">
+                                                    {attempt.quiz_title || attempt.quiz}
+                                                </div>
+                                                <span className={`stu-status-badge ${statusBadge.className}`}>
                                                     {statusBadge.label}
                                                 </span>
-                                                {attempt.status === 'completed' && (
-                                                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#007bff' }}>
-                                                        {attempt.score?.toFixed(1) || 'N/A'} / 10
-                                                    </span>
+                                            </div>
+                                            <div className="stu-history-item-mobile-meta">
+                                                <FiCalendar style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                                                {formatDate(attempt.started_at)}
+                                            </div>
+                                            <div className="stu-history-item-mobile-footer">
+                                                <div>
+                                                    {attempt.status === 'completed' && (
+                                                        <span className={`stu-score-premium ${getScoreClass(attempt.score)}`}>
+                                                            {attempt.score?.toFixed(1) || '0.0'} / 10
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {attempt.status === 'completed' ? (
+                                                    <Link to={`/student/result/${attempt.id}`} className="stu-history-btn-detail">
+                                                        <FiEye /> Kết quả
+                                                    </Link>
+                                                ) : (
+                                                    <span className="is-muted" style={{ fontSize: '0.9rem' }}>Chưa nộp bài</span>
                                                 )}
                                             </div>
                                         </div>
@@ -222,143 +231,88 @@ export default function History() {
                             </div>
 
                             {/* Table for larger screens */}
-                            <table style={{
-                                width: '100%',
-                                borderCollapse: 'collapse',
-                                display: 'block',
-                                overflowX: 'auto'
-                            }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #ddd' }}>
-                                        <th style={{
-                                            padding: '1rem',
-                                            textAlign: 'left',
-                                            fontWeight: 'bold',
-                                            fontSize: '0.95rem'
-                                        }}>
-                                            Bài Quiz
-                                        </th>
-                                        <th style={{
-                                            padding: '1rem',
-                                            textAlign: 'left',
-                                            fontWeight: 'bold',
-                                            fontSize: '0.95rem'
-                                        }}>
-                                            Ngày giờ
-                                        </th>
-                                        <th style={{
-                                            padding: '1rem',
-                                            textAlign: 'center',
-                                            fontWeight: 'bold',
-                                            fontSize: '0.95rem'
-                                        }}>
-                                            Trạng thái
-                                        </th>
-                                        <th style={{
-                                            padding: '1rem',
-                                            textAlign: 'center',
-                                            fontWeight: 'bold',
-                                            fontSize: '0.95rem'
-                                        }}>
-                                            Điểm
-                                        </th>
-                                        <th style={{
-                                            padding: '1rem',
-                                            textAlign: 'center',
-                                            fontWeight: 'bold',
-                                            fontSize: '0.95rem'
-                                        }}>
-                                            Chi tiết
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredAttempts.map((attempt, idx) => {
-                                        const statusBadge = getStatusBadge(attempt.status);
-                                        return (
-                                            <tr
-                                                key={attempt.id}
-                                                style={{
-                                                    borderBottom: '1px solid #eee',
-                                                    backgroundColor: idx % 2 === 0 ? '#fafafa' : 'white',
-                                                    transition: 'background-color 0.2s'
-                                                }}
-                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
-                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = idx % 2 === 0 ? '#fafafa' : 'white'}
-                                            >
-                                                <td style={{ padding: '1rem', fontWeight: 'bold' }}>
-                                                    {attempt.quiz_title || attempt.quiz}
-                                                </td>
-                                                <td style={{ padding: '1rem', fontSize: '0.9rem', color: '#666' }}>
-                                                    {formatDate(attempt.started_at)}
-                                                </td>
-                                                <td style={{
-                                                    padding: '1rem',
-                                                    textAlign: 'center'
-                                                }}>
-                                                    <span style={{
-                                                        padding: '6px 12px',
-                                                        backgroundColor: statusBadge.color,
-                                                        color: 'white',
-                                                        borderRadius: '20px',
-                                                        fontSize: '0.85rem',
-                                                        display: 'inline-block'
-                                                    }}>
-                                                        {statusBadge.label}
-                                                    </span>
-                                                </td>
-                                                <td style={{
-                                                    padding: '1rem',
-                                                    textAlign: 'center',
-                                                    fontSize: '1.1rem',
-                                                    fontWeight: 'bold',
-                                                    color: attempt.status === 'completed' ? '#007bff' : '#999'
-                                                }}>
-                                                    {attempt.status === 'completed' ? `${(attempt.score || 0).toFixed(1)} / 10` : '-'}
-                                                </td>
-                                                <td style={{
-                                                    padding: '1rem',
-                                                    textAlign: 'center'
-                                                }}>
-                                                    {attempt.status === 'completed' ? (
-                                                        <Link
-                                                            to={`/student/result/${attempt.id}`}
-                                                            style={{
-                                                                color: '#007bff',
-                                                                textDecoration: 'none',
-                                                                fontWeight: 'bold',
-                                                                cursor: 'pointer'
-                                                            }}
-                                                        >
-                                                            Xem kết quả →
-                                                        </Link>
-                                                    ) : (
-                                                        <span style={{ color: '#999' }}>-</span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                            <div className="stu-history-table-wrap">
+                                <table className="stu-history-table-premium">
+                                    <thead>
+                                        <tr>
+                                            <th>Bài Kiểm Tra</th>
+                                            <th>Thời Gian Bắt Đầu</th>
+                                            <th style={{ textAlign: 'center' }}>Trạng Thái</th>
+                                            <th style={{ textAlign: 'center' }}>Điểm Số</th>
+                                            <th style={{ textAlign: 'center' }}>Hành Động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredAttempts.map((attempt) => {
+                                            const statusBadge = getStatusBadge(attempt.status);
+                                            return (
+                                                <tr key={attempt.id}>
+                                                    <td style={{ fontWeight: 700, color: '#0f172a' }}>
+                                                        {attempt.quiz_title || attempt.quiz}
+                                                    </td>
+                                                    <td style={{ color: '#64748b' }}>
+                                                        {formatDate(attempt.started_at)}
+                                                    </td>
+                                                    <td style={{ textAlign: 'center' }}>
+                                                        <span className={`stu-status-badge ${statusBadge.className}`}>
+                                                            {statusBadge.label}
+                                                        </span>
+                                                    </td>
+                                                    <td style={{ textAlign: 'center' }}>
+                                                        {attempt.status === 'completed' ? (
+                                                            <span className={`stu-score-premium ${getScoreClass(attempt.score)}`}>
+                                                                {attempt.score !== undefined ? (Number(attempt.score).toFixed(1)) : '0.0'} / 10
+                                                            </span>
+                                                        ) : (
+                                                            <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>-</span>
+                                                        )}
+                                                    </td>
+                                                    <td style={{ textAlign: 'center' }}>
+                                                        {attempt.status === 'completed' ? (
+                                                            <Link
+                                                                to={`/student/result/${attempt.id}`}
+                                                                className="stu-history-btn-detail"
+                                                            >
+                                                                <FiEye /> Xem kết quả
+                                                            </Link>
+                                                        ) : (
+                                                            <Link
+                                                                to={`/student/quizzes/${attempt.quiz}/take`}
+                                                                className="stu-history-btn-detail"
+                                                                style={{ color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.08)' }}
+                                                            >
+                                                                <FiClock /> Làm tiếp
+                                                            </Link>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
                 </div>
             </section>
 
-            {/* Quick Navigation */}
+            {/* Quick Navigation Footer */}
             <section className="stu-nav-section">
                 <div className="stu-container">
                     <div className="stu-nav-grid">
                         <Link to="/student" className="stu-nav-card">
-                            <div className="stu-nav-icon">🏠</div>
+                            <div className="stu-nav-icon-wrap">
+                                <FiHome className="stu-nav-icon" />
+                            </div>
                             <h3>Trang chủ</h3>
-                            <p>Quay lại trang chủ</p>
+                            <p>Quay lại bảng điều khiển</p>
                         </Link>
                         <Link to="/student/quizzes" className="stu-nav-card">
-                            <div className="stu-nav-icon">📚</div>
+                            <div className="stu-nav-icon-wrap">
+                                <FiBookOpen className="stu-nav-icon" />
+                            </div>
                             <h3>Danh sách Quiz</h3>
-                            <p>Làm bài quiz mới</p>
+                            <p>Luyện tập làm bài thi mới</p>
                         </Link>
                     </div>
                 </div>

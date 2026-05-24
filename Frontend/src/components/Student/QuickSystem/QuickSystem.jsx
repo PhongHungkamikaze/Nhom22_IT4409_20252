@@ -5,9 +5,9 @@ import './QuickSystem.css';
 export default function QuickSystem() {
     const location = useLocation();
     const navItems = [
-        { to: '/student', icon: '🏠', label: 'Trang chính', exact: true },
-        { to: '/student/quizzes', icon: '📚', label: 'Danh sách Quiz' },
-        { to: '/student/history', icon: '📊', label: 'Lịch sử làm bài' },
+        { to: '/student', icon: '', label: 'Trang chính', exact: true },
+        { to: '/student/quizzes', icon: '', label: 'Danh sách Quiz' },
+        { to: '/student/history', icon: '', label: 'Lịch sử làm bài' },
     ];
 
     const isActive = (item) => {

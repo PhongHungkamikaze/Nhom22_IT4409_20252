@@ -15,12 +15,19 @@ from pathlib import Path
 from decouple import config
 import os
 import socket
+import dj_database_url
+
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
 
 def check_redis():
     try:
+        from urllib.parse import urlparse
+        url = urlparse(REDIS_URL)
+        host = url.hostname or "127.0.0.1"
+        port = url.port or 6379
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(0.2)
-        s.connect(("127.0.0.1", 6379))
+        s.connect((host, port))
         s.close()
         return True
     except Exception:
@@ -36,12 +43,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY", default="django-insecure-zz2&31)t*(vx1!x@ue-e4vash2)gn7)j61m+9&j=1sueca=i)7")
+SECRET_KEY = config(
+    "SECRET_KEY",
+    default="django-insecure-zz2&31)t*(vx1!x@ue-e4vash2)gn7)j61m+9&j=1sueca=i)7",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=lambda v: [s.strip() for s in v.split(",")])
 
 
 # Application definition
@@ -75,7 +85,7 @@ if REDIS_RUNNING:
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
-                "hosts": [("127.0.0.1", 6379)],
+                "hosts": [REDIS_URL],
             },
         },
     }
@@ -134,12 +144,10 @@ WSGI_APPLICATION = "exam_online.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.parse(
+        os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
+    )
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -177,6 +185,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -200,19 +209,18 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # EMAIL_HOST_PASSWORD = "your-app-password"
 
 # URL frontend dùng trong link reset password (đổi khi deploy production)
-FRONTEND_URL = "http://localhost:3000"
+FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React dev server
-    "http://127.0.0.1:3000",
     "http://localhost:5173",  # Vite dev server default port
     "http://127.0.0.1:5173",
+    "https://nhom22-it-4409-20252.vercel.app",
 ]
 
 CORS_ALLOWED_CREDENTIALS = True
 
-CORS_ALLOW_ALL_ORIGINS = False  # Set to True only for development if needed
+CORS_ALLOW_ALL_ORIGINS = True  # Set to True only for development if needed
 
 # Allowed headers for CORS
 CORS_ALLOW_HEADERS = [
@@ -227,10 +235,8 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://127.0.0.1:6379/0")
-CELERY_RESULT_BACKEND = config(
-    "CELERY_RESULT_BACKEND", default="redis://127.0.0.1:6379/0"
-)
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
 if not REDIS_RUNNING:
     CELERY_TASK_ALWAYS_EAGER = True
     CELERY_TASK_EAGER_PROPAGATES = True
@@ -241,7 +247,9 @@ SIMPLE_JWT = {
     # Refresh Token thường để dài hơn (Ví dụ: 7 ngày)
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
-NOTIFICATION_PURGE_AFTER_DAYS = config("NOTIFICATION_PURGE_AFTER_DAYS", default=30, cast=int)
+NOTIFICATION_PURGE_AFTER_DAYS = config(
+    "NOTIFICATION_PURGE_AFTER_DAYS", default=30, cast=int
+)
 
 # AI Configuration
 GEMINI_API_KEY = config("GEMINI_API_KEY", default="")

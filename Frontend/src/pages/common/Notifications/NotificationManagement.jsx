@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import apiService from '../../../services/api';
 import '../../Admin/Admin.css';
+import './NotificationManagement.css';
 import QuickSystem from '../../../components/Admin/QuickSystem/QuickSystem';
 import TeacherQuickSystem from '../../../components/Teacher/QuickSystem/QuickSystem';
+import StudentQuickSystem from '../../../components/Student/QuickSystem/QuickSystem';
 
 const NotificationManagement = ({ role }) => {
     const [notifications, setNotifications] = useState([]);
@@ -97,38 +99,41 @@ const NotificationManagement = ({ role }) => {
         }
     };
 
-    const containerClass = role === 'admin' ? 'admin-container' : 'admin-container';
-    const titleText = role === 'admin' ? 'Quản lý Thông báo (Admin)' : 'Quản lý Thông báo (Giáo viên)';
+    const containerClass = role === 'student' ? 'student-page' : 'admin-container';
+    const titleText = role === 'admin'
+        ? 'Quản lý Thông báo (Admin)'
+        : role === 'teacher'
+            ? 'Quản lý Thông báo (Giáo viên)'
+            : 'Thông báo của bạn';
 
     return (
-        <div className={containerClass}>
-            {role === 'admin' ? <QuickSystem /> : <TeacherQuickSystem />}
+        <div className={`${containerClass} notifications-page`}>
+            {role === 'admin' ? <QuickSystem /> : role === 'teacher' ? <TeacherQuickSystem /> : <StudentQuickSystem />}
             <header className="admin-header">
                 <div>
                     <h1 className="admin-title">{titleText}</h1>
                     <p className="admin-subtitle">Xem và quản lý lịch sử thông báo hệ thống.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div className="notifications-actions">
                     {selectedIds.length > 0 && (
                         <>
                             <button className="primary-btn" onClick={handleMarkAsRead}>
-                                ✓ Đánh dấu đã đọc ({selectedIds.length})
+                                Đánh dấu đã đọc ({selectedIds.length})
                             </button>
-                            <button className="primary-btn" style={{ background: '#ef4444' }} onClick={handleDelete}>
-                                🗑 Xóa ({selectedIds.length})
+                            <button className="primary-btn danger" onClick={handleDelete}>
+                                Xóa ({selectedIds.length})
                             </button>
                         </>
                     )}
-                    <button className="primary-btn" onClick={fetchNotifications} style={{ background: '#6b7280' }}>
-                        🔄 Làm mới
+                    <button className="primary-btn secondary" onClick={fetchNotifications}>
+                        Làm mới
                     </button>
                 </div>
             </header>
 
             <div className="admin-card">
-                <div className="table-controls">
+                <div className="table-controls notifications-toolbar">
                     <div className="search-bar">
-                        <span className="search-icon">🔍</span>
                         <input
                             type="text"
                             placeholder="Tìm kiếm thông báo..."
@@ -208,7 +213,7 @@ const NotificationManagement = ({ role }) => {
                             disabled={page === 1}
                             onClick={() => setPage(p => p - 1)}
                         >
-                            ◀ Trước
+                            Trước
                         </button>
                         <button className="page-btn active">{page}</button>
                         <button
@@ -216,7 +221,7 @@ const NotificationManagement = ({ role }) => {
                             disabled={page === totalPages}
                             onClick={() => setPage(p => p + 1)}
                         >
-                            Sau ▶
+                            Sau
                         </button>
                     </div>
                 </div>

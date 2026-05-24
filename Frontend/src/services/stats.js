@@ -5,9 +5,9 @@ export async function getStats() {
         return await apiClient.request('/stats/');
     } catch (error) {
         return {
-            totalQuizzes: 150,
-            totalUsers: 2500,
-            completedTests: 8750,
+            total_quizzes: 150,
+            total_users: 2500,
+            completed_attempts: 8750,
         };
     }
 }

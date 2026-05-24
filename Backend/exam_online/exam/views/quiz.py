@@ -51,41 +51,6 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     ordering = ["-created_at"]
     filterset_class = QuizFilter
 
-    def perform_create(self, serializer):
-        quiz = serializer.save(author=self.request.user)
-        # Create notification for all admins
-        admin_ids = list(
-            User.objects.filter(role=UserRole.Admin).values_list("id", flat=True)
-        )
-        create_notifications.delay(
-            recipient_ids=admin_ids,
-            title="Bài thi mới",
-            content=f"Giáo viên {self.request.user.username} đã tạo bài thi mới: {quiz.title}",
-        )
-
-    def perform_update(self, serializer):
-        quiz = serializer.save()
-        admin_ids = list(
-            User.objects.filter(role=UserRole.Admin).values_list("id", flat=True)
-        )
-        create_notifications.delay(
-            recipient_ids=admin_ids,
-            title="Cập nhật bài thi",
-            content=f"Người dùng {self.request.user.username} đã cập nhật bài thi: {quiz.title}",
-        )
-
-    def perform_destroy(self, instance):
-        title = instance.title
-        instance.delete()
-        admin_ids = list(
-            User.objects.filter(role=UserRole.Admin).values_list("id", flat=True)
-        )
-        create_notifications.delay(
-            recipient_ids=admin_ids,
-            title="Xóa bài thi",
-            content=f"Người dùng {self.request.user.username} đã xóa bài thi: {title}",
-        )
-
     def get_serializer_class(self):
         if self.action == "start":
             return None
@@ -181,86 +146,101 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
         quiz.save()
         return response.Response({"message": "Quiz published successfully"})
 
-    @action(detail=True, methods=['get'], url_path='performance-stats')
+    @action(detail=True, methods=["get"], url_path="performance-stats")
     def performance_stats(self, request, pk=None):
         quiz = self.get_object()
-        stats = Attempt.objects.filter(quiz=quiz, status='completed').aggregate(
-            average_score=Avg('score'),
-            highest_score=Max('score'),
-            lowest_score=Min('score'),
-            total_attempts=Count('id')
+        stats = Attempt.objects.filter(quiz=quiz, status="completed").aggregate(
+            average_score=Avg("score"),
+            highest_score=Max("score"),
+            lowest_score=Min("score"),
+            total_attempts=Count("id"),
         )
-        return response.Response({
-            "quiz_id": quiz.id,
-            "quiz_title": quiz.title,
-            "stats": stats
-        })
+        return response.Response(
+            {"quiz_id": quiz.id, "quiz_title": quiz.title, "stats": stats}
+        )
 
-    @action(detail=True, methods=['get'], url_path='question-analysis')
+    @action(detail=True, methods=["get"], url_path="question-analysis")
     def question_analysis(self, request, pk=None):
         quiz = self.get_object()
-        completed_attempts = Attempt.objects.filter(quiz=quiz, status='completed')
+        completed_attempts = Attempt.objects.filter(quiz=quiz, status="completed")
         total_attempts = completed_attempts.count()
 
         if total_attempts == 0:
-            return response.Response({"message": "Chưa có dữ liệu lượt thi để phân tích."}, status=status.HTTP_200_OK)
+            return response.Response(
+                {"message": "Chưa có dữ liệu lượt thi để phân tích."},
+                status=status.HTTP_200_OK,
+            )
 
         hard_questions = []
-        questions = quiz.questions.all().prefetch_related('choices')
-        
+        questions = quiz.questions.all().prefetch_related("choices")
+
         for question in questions:
-            answers = Answer.objects.filter(attempt__in=completed_attempts, question=question).prefetch_related('selected_choices')
+            answers = Answer.objects.filter(
+                attempt__in=completed_attempts, question=question
+            ).prefetch_related("selected_choices")
             total_answers = answers.count()
-            
+
             if total_answers == 0:
                 continue
 
-            correct_choice_ids = set(question.choices.filter(is_correct=True).values_list('id', flat=True))
+            correct_choice_ids = set(
+                question.choices.filter(is_correct=True).values_list("id", flat=True)
+            )
             wrong_count = 0
-            
+
             for answer in answers:
-                selected_ids = set(answer.selected_choices.values_list('id', flat=True))
+                selected_ids = set(answer.selected_choices.values_list("id", flat=True))
                 if selected_ids != correct_choice_ids:
                     wrong_count += 1
-            
+
             error_rate = (wrong_count / total_answers) * 100
-            
+
             if error_rate > 70:
-                hard_questions.append({
-                    "question_id": question.id,
-                    "content": question.content[:100] + '...',
-                    "error_rate": round(error_rate, 2),
-                    "total_answers": total_answers,
-                    "wrong_count": wrong_count,
-                    "suggestion": "Xem xét viết lại câu hỏi hoặc giảm độ khó của các choices."
-                })
+                hard_questions.append(
+                    {
+                        "question_id": question.id,
+                        "content": question.content[:100] + "...",
+                        "error_rate": round(error_rate, 2),
+                        "total_answers": total_answers,
+                        "wrong_count": wrong_count,
+                        "suggestion": "Xem xét viết lại câu hỏi hoặc giảm độ khó của các choices.",
+                    }
+                )
 
-        return response.Response({
-            "quiz_id": quiz.id,
-            "analyzed_questions_count": questions.count(),
-            "hard_questions": hard_questions
-        })
+        return response.Response(
+            {
+                "quiz_id": quiz.id,
+                "analyzed_questions_count": questions.count(),
+                "hard_questions": hard_questions,
+            }
+        )
 
-    @action(detail=True, methods=['get'], url_path='export-results')
+    @action(detail=True, methods=["get"], url_path="export-results")
     def export_results(self, request, pk=None):
         quiz = self.get_object()
-        attempts = Attempt.objects.filter(quiz=quiz, status='completed').select_related('user')
-        
+        attempts = Attempt.objects.filter(quiz=quiz, status="completed").select_related(
+            "user"
+        )
+
         data = []
         for index, attempt in enumerate(attempts, 1):
-            data.append({
-                "STT": index,
-                "Họ & Tên": attempt.user.get_full_name() or attempt.user.username,
-                "Email": attempt.user.email,
-                "Điểm Số": attempt.score,
-                "Thời gian nộp": attempt.updated_at.strftime("%H:%M:%S %d/%m/%Y")
-            })
-            
+            data.append(
+                {
+                    "STT": index,
+                    "Họ & Tên": attempt.user.get_full_name() or attempt.user.username,
+                    "Email": attempt.user.email,
+                    "Điểm Số": attempt.score,
+                    "Thời gian nộp": attempt.updated_at.strftime("%H:%M:%S %d/%m/%Y"),
+                }
+            )
+
         df = pd.DataFrame(data)
-        res = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        
+        res = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
         filename = f"Ket_qua_thi_{quiz.id}_{datetime.now().strftime('%Y%m%d')}.xlsx"
-        res['Content-Disposition'] = f'attachment; filename="{filename}"'
-        
-        df.to_excel(res, index=False, engine='openpyxl')
+        res["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        df.to_excel(res, index=False, engine="openpyxl")
         return res

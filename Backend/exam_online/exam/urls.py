@@ -14,6 +14,7 @@ from .views import (
     UserViewSet,
     SubjectViewSet,
     NotificationViewSet,
+    StatsView,
 )
 
 router = DefaultRouter()
@@ -26,6 +27,7 @@ router.register(r"subjects", SubjectViewSet)
 router.register(r"notification", NotificationViewSet, basename="notification")
 urlpatterns = [
     path("", include(router.urls)),
+    path("stats/", StatsView.as_view(), name="stats"),
     path("auth/register/", RegisterView.as_view(), name="register"),
     path("auth/login/", LoginView.as_view(), name="login"),
     path("auth/profile/", UserProfileView.as_view(), name="user-profile"),

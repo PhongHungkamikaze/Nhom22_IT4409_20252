@@ -2,6 +2,21 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import apiService from '../../services/api';
+import { toast } from 'react-hot-toast';
+import { 
+    FiLock, 
+    FiSliders, 
+    FiUser, 
+    FiKey, 
+    FiSettings, 
+    FiLogOut, 
+    FiTrash2, 
+    FiInfo, 
+    FiAlertTriangle,
+    FiBell,
+    FiGlobe,
+    FiSun
+} from 'react-icons/fi';
 import './Student.css';
 
 export default function Settings() {
@@ -15,15 +30,13 @@ export default function Settings() {
         confirmPassword: '',
     });
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
     const [preferences, setPreferences] = useState({
         theme: localStorage.getItem('theme') || 'light',
         notifications: localStorage.getItem('notifications') !== 'false',
         language: localStorage.getItem('language') || 'vi',
     });
 
-    // Handle password change
+    // Handle password change inputs
     const handlePasswordChange = (e) => {
         const { name, value } = e.target;
         setPasswordData(prev => ({
@@ -35,26 +48,40 @@ export default function Settings() {
     // UPDATE: Change password
     const handleChangePassword = async (e) => {
         e.preventDefault();
-        
+
+        if (!passwordData.oldPassword) {
+            toast.error('Vui lòng nhập mật khẩu hiện tại');
+            return;
+        }
+
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            setError('Mật khẩu mới không khớp');
+            toast.error('Xác nhận mật khẩu mới không trùng khớp');
             return;
         }
 
         if (passwordData.newPassword.length < 6) {
-            setError('Mật khẩu phải có ít nhất 6 ký tự');
+            toast.error('Mật khẩu mới phải có ít nhất 6 ký tự');
             return;
         }
 
         try {
             setLoading(true);
-            await apiService.changePassword(passwordData.oldPassword, passwordData.newPassword);
-            setSuccess('✓ Đổi mật khẩu thành công!');
+            await apiService.changePassword(
+                passwordData.oldPassword,
+                passwordData.newPassword,
+                passwordData.confirmPassword
+            );
+            toast.success('Đổi mật khẩu thành công!');
             setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
-            setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error('Failed to change password:', err);
-            setError('Lỗi khi đổi mật khẩu. Kiểm tra mật khẩu cũ và thử lại.');
+            const fieldMessage =
+                err?.data?.old_password?.[0] ||
+                err?.data?.new_password?.[0] ||
+                err?.data?.confirm_password?.[0];
+            const detailMessage = err?.data?.detail;
+            const fallbackMessage = 'Mật khẩu cũ không chính xác. Vui lòng kiểm tra lại.';
+            toast.error(fieldMessage || detailMessage || fallbackMessage);
         } finally {
             setLoading(false);
         }
@@ -64,389 +91,292 @@ export default function Settings() {
     const handlePreferenceChange = (key, value) => {
         const newPrefs = { ...preferences, [key]: value };
         setPreferences(newPrefs);
-        
+
         // Save to localStorage
         if (key === 'theme') localStorage.setItem('theme', value);
         if (key === 'notifications') localStorage.setItem('notifications', value);
         if (key === 'language') localStorage.setItem('language', value);
-        
-        setSuccess(`✓ Cập nhật ${key} thành công!`);
-        setTimeout(() => setSuccess(null), 2000);
+
+        const configName = key === 'theme' ? 'giao diện' : key === 'language' ? 'ngôn ngữ' : 'thông báo';
+        toast.success(`Cập nhật cài đặt ${configName} thành công!`);
     };
 
     return (
         <div className="student-page">
-            {/* Hero */}
-            <section className="stu-hero">
-                <div className="stu-hero-content">
-                    <div className="stu-hero-text">
-                        <h1>⚙️ Cài Đặt</h1>
-                        <p>Quản lý các cài đặt tài khoản của bạn</p>
+            {/* Hero Header */}
+            <div className="stu-dashboard-header">
+                <div className="stu-container">
+                    <div className="stu-welcome-row">
+                        <div className="stu-welcome-left">
+                            <div className="stu-header-badge">
+                                <FiSettings className="stu-badge-icon" />
+                                Cài Đặt Hệ Thống
+                            </div>
+                            <h1>Cấu hình tài khoản</h1>
+                            <p>Thay đổi tùy chọn bảo mật, giao diện và thông báo theo sở thích của bạn.</p>
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            {/* Settings Content */}
+            {/* Main Settings Section */}
             <section className="stu-quizzes-section">
                 <div className="stu-container">
-                    <div style={{
-                        maxWidth: '900px',
-                        margin: '0 auto',
-                        display: 'grid',
-                        gridTemplateColumns: '250px 1fr',
-                        gap: '2rem'
-                    }}>
+                    <div className="stu-settings-grid" style={{ marginTop: '-3rem', position: 'relative', zIndex: 10 }}>
+                        
                         {/* Sidebar Tabs */}
-                        <div style={{
-                            backgroundColor: 'white',
-                            borderRadius: '8px',
-                            padding: '1rem',
-                            height: 'fit-content',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                        }}>
-                            <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>Menu</h3>
+                        <div className="stu-settings-sidebar-premium">
+                            <h3 className="stu-settings-menu-title" style={{ paddingLeft: '0.8rem', fontSize: '1rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Danh mục
+                            </h3>
                             {[
-                                { id: 'security', label: '🔒 Bảo mật', icon: '🔒' },
-                                { id: 'preferences', label: '⚙️ Tùy chọn', icon: '⚙️' },
-                                { id: 'account', label: '📱 Tài khoản', icon: '📱' },
+                                { id: 'security', label: 'Bảo mật & Mật khẩu', icon: <FiLock /> },
+                                { id: 'preferences', label: 'Tùy chọn hiển thị', icon: <FiSliders /> },
+                                { id: 'account', label: 'Tài khoản cá nhân', icon: <FiUser /> },
                             ].map(tab => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '12px 16px',
-                                        marginBottom: '0.5rem',
-                                        backgroundColor: activeTab === tab.id ? '#007bff' : 'transparent',
-                                        color: activeTab === tab.id ? 'white' : '#333',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                        textAlign: 'left',
-                                        fontWeight: activeTab === tab.id ? 'bold' : 'normal',
-                                        transition: 'all 0.2s'
-                                    }}
+                                    className={`stu-settings-tab-premium${activeTab === tab.id ? ' is-active' : ''}`}
                                 >
+                                    {tab.icon}
                                     {tab.label}
                                 </button>
                             ))}
                         </div>
 
-                        {/* Main Content */}
-                        <div style={{
-                            backgroundColor: 'white',
-                            borderRadius: '8px',
-                            padding: '2rem',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                        }}>
-                            {/* Error Message */}
-                            {error && (
-                                <div style={{
-                                    padding: '12px 16px',
-                                    backgroundColor: '#fee',
-                                    color: '#c33',
-                                    borderRadius: '8px',
-                                    marginBottom: '1rem'
-                                }}>
-                                    {error}
-                                </div>
-                            )}
-
-                            {/* Success Message */}
-                            {success && (
-                                <div style={{
-                                    padding: '12px 16px',
-                                    backgroundColor: '#efe',
-                                    color: '#3c3',
-                                    borderRadius: '8px',
-                                    marginBottom: '1rem'
-                                }}>
-                                    {success}
-                                </div>
-                            )}
-
-                            {/* Security Tab */}
+                        {/* Main Settings Content Panel */}
+                        <div className="stu-settings-panel-premium">
+                            
+                            {/* SECURITY TAB */}
                             {activeTab === 'security' && (
-                                <div>
-                                    <h2 style={{ marginTop: 0 }}>🔒 Bảo Mật</h2>
-                                    <form onSubmit={handleChangePassword}>
+                                <div className="stu-settings-section">
+                                    <h2 className="stu-settings-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <FiLock style={{ color: '#4f46e5' }} /> Bảo mật tài khoản
+                                    </h2>
+                                    <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '2rem' }}>
+                                        Đổi mật khẩu định kỳ để bảo vệ tài khoản và kết quả làm bài thi trắc nghiệm của bạn.
+                                    </p>
+
+                                    <form onSubmit={handleChangePassword} className="stu-profile-form">
                                         {/* Old Password */}
-                                        <div style={{ marginBottom: '1.5rem' }}>
-                                            <label style={{
-                                                display: 'block',
-                                                fontWeight: 'bold',
-                                                marginBottom: '0.5rem',
-                                                color: '#333'
-                                            }}>
-                                                Mật khẩu hiện tại
+                                        <div className="stu-form-group stu-form-full-width">
+                                            <label className="stu-field-label">
+                                                <FiKey /> Mật khẩu hiện tại
                                             </label>
-                                            <input
-                                                type="password"
-                                                name="oldPassword"
-                                                value={passwordData.oldPassword}
-                                                onChange={handlePasswordChange}
-                                                placeholder="Nhập mật khẩu hiện tại"
-                                                style={{
-                                                    width: '100%',
-                                                    padding: '10px 12px',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #ddd',
-                                                    fontFamily: 'inherit',
-                                                    boxSizing: 'border-box'
-                                                }}
-                                            />
+                                            <div className="stu-input-wrapper">
+                                                <input
+                                                    type="password"
+                                                    name="oldPassword"
+                                                    value={passwordData.oldPassword}
+                                                    onChange={handlePasswordChange}
+                                                    placeholder="Nhập mật khẩu đang dùng"
+                                                    className="stu-input-with-icon"
+                                                    required
+                                                />
+                                                <FiLock className="stu-input-icon" />
+                                            </div>
                                         </div>
 
                                         {/* New Password */}
-                                        <div style={{ marginBottom: '1.5rem' }}>
-                                            <label style={{
-                                                display: 'block',
-                                                fontWeight: 'bold',
-                                                marginBottom: '0.5rem',
-                                                color: '#333'
-                                            }}>
+                                        <div className="stu-form-group">
+                                            <label className="stu-field-label">
                                                 Mật khẩu mới
                                             </label>
-                                            <input
-                                                type="password"
-                                                name="newPassword"
-                                                value={passwordData.newPassword}
-                                                onChange={handlePasswordChange}
-                                                placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
-                                                style={{
-                                                    width: '100%',
-                                                    padding: '10px 12px',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #ddd',
-                                                    fontFamily: 'inherit',
-                                                    boxSizing: 'border-box'
-                                                }}
-                                            />
+                                            <div className="stu-input-wrapper">
+                                                <input
+                                                    type="password"
+                                                    name="newPassword"
+                                                    value={passwordData.newPassword}
+                                                    onChange={handlePasswordChange}
+                                                    placeholder="Tối thiểu 6 ký tự"
+                                                    className="stu-input-with-icon"
+                                                    required
+                                                />
+                                                <FiLock className="stu-input-icon" />
+                                            </div>
                                         </div>
 
                                         {/* Confirm Password */}
-                                        <div style={{ marginBottom: '2rem' }}>
-                                            <label style={{
-                                                display: 'block',
-                                                fontWeight: 'bold',
-                                                marginBottom: '0.5rem',
-                                                color: '#333'
-                                            }}>
+                                        <div className="stu-form-group">
+                                            <label className="stu-field-label">
                                                 Xác nhận mật khẩu mới
                                             </label>
-                                            <input
-                                                type="password"
-                                                name="confirmPassword"
-                                                value={passwordData.confirmPassword}
-                                                onChange={handlePasswordChange}
-                                                placeholder="Nhập lại mật khẩu mới"
-                                                style={{
-                                                    width: '100%',
-                                                    padding: '10px 12px',
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #ddd',
-                                                    fontFamily: 'inherit',
-                                                    boxSizing: 'border-box'
-                                                }}
-                                            />
+                                            <div className="stu-input-wrapper">
+                                                <input
+                                                    type="password"
+                                                    name="confirmPassword"
+                                                    value={passwordData.confirmPassword}
+                                                    onChange={handlePasswordChange}
+                                                    placeholder="Nhập lại mật khẩu mới"
+                                                    className="stu-input-with-icon"
+                                                    required
+                                                />
+                                                <FiLock className="stu-input-icon" />
+                                            </div>
                                         </div>
 
-                                        <button
-                                            type="submit"
-                                            disabled={loading}
-                                            style={{
-                                                padding: '10px 30px',
-                                                backgroundColor: loading ? '#ccc' : '#28a745',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                cursor: loading ? 'not-allowed' : 'pointer',
-                                                fontWeight: 'bold'
-                                            }}
-                                        >
-                                            {loading ? '⏳ Đang cập nhật...' : '✓ Đổi mật khẩu'}
-                                        </button>
+                                        {/* Submit Action */}
+                                        <div className="stu-form-actions-premium" style={{ width: '100%' }}>
+                                            <button
+                                                type="submit"
+                                                disabled={loading}
+                                                className="stu-btn-save-premium"
+                                            >
+                                                {loading ? (
+                                                    <>
+                                                        <span className="stu-loading-spinner-btn"></span>
+                                                        Đang cập nhật...
+                                                    </>
+                                                ) : (
+                                                    'Cập nhật mật khẩu'
+                                                )}
+                                            </button>
+                                        </div>
                                     </form>
                                 </div>
                             )}
 
-                            {/* Preferences Tab */}
+                            {/* PREFERENCES TAB */}
                             {activeTab === 'preferences' && (
-                                <div>
-                                    <h2 style={{ marginTop: 0 }}>⚙️ Tùy Chọn</h2>
+                                <div className="stu-settings-section">
+                                    <h2 className="stu-settings-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <FiSliders style={{ color: '#4f46e5' }} /> Tùy chọn hiển thị
+                                    </h2>
+                                    <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '2rem' }}>
+                                        Cấu hình giao diện, ngôn ngữ hiển thị và cài đặt gửi thông báo của hệ thống.
+                                    </p>
 
-                                    {/* Theme */}
-                                    <div style={{ marginBottom: '2rem' }}>
-                                        <label style={{
-                                            display: 'block',
-                                            fontWeight: 'bold',
-                                            marginBottom: '0.5rem',
-                                            color: '#333'
-                                        }}>
-                                            🎨 Chủ đề
-                                        </label>
-                                        <select
-                                            value={preferences.theme}
-                                            onChange={(e) => handlePreferenceChange('theme', e.target.value)}
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderRadius: '6px',
-                                                border: '1px solid #ddd',
-                                                fontFamily: 'inherit',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            <option value="light">☀️ Sáng</option>
-                                            <option value="dark">🌙 Tối</option>
-                                            <option value="auto">🔄 Tự động</option>
-                                        </select>
-                                    </div>
+                                    <div className="stu-profile-form">
+                                        {/* Theme preference */}
+                                        <div className="stu-form-group stu-form-full-width">
+                                            <label className="stu-field-label">
+                                                <FiSun /> Giao diện hệ thống
+                                            </label>
+                                            <select
+                                                value={preferences.theme}
+                                                onChange={(e) => handlePreferenceChange('theme', e.target.value)}
+                                                className="stu-settings-select"
+                                                style={{ padding: '0.75rem 1rem', borderRadius: '10px', width: '100%', maxWidth: '100%', border: '1.5px solid #cbd5e1', fontWeight: 500 }}
+                                            >
+                                                <option value="light">Chế độ Sáng (Light Mode)</option>
+                                                <option value="dark">Chế độ Tối (Dark Mode)</option>
+                                                <option value="auto">Tự động (Theo hệ điều hành)</option>
+                                            </select>
+                                        </div>
 
-                                    {/* Language */}
-                                    <div style={{ marginBottom: '2rem' }}>
-                                        <label style={{
-                                            display: 'block',
-                                            fontWeight: 'bold',
-                                            marginBottom: '0.5rem',
-                                            color: '#333'
-                                        }}>
-                                            🌐 Ngôn ngữ
-                                        </label>
-                                        <select
-                                            value={preferences.language}
-                                            onChange={(e) => handlePreferenceChange('language', e.target.value)}
-                                            style={{
-                                                padding: '10px 12px',
-                                                borderRadius: '6px',
-                                                border: '1px solid #ddd',
-                                                fontFamily: 'inherit',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            <option value="vi">Tiếng Việt</option>
-                                            <option value="en">English</option>
-                                        </select>
-                                    </div>
+                                        {/* Language preference */}
+                                        <div className="stu-form-group stu-form-full-width">
+                                            <label className="stu-field-label">
+                                                <FiGlobe /> Ngôn ngữ chính
+                                            </label>
+                                            <select
+                                                value={preferences.language}
+                                                onChange={(e) => handlePreferenceChange('language', e.target.value)}
+                                                className="stu-settings-select"
+                                                style={{ padding: '0.75rem 1rem', borderRadius: '10px', width: '100%', maxWidth: '100%', border: '1.5px solid #cbd5e1', fontWeight: 500 }}
+                                            >
+                                                <option value="vi">Tiếng Việt (Vietnamese)</option>
+                                                <option value="en">Tiếng Anh (English)</option>
+                                            </select>
+                                        </div>
 
-                                    {/* Notifications */}
-                                    <div style={{ marginBottom: '2rem' }}>
-                                        <label style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            cursor: 'pointer'
-                                        }}>
-                                            <input
-                                                type="checkbox"
-                                                checked={preferences.notifications}
-                                                onChange={(e) => handlePreferenceChange('notifications', e.target.checked)}
-                                                style={{ marginRight: '10px', width: '18px', height: '18px', cursor: 'pointer' }}
-                                            />
-                                            <span style={{ fontWeight: 'bold', color: '#333' }}>
-                                                🔔 Nhận thông báo
-                                            </span>
-                                        </label>
-                                        <p style={{ fontSize: '0.9rem', color: '#999', margin: '0.5rem 0 0 28px' }}>
-                                            Nhập thông báo về kết quả bài quiz
-                                        </p>
+                                        {/* Notifications preference */}
+                                        <div className="stu-form-group stu-form-full-width" style={{ marginTop: '0.5rem' }}>
+                                            <label className="stu-settings-checkbox">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={preferences.notifications}
+                                                    onChange={(e) => handlePreferenceChange('notifications', e.target.checked)}
+                                                    className="stu-settings-checkbox-input"
+                                                />
+                                                <span className="stu-settings-checkbox-text" style={{ fontSize: '0.95rem', fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                    <FiBell /> Bật thông báo hệ thống
+                                                </span>
+                                            </label>
+                                            <p className="stu-settings-help" style={{ color: '#94a3b8', fontSize: '0.85rem', marginLeft: '1.8rem', marginTop: '0.25rem' }}>
+                                                Gửi thông báo đẩy về điểm số ngay sau khi hoàn thành bài thi trắc nghiệm.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Account Tab */}
+                            {/* ACCOUNT TAB (DANGER ZONE) */}
                             {activeTab === 'account' && (
-                                <div>
-                                    <h2 style={{ marginTop: 0 }}>📱 Tài Khoản</h2>
+                                <div className="stu-settings-section">
+                                    <h2 className="stu-settings-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <FiUser style={{ color: '#4f46e5' }} /> Quản lý tài khoản
+                                    </h2>
+                                    <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '2rem' }}>
+                                        Đăng xuất khỏi thiết bị hiện tại hoặc thực hiện xóa tài khoản vĩnh viễn khỏi hệ thống.
+                                    </p>
 
-                                    <div style={{
-                                        padding: '1rem',
-                                        backgroundColor: '#f9f9f9',
-                                        borderRadius: '6px',
-                                        marginBottom: '2rem',
-                                        borderLeft: '4px solid #dc3545'
-                                    }}>
-                                        <h3 style={{ marginTop: 0, color: '#dc3545' }}>⚠️ Khu vực Nguy Hiểm</h3>
-                                        <p style={{ color: '#666', marginBottom: '1rem' }}>
-                                            Những hành động này không thể được hoàn tác
+                                    {/* Danger Zone */}
+                                    <div className="stu-settings-card-premium is-danger">
+                                        <h3 className="stu-settings-card-title-premium is-danger">
+                                            <FiAlertTriangle /> Khu vực quan trọng
+                                        </h3>
+                                        <p style={{ color: '#64748b', fontSize: '0.9rem', margin: '0 0 1.5rem 0', lineHeight: 1.5 }}>
+                                            Đăng xuất sẽ xóa phiên hoạt động hiện tại của bạn. Nếu thực hiện xóa tài khoản, toàn bộ lịch sử điểm số và thông tin cá nhân sẽ biến mất vĩnh viễn và không thể phục hồi.
                                         </p>
 
-                                        <button
-                                            onClick={() => {
-                                                if (window.confirm('Bạn chắc chắn muốn đăng xuất?')) {
-                                                    logout();
-                                                    navigate('/login');
-                                                }
-                                            }}
-                                            style={{
-                                                padding: '10px 30px',
-                                                backgroundColor: '#ffc107',
-                                                color: '#333',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                cursor: 'pointer',
-                                                fontWeight: 'bold',
-                                                marginRight: '1rem'
-                                            }}
-                                        >
-                                            🚪 Đăng xuất
-                                        </button>
+                                        <div className="stu-settings-actions">
+                                            <button
+                                                onClick={() => {
+                                                    if (window.confirm('Bạn chắc chắn muốn đăng xuất khỏi tài khoản này?')) {
+                                                        logout();
+                                                        toast.success('Đăng xuất thành công');
+                                                        navigate('/login');
+                                                    }
+                                                }}
+                                                className="stu-btn-cancel-premium"
+                                                style={{ border: '1.5px solid #cbd5e1', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                                            >
+                                                <FiLogOut /> Đăng xuất tài khoản
+                                            </button>
 
-                                        <button
-                                            onClick={() => {
-                                                if (window.confirm('Bạn chắc chắn muốn xóa tài khoản? Tất cả dữ liệu sẽ bị mất!')) {
-                                                    alert('Chức năng này sẽ được cập nhật. Vui lòng liên hệ support để xóa tài khoản.');
-                                                }
-                                            }}
-                                            style={{
-                                                padding: '10px 30px',
-                                                backgroundColor: '#dc3545',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                cursor: 'pointer',
-                                                fontWeight: 'bold'
-                                            }}
-                                        >
-                                            🗑️ Xóa Tài Khoản
-                                        </button>
+                                            <button
+                                                onClick={() => {
+                                                    if (window.confirm('CẢNH BÁO: Bạn chắc chắn muốn xóa tài khoản này? Toàn bộ kết quả thi của bạn sẽ mất hết!')) {
+                                                        toast.error('Chức năng xóa tài khoản đang được bảo trì. Vui lòng liên hệ Admin để được hỗ trợ.');
+                                                    }
+                                                }}
+                                                className="stu-action-btn stu-settings-danger-btn"
+                                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: 'none' }}
+                                            >
+                                                <FiTrash2 /> Yêu cầu xóa tài khoản
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <div style={{
-                                        padding: '1rem',
-                                        backgroundColor: '#f0f7ff',
-                                        borderRadius: '6px',
-                                        borderLeft: '4px solid #007bff'
-                                    }}>
-                                        <h3 style={{ marginTop: 0, color: '#007bff' }}>ℹ️ Thông Tin Hỗ Trợ</h3>
-                                        <p style={{ color: '#666' }}>
-                                            Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ:
+                                    {/* Help Card */}
+                                    <div className="stu-settings-card-premium is-info">
+                                        <h3 className="stu-settings-card-title-premium is-info">
+                                            <FiInfo /> Liên hệ hỗ trợ kỹ thuật
+                                        </h3>
+                                        <p style={{ color: '#64748b', fontSize: '0.9rem', margin: '0 0 0.75rem 0', lineHeight: 1.5 }}>
+                                            Nếu bạn gặp bất kỳ sự cố nào liên quan đến việc thi cử, lỗi hiển thị hoặc cần cập nhật quyền hạn tài khoản, vui lòng liên hệ:
                                         </p>
-                                        <ul style={{ color: '#666' }}>
-                                            <li>📧 Email: support@quizmaster.com</li>
-                                            <li>📞 Điện thoại: 1900-xxxx</li>
-                                            <li>💬 Chat: Trên trang web</li>
+                                        <ul className="stu-settings-list" style={{ paddingLeft: '1.2rem', color: '#475569', fontSize: '0.9rem' }}>
+                                            <li style={{ marginBottom: '0.4rem' }}>Email hỗ trợ: <strong>support@quizmaster.com</strong></li>
+                                            <li>Hotline hỗ trợ: <strong>1900-8888 (08:00 - 18:00)</strong></li>
                                         </ul>
                                     </div>
                                 </div>
                             )}
 
                             {/* Back Button */}
-                            <div style={{ marginTop: '2rem' }}>
+                            <div className="stu-settings-footer" style={{ borderTop: '1px solid #f1f5f9', paddingTop: '1.5rem', marginTop: '2.5rem' }}>
                                 <button
                                     onClick={() => navigate('/student')}
-                                    style={{
-                                        padding: '10px 30px',
-                                        backgroundColor: '#e0e0e0',
-                                        color: '#333',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                        fontWeight: 'bold'
-                                    }}
+                                    className="stu-btn-cancel-premium"
                                 >
-                                    ← Quay lại
+                                    Quay lại
                                 </button>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </section>

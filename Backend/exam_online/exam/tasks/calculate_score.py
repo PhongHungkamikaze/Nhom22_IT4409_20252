@@ -18,7 +18,7 @@ def calculate_attempt_score(attempt):
     return (
         0
         if total_questions == 0
-        else round((correct_count / total_questions) * 100, 2)
+        else round((correct_count / total_questions) * 10, 2)
     )
 
 @shared_task
@@ -33,7 +33,6 @@ def calculate_score(attempt_id):
     )
 
     attempt.score = calculate_attempt_score(attempt)
-    attempt.refresh_from_db()
     if attempt.status == StatusChoices.Processing:
         attempt.status = StatusChoices.Completed
     attempt.save(update_fields=["score", "status"])

@@ -1,5 +1,15 @@
 // Lightweight API client that handles Authorization header and token refresh
-const API_BASE_URL = 'http://localhost:8000/api';
+// Read base URL from Vite env (set VITE_API_BASE_URL), otherwise use '/api' so dev proxy works
+const rawBase = typeof import.meta !== 'undefined' ? import.meta.env.VITE_API_BASE_URL : undefined;
+const DEFAULT_BASE = rawBase || '/api';
+
+const normalizeBase = (u) => {
+    if (!u) return '';
+    // remove trailing slash(es)
+    return u.replace(/\/+$|\\/u, '').replace(/\\/g, '/');
+};
+
+const API_BASE_URL = normalizeBase(DEFAULT_BASE);
 
 class ApiClient {
     constructor() {
@@ -9,7 +19,9 @@ class ApiClient {
     }
 
     async request(endpoint, options = {}) {
-        let url = `${this.baseURL}${endpoint}`;
+        // ensure endpoint begins with a slash
+        const ep = endpoint && endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+        let url = `${this.baseURL}${ep}`;
 
         if (options.params) {
             const searchParams = new URLSearchParams();
@@ -28,7 +40,8 @@ class ApiClient {
 
         const config = {
             headers: {
-                'Content-Type': 'application/json',
+                // Chỉ set Content-Type nếu body KHÔNG phải FormData
+                ...(!(options.body instanceof FormData) && { 'Content-Type': 'application/json' }),
                 ...options.headers,
             },
             ...options,
@@ -83,7 +96,17 @@ class ApiClient {
                     return await retry();
                 }
 
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                let errorData = null;
+                try {
+                    errorData = errorText ? JSON.parse(errorText) : null;
+                } catch (parseError) {
+                    errorData = errorText || null;
+                }
+                const error = new Error(`HTTP error! status: ${response.status}`);
+                error.status = response.status;
+                error.data = errorData;
+                throw error;
             }
 
             // Some endpoints may return no content (204). Parse safely.
@@ -103,7 +126,8 @@ class ApiClient {
         }
 
         try {
-            const response = await fetch(`${this.baseURL}/auth/token/refresh/`, {
+            const refreshEp = '/auth/token/refresh/';
+            const response = await fetch(`${this.baseURL}${refreshEp}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ refresh: refreshToken }),

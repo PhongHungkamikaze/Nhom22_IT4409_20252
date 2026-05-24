@@ -104,6 +104,15 @@ export default function TeacherQuizDetail() {
                                 <button className="secondary-btn" disabled>Only author can edit</button>
                             )}
                         </div>
+                        
+                        <div className="action-block">
+                            <button
+                                className="primary-btn"
+                                onClick={() => navigate(`/teacher/quizzes/${quiz.id}/stats`)}
+                            >
+                                📊 Thống kê & Phân tích
+                            </button>
+                        </div>
                     </aside>
                 </div>
             </div>

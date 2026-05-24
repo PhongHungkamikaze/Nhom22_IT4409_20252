@@ -2,54 +2,76 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import apiService from '../../services/api';
+import { FiPlay, FiActivity, FiBookOpen, FiHelpCircle, FiClock, FiPieChart } from 'react-icons/fi';
 import './Student.css';
 
 export default function Dashboard() {
     const { getUserDisplayName } = useAuth();
     const [quizzes, setQuizzes] = useState([]);
+    const [stats, setStats] = useState({ completedCount: 0, averageScore: '--' });
     const [loading, setLoading] = useState(true);
 
     const displayName = getUserDisplayName() || 'Bạn';
 
     useEffect(() => {
-        const fetchQuizzes = async () => {
+        const fetchDashboardData = async () => {
             try {
-                const data = await apiService.getQuizzes();
-                const list = Array.isArray(data.results)
-                    ? data.results
-                    : Array.isArray(data) ? data : [];
-                setQuizzes(list);
+                const [quizzesData, attemptsData] = await Promise.all([
+                    apiService.getQuizzes(),
+                    apiService.getAttempts ? apiService.getAttempts() : apiService.request('/attempts/'),
+                ]);
+
+                const quizList = Array.isArray(quizzesData.results)
+                    ? quizzesData.results
+                    : Array.isArray(quizzesData) ? quizzesData : [];
+                setQuizzes(quizList);
+
+                const attemptList = Array.isArray(attemptsData.results)
+                    ? attemptsData.results
+                    : Array.isArray(attemptsData) ? attemptsData : [];
+
+                const completedAttempts = attemptList.filter(a => a.status === 'completed');
+                const completedCount = completedAttempts.length;
+
+                const scores = completedAttempts.map(a => Number(a.score)).filter(s => !isNaN(s));
+                const averageScore = scores.length > 0
+                    ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
+                    : '--';
+
+                setStats({
+                    completedCount,
+                    averageScore
+                });
             } catch (error) {
-                console.error('Failed to fetch quizzes:', error);
+                console.error('Failed to fetch dashboard data:', error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchQuizzes();
+        fetchDashboardData();
     }, []);
 
     return (
         <div className="student-page">
-            {/* ===== Hero Section ===== */}
-            <section className="stu-hero">
-                <div className="stu-hero-content">
-                    <div className="stu-hero-text">
-                        <h1>Xin chào, <span className="stu-highlight">{displayName}</span>! 👋</h1>
-                        <p>Sẵn sàng chinh phục kiến thức mới? Hãy chọn một bài quiz và bắt đầu ngay thôi!</p>
-                        <div className="stu-hero-buttons">
-                            <Link to="/student/quizzes" className="stu-btn-primary">🚀 Làm bài ngay</Link>
-                            <Link to="/student/history" className="stu-btn-secondary">📊 Xem lịch sử</Link>
+            {/* ===== Compact Welcome Header ===== */}
+            <div className="stu-dashboard-header">
+                <div className="stu-container">
+                    <div className="stu-welcome-row">
+                        <div className="stu-welcome-left">
+                            <h1>Xin chào, {displayName}</h1>
+                            <p>Hôm nay bạn muốn học gì? Dưới đây là tổng quan hoạt động và các bài kiểm tra dành cho bạn.</p>
                         </div>
-                    </div>
-                    <div className="stu-hero-visual">
-                        <div className="stu-floating-cards">
-                            <div className="stu-float-card stu-fc-1">📚 Quiz</div>
-                            <div className="stu-float-card stu-fc-2">🎯 Kết quả</div>
-                            <div className="stu-float-card stu-fc-3">⭐ Thành tích</div>
+                        <div className="stu-welcome-actions">
+                            <Link to="/student/quizzes" className="stu-btn-primary-clean">
+                                <FiPlay className="stu-btn-icon" /> Làm bài ngay
+                            </Link>
+                            <Link to="/student/history" className="stu-btn-secondary-clean">
+                                <FiActivity className="stu-btn-icon" /> Lịch sử làm bài
+                            </Link>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
             {/* ===== Stats Section ===== */}
             <section className="stu-stats">
@@ -60,11 +82,11 @@ export default function Dashboard() {
                             <div className="stu-stat-label">Bài quiz khả dụng</div>
                         </div>
                         <div className="stu-stat-item">
-                            <div className="stu-stat-number">0</div>
+                            <div className="stu-stat-number">{stats.completedCount}</div>
                             <div className="stu-stat-label">Đã hoàn thành</div>
                         </div>
                         <div className="stu-stat-item">
-                            <div className="stu-stat-number">--</div>
+                            <div className="stu-stat-number">{stats.averageScore}</div>
                             <div className="stu-stat-label">Điểm trung bình</div>
                         </div>
                     </div>
@@ -86,7 +108,9 @@ export default function Dashboard() {
                         </div>
                     ) : quizzes.length === 0 ? (
                         <div className="stu-empty">
-                            <span className="stu-empty-icon">📭</span>
+                            <div className="stu-empty-icon-wrap">
+                                <FiBookOpen size={40} className="stu-empty-icon" />
+                            </div>
                             <p>Chưa có bài quiz nào. Hãy quay lại sau nhé!</p>
                         </div>
                     ) : (
@@ -105,8 +129,12 @@ export default function Dashboard() {
                                         {quiz.description || 'Hãy thử sức với bài quiz này!'}
                                     </p>
                                     <div className="stu-quiz-info">
-                                        <span>📝 {quiz.questions_count || quiz.question_count || '?'} câu hỏi</span>
-                                        <span>⏱️ {quiz.time_limit || quiz.duration || '30'} phút</span>
+                                        <span>
+                                            <FiHelpCircle className="stu-quiz-info-icon" /> {quiz.questions_count || quiz.question_count || '?'} câu hỏi
+                                        </span>
+                                        <span>
+                                            <FiClock className="stu-quiz-info-icon" /> {quiz.time_limit || quiz.duration || '30'} phút
+                                        </span>
                                     </div>
                                     <div className="stu-quiz-footer">
                                         <span className="stu-quiz-author">
@@ -120,25 +148,6 @@ export default function Dashboard() {
                             ))}
                         </div>
                     )}
-                </div>
-            </section>
-
-            {/* ===== Quick Navigation ===== */}
-            <section className="stu-nav-section">
-                <div className="stu-container">
-                    <h2 className="stu-section-title">Truy cập nhanh</h2>
-                    <div className="stu-nav-grid">
-                        <Link to="/student/quizzes" className="stu-nav-card">
-                            <div className="stu-nav-icon">📚</div>
-                            <h3>Danh sách Quiz</h3>
-                            <p>Xem tất cả bài quiz có sẵn</p>
-                        </Link>
-                        <Link to="/student/history" className="stu-nav-card">
-                            <div className="stu-nav-icon">📊</div>
-                            <h3>Lịch sử làm bài</h3>
-                            <p>Xem kết quả các bài đã làm</p>
-                        </Link>
-                    </div>
                 </div>
             </section>
         </div>

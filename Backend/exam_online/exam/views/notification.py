@@ -1,4 +1,3 @@
-from django.db import models
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema

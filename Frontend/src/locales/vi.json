@@ -1,0 +1,91 @@
+{
+    "home": "Trang chủ",
+    "my_page": "Trang của tôi",
+    "quizzes": "Bài Quiz",
+    "notifications": "Thông báo",
+    "mark_read": "Đánh dấu đã đọc",
+    "of_me": "(của tôi)",
+    "no_notifications": "Bạn chưa có thông báo nào",
+    "welcome": "Xin chào,",
+    "profile": "Thông tin cá nhân",
+    "dashboard": "Bảng điều khiển",
+    "history": "Lịch sử hoạt động",
+    "settings": "Cài đặt",
+    "logout": "Đăng xuất",
+    "login": "Đăng nhập",
+    "get_started": "Bắt đầu ngay",
+    "buttons": {
+        "save": "Lưu",
+        "cancel": "Hủy",
+        "edit": "Sửa",
+        "delete": "Xóa",
+        "create": "Tạo",
+        "submit": "Gửi",
+        "search": "Tìm",
+        "back": "Quay lại",
+        "confirm": "Xác nhận"
+    },
+    "forms": {
+        "username": "Tên đăng nhập",
+        "password": "Mật khẩu",
+        "email": "Email",
+        "full_name": "Họ và tên",
+        "phone": "Số điện thoại",
+        "role": "Vai trò",
+        "title": "Tiêu đề",
+        "description": "Mô tả"
+    },
+    "quiz": {
+        "create_quiz": "Tạo Quiz",
+        "edit_quiz": "Chỉnh sửa Quiz",
+        "questions": "Câu hỏi",
+        "duration": "Thời lượng",
+        "total_marks": "Tổng điểm",
+        "start_quiz": "Bắt đầu Quiz",
+        "submit_quiz": "Nộp Quiz",
+        "time_left": "Thời gian còn lại"
+    },
+    "question": {
+        "single_choice": "Trắc nghiệm 1 đáp án",
+        "multiple_choice": "Trắc nghiệm nhiều đáp án",
+        "true_false": "Đúng / Sai",
+        "points": "Điểm",
+        "add_option": "Thêm lựa chọn",
+        "remove_option": "Xóa lựa chọn"
+    },
+    "attempts": {
+        "attempts": "Attempts",
+        "view_attempt": "Xem attempt",
+        "attempt_score": "Điểm"
+    },
+    "pagination": {
+        "previous": "Trước",
+        "next": "Tiếp",
+        "page": "Trang"
+    },
+    "messages": {
+        "save_success": "Lưu thành công",
+        "save_error": "Lỗi khi lưu",
+        "delete_confirm": "Bạn có chắc muốn xóa không?",
+        "not_found": "Không tìm thấy",
+        "unauthorized": "Bạn không có quyền",
+        "server_error": "Lỗi máy chủ"
+    },
+    "labels": {
+        "created_at": "Tạo lúc",
+        "updated_at": "Cập nhật lúc",
+        "status": "Trạng thái",
+        "action": "Hành động"
+    },
+    "validation": {
+        "required": "Trường này là bắt buộc",
+        "invalid_email": "Địa chỉ email không hợp lệ",
+        "min_length": "Độ dài tối thiểu là {{count}}",
+        "max_length": "Độ dài tối đa là {{count}}"
+    },
+    "filters": {
+        "all": "Tất cả",
+        "published": "Đã xuất bản",
+        "draft": "Bản nháp"
+    }
+}

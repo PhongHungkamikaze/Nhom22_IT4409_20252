@@ -7,6 +7,8 @@ import {
   FiPieChart, FiHome, FiLayout, FiBookOpen,
   FiBell, FiClock, FiCheckCircle, FiInfo
 } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher';
 import './Header.css';
 
 const Header = () => {
@@ -14,6 +16,7 @@ const Header = () => {
   const location = useLocation();
   const { user, isAuthenticated, logout, getUserDisplayName } = useAuth();
   const { notifications, unreadCount, markAllRead, markAsRead } = useNotifications();
+  const { t } = useTranslation();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -86,7 +89,7 @@ const Header = () => {
           <ul className="nav-links">
             <li>
               <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
-                <FiHome className="nav-icon" /> Trang chủ
+                <FiHome className="nav-icon" /> {t('home')}
               </Link>
             </li>
 
@@ -97,7 +100,7 @@ const Header = () => {
                     to={roleBasePath}
                     className={location.pathname === roleBasePath ? 'active' : ''}
                   >
-                    <FiLayout className="nav-icon" /> Trang của tôi
+                    <FiLayout className="nav-icon" /> {t('my_page')}
                   </Link>
                 </li>
                 <li>
@@ -105,7 +108,7 @@ const Header = () => {
                     to={`${roleBasePath}/quizzes`}
                     className={location.pathname.includes('/quizzes') ? 'active' : ''}
                   >
-                    <FiBookOpen className="nav-icon" /> Bài Quiz
+                    <FiBookOpen className="nav-icon" /> {t('quizzes')}
                   </Link>
                 </li>
               </>
@@ -115,6 +118,7 @@ const Header = () => {
 
         {/* Right Section */}
         <div className="header-right">
+          <LanguageSwitcher />
           {isAuthenticated ? (
             <>
               {/* Notification Bell */}
@@ -130,8 +134,8 @@ const Header = () => {
                 {isNotifOpen && (
                   <div className="notif-dropdown animate-in">
                     <div className="notif-header">
-                      <h3>Thông báo</h3>
-                      <button onClick={markAllRead}>Đánh dấu đã đọc</button>
+                      <h3>{t('notifications')}</h3>
+                      <button onClick={markAllRead}>{t('mark_read') || 'Đánh dấu đã đọc'}</button>
                     </div>
 
                     <div className="notif-list">
@@ -161,13 +165,13 @@ const Header = () => {
                       ) : (
                         <div className="notif-empty">
                           <FiBell size={40} />
-                          <p>Bạn chưa có thông báo nào</p>
+                          <p>{t('no_notifications')}</p>
                         </div>
                       )}
                     </div>
 
                     <Link to={`${roleBasePath}/notifications`} className="notif-footer">
-                      Xem tất cả thông báo
+                      {t('notifications')}
                     </Link>
                   </div>
                 )}
@@ -181,7 +185,7 @@ const Header = () => {
                 >
                   <div className="avatar-wrapper"><FiUser /></div>
                   <div className="user-brief">
-                    <span className="welcome-text">Xin chào,</span>
+                    <span className="welcome-text">{t('welcome')}</span>
                     <span className="display-name">{getUserDisplayName()}</span>
                   </div>
                   <FiChevronDown className={`chevron ${isUserMenuOpen ? 'open' : ''}`} />
@@ -196,20 +200,20 @@ const Header = () => {
 
                     <div className="dropdown-section">
                       <Link to={`${roleBasePath}/profile`} className="dropdown-item">
-                        <FiUser /> Thông tin cá nhân
+                        <FiUser /> {t('profile')}
                       </Link>
                       <Link to={roleBasePath} className="dropdown-item">
-                        <FiLayout /> Bảng điều khiển
+                        <FiLayout /> {t('dashboard')}
                       </Link>
 
                       {/* Student links */}
                       {user?.role === 'student' && (
                         <>
                           <Link to="/student/history" className="dropdown-item">
-                            <FiPieChart /> Lịch sử hoạt động
+                            <FiPieChart /> {t('history')}
                           </Link>
                           <Link to="/student/settings" className="dropdown-item">
-                            <FiSettings /> Cài đặt
+                            <FiSettings /> {t('settings')}
                           </Link>
                         </>
                       )}
@@ -218,7 +222,7 @@ const Header = () => {
                       {user?.role === 'teacher' && (
                         <>
                           <Link to="/teacher/quizzes" className="dropdown-item">
-                            <FiBookOpen /> Bài Quiz của tôi
+                            <FiBookOpen /> {t('quizzes')} {t('of_me') || ''}
                           </Link>
                           <Link to="/teacher/questions" className="dropdown-item">
                             <FiPieChart /> Ngân hàng câu hỏi
@@ -244,7 +248,7 @@ const Header = () => {
 
                     <div className="dropdown-footer">
                       <button onClick={handleLogout} className="logout-button">
-                        <FiLogOut /> Đăng xuất
+                        <FiLogOut /> {t('logout')}
                       </button>
                     </div>
                   </div>

@@ -1,0 +1,91 @@
+{
+    "home": "Home",
+    "my_page": "My Page",
+    "quizzes": "Quizzes",
+    "notifications": "Notifications",
+    "mark_read": "Mark all read",
+    "of_me": "(my)",
+    "no_notifications": "You have no notifications",
+    "welcome": "Hello,",
+    "profile": "Profile",
+    "dashboard": "Dashboard",
+    "history": "History",
+    "settings": "Settings",
+    "logout": "Logout",
+    "login": "Login",
+    "get_started": "Get Started",
+    "buttons": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "delete": "Delete",
+        "create": "Create",
+        "submit": "Submit",
+        "search": "Search",
+        "back": "Back",
+        "confirm": "Confirm"
+    },
+    "forms": {
+        "username": "Username",
+        "password": "Password",
+        "email": "Email",
+        "full_name": "Full name",
+        "phone": "Phone",
+        "role": "Role",
+        "title": "Title",
+        "description": "Description"
+    },
+    "quiz": {
+        "create_quiz": "Create Quiz",
+        "edit_quiz": "Edit Quiz",
+        "questions": "Questions",
+        "duration": "Duration",
+        "total_marks": "Total marks",
+        "start_quiz": "Start Quiz",
+        "submit_quiz": "Submit Quiz",
+        "time_left": "Time left"
+    },
+    "question": {
+        "single_choice": "Single choice",
+        "multiple_choice": "Multiple choice",
+        "true_false": "True / False",
+        "points": "Points",
+        "add_option": "Add option",
+        "remove_option": "Remove option"
+    },
+    "attempts": {
+        "attempts": "Attempts",
+        "view_attempt": "View attempt",
+        "attempt_score": "Score"
+    },
+    "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "page": "Page"
+    },
+    "messages": {
+        "save_success": "Saved successfully",
+        "save_error": "Error while saving",
+        "delete_confirm": "Are you sure you want to delete this?",
+        "not_found": "Not found",
+        "unauthorized": "You are not authorized",
+        "server_error": "Server error"
+    },
+    "labels": {
+        "created_at": "Created at",
+        "updated_at": "Updated at",
+        "status": "Status",
+        "action": "Action"
+    },
+    "validation": {
+        "required": "This field is required",
+        "invalid_email": "Invalid email address",
+        "min_length": "Minimum length is {{count}}",
+        "max_length": "Maximum length is {{count}}"
+    },
+    "filters": {
+        "all": "All",
+        "published": "Published",
+        "draft": "Draft"
+    }
+}

@@ -30,3 +30,7 @@ MODEL_RELATIONSHIP_GUIDE.md
 PROJECT_OVERVIEW.md
 RUNNING_GUIDE.md
 HUONG_DAN_CSS_STUDENT.md
+
+# Env files (local)
+.env
+.env.*

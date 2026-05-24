@@ -1,5 +1,15 @@
 // Lightweight API client that handles Authorization header and token refresh
-const API_BASE_URL = 'http://localhost:8000/api';
+// Read base URL from Vite env (set VITE_API_BASE_URL), otherwise use '/api' so dev proxy works
+const rawBase = typeof import.meta !== 'undefined' ? import.meta.env.VITE_API_BASE_URL : undefined;
+const DEFAULT_BASE = rawBase || '/api';
+
+const normalizeBase = (u) => {
+    if (!u) return '';
+    // remove trailing slash(es)
+    return u.replace(/\/+$|\\/u, '').replace(/\\/g, '/');
+};
+
+const API_BASE_URL = normalizeBase(DEFAULT_BASE);
 
 class ApiClient {
     constructor() {
@@ -9,7 +19,9 @@ class ApiClient {
     }
 
     async request(endpoint, options = {}) {
-        let url = `${this.baseURL}${endpoint}`;
+        // ensure endpoint begins with a slash
+        const ep = endpoint && endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+        let url = `${this.baseURL}${ep}`;
 
         if (options.params) {
             const searchParams = new URLSearchParams();
@@ -114,7 +126,8 @@ class ApiClient {
         }
 
         try {
-            const response = await fetch(`${this.baseURL}/auth/token/refresh/`, {
+            const refreshEp = '/auth/token/refresh/';
+            const response = await fetch(`${this.baseURL}${refreshEp}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ refresh: refreshToken }),

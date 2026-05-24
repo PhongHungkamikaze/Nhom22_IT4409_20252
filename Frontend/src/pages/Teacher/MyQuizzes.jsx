@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import './Teacher.css';
+import '../Admin/Admin.css';
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 
 export default function MyQuizzes() {
@@ -14,7 +15,9 @@ export default function MyQuizzes() {
 
     const [ordering, setOrdering] = useState('-created_at');
     const [publishedFilter, setPublishedFilter] = useState('all');
-    const [subjectFilter, setSubjectFilter] = useState('all');
+    const [subjectFilter, setSubjectFilter] = useState([]);
+    const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
+    const subjectDropdownRef = useRef(null);
     const [subjects, setSubjects] = useState([]);
 
     const fetchQuizzes = async () => {
@@ -26,7 +29,7 @@ export default function MyQuizzes() {
             };
             if (publishedFilter === 'published') params.is_published = true;
             if (publishedFilter === 'draft') params.is_published = false;
-            if (subjectFilter !== 'all') params.subject = subjectFilter;
+            if (subjectFilter.length > 0) params.subject__in = subjectFilter.join(',');
 
             const data = await apiService.getQuizzes(params);
             setQuizzes(data.results || []);
@@ -50,12 +53,24 @@ export default function MyQuizzes() {
         fetchSubjects();
     }, []);
 
+    // click‑outside handler for dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target)) {
+                setIsSubjectDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const subjectFilterString = subjectFilter.join(',');
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             fetchQuizzes();
         }, 500);
         return () => clearTimeout(timeoutId);
-    }, [searchTerm, publishedFilter, subjectFilter, ordering]);
+    }, [searchTerm, publishedFilter, subjectFilterString, ordering]);
 
     return (
         <div className="admin-container">
@@ -88,12 +103,57 @@ export default function MyQuizzes() {
                             <option value="published">Đã xuất bản</option>
                             <option value="draft">Bản nháp</option>
                         </select>
-                        <select className="filter-select" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
-                            <option value="all">Tất cả môn học</option>
-                            {subjects.map(s => (
-                                <option key={s.id} value={s.id}>{s.name}</option>
-                            ))}
-                        </select>
+                        <div className={`multi-select-container ${isSubjectDropdownOpen ? 'open' : ''}`} ref={subjectDropdownRef}>
+                        <div
+                            className="filter-select multi-select-trigger"
+                            onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+                        >
+                            <span>
+                                {subjectFilter.length === 0
+                                    ? 'Tất cả môn học'
+                                    : `Môn học (${subjectFilter.length})`}
+                            </span>
+                            <span className="multi-select-arrow">▼</span>
+                        </div>
+                        {isSubjectDropdownOpen && (
+                            <div className="multi-select-dropdown">
+                                <div
+                                    className="multi-select-option"
+                                    onClick={() => setSubjectFilter([])}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={subjectFilter.length === 0}
+                                        onChange={() => {}}
+                                    />
+                                    <span>Tất cả môn học</span>
+                                </div>
+                                {subjects.map(s => {
+                                    const isChecked = subjectFilter.includes(s.id);
+                                    return (
+                                        <div
+                                            key={s.id}
+                                            className="multi-select-option"
+                                            onClick={() => {
+                                                if (isChecked) {
+                                                    setSubjectFilter(subjectFilter.filter(id => id !== s.id));
+                                                } else {
+                                                    setSubjectFilter([...subjectFilter, s.id]);
+                                                }
+                                            }}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={isChecked}
+                                                onChange={() => {}}
+                                            />
+                                            <span>{s.name}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                         <select className="filter-select" value={ordering} onChange={(e) => setOrdering(e.target.value)}>
                             <option value="-created_at">Mới nhất</option>
                             <option value="created_at">Cũ nhất</option>

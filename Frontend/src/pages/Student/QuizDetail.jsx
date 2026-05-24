@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
-import { FiFileText, FiClock, FiUser, FiActivity, FiArrowLeft, FiPlay, FiAlertTriangle } from 'react-icons/fi';
+import { 
+    FiFileText, 
+    FiClock, 
+    FiUser, 
+    FiActivity, 
+    FiArrowLeft, 
+    FiPlay, 
+    FiAlertTriangle, 
+    FiBookOpen, 
+    FiShield 
+} from 'react-icons/fi';
 import './Student.css';
 
 export default function QuizDetail() {
@@ -24,7 +34,7 @@ export default function QuizDetail() {
                 setError(null);
             } catch (err) {
                 console.error('Failed to fetch quiz:', err);
-                const errorMsg = err.message || 'Không thể tải chi tiết bài quiz. Bài quiz có thể chưa được publish.';
+                const errorMsg = err.message || 'Không thể tải chi tiết bài quiz. Bài quiz có thể chưa được công bố (published).';
                 setError(errorMsg);
                 setQuiz(null);
             } finally {
@@ -34,11 +44,23 @@ export default function QuizDetail() {
         fetchQuizDetails();
     }, [id]);
 
+    // Intercept plain placeholder description with professional text
+    const getProfessionalDescription = (desc) => {
+        const lowerDesc = (desc || '').toLowerCase().trim();
+        if (!lowerDesc || 
+            lowerDesc === 'hãy thử sức với bài quiz này!' || 
+            lowerDesc === 'hãy thử sức với bài quiz này đi' ||
+            lowerDesc === 'hãy thử sức với bài quiz này' ||
+            lowerDesc.includes('hãy thử sức')) {
+            return 'Bài thi này được thiết kế nhằm mục đích kiểm tra và đánh giá một cách toàn diện kiến thức tích lũy của bạn đối với nội dung môn học. Vui lòng kiểm tra kỹ các thông số đề thi và đọc rõ quy chế phòng thi bên dưới trước khi chính thức bắt đầu làm bài để đạt kết quả tối ưu nhất.';
+        }
+        return desc;
+    };
+
     // START ATTEMPT: Create new attempt (POST /quizzes/{id}/start)
     const handleStartQuiz = async () => {
         try {
             setStarting(true);
-            // Call the start endpoint
             const response = await apiService.startQuiz(id);
 
             const attemptId = response.attempt?.id;
@@ -46,11 +68,11 @@ export default function QuizDetail() {
                 // Navigate to TakeQuiz page with attempt ID
                 navigate(`/student/take-quiz/${attemptId}`, { state: { quizId: id } });
             } else {
-                setError('Không thể tạo phiên làm bài');
+                setError('Không thể tạo phiên làm bài thi. Vui lòng kiểm tra lại quyền truy cập.');
             }
         } catch (err) {
             console.error('Failed to start quiz:', err);
-            setError(err.message || 'Không thể bắt đầu bài quiz');
+            setError(err.message || 'Không thể bắt đầu thực hiện bài quiz này.');
         } finally {
             setStarting(false);
         }
@@ -64,11 +86,9 @@ export default function QuizDetail() {
     if (loading) {
         return (
             <div className="student-page">
-                <section className="stu-hero">
-                    <div className="stu-loading">
-                        <div className="stu-spinner"></div>
-                        <p>Đang tải chi tiết bài quiz...</p>
-                    </div>
+                <section className="stu-loading">
+                    <div className="stu-spinner"></div>
+                    <p>Đang tải chi tiết đề thi...</p>
                 </section>
             </div>
         );
@@ -77,223 +97,200 @@ export default function QuizDetail() {
     if (error || !quiz) {
         return (
             <div className="student-page">
-                <section className="stu-hero">
+                <div className="stu-dashboard-header">
                     <div className="stu-container">
-                        <div style={{
-                            padding: '2rem',
-                            textAlign: 'center',
-                            backgroundColor: '#fee2e2',
-                            borderRadius: '12px',
-                            border: '1px solid #fecaca',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center'
-                        }}>
-                            <FiAlertTriangle size={48} style={{ color: '#ef4444', marginBottom: '1rem' }} />
-                            <h2 style={{ marginTop: 0, color: '#ef4444' }}>Lỗi</h2>
-                            <p style={{ color: '#475569', marginBottom: '1.5rem' }}>
-                                {error || 'Bài quiz không tồn tại hoặc chưa được publish'}
-                            </p>
-                            <button
-                                onClick={() => {
-                                    console.log('Error page back button clicked'); // DEBUG
-                                    navigate('/student/quizzes');
-                                }}
-                                style={{
-                                    marginTop: '0.5rem',
-                                    padding: '12px 30px',
-                                    backgroundColor: '#4f46e5',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    cursor: 'pointer',
-                                    fontSize: '1rem',
-                                    fontWeight: 'bold',
-                                    pointerEvents: 'auto',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)'
-                                }}
-                            >
-                                <FiArrowLeft /> Quay lại danh sách
-                            </button>
+                        <div className="stu-welcome-row">
+                            <div className="stu-welcome-left">
+                                <h1>Chi Tiết Bài Quiz</h1>
+                                <p>Đã xảy ra lỗi trong quá trình hiển thị thông tin bài kiểm tra.</p>
+                            </div>
                         </div>
                     </div>
-                </section>
+                </div>
+
+                <div className="stu-container" style={{ marginTop: '2rem' }}>
+                    <div style={{
+                        padding: '3rem 2rem',
+                        textAlign: 'center',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '20px',
+                        border: '1px solid #fee2e2',
+                        boxShadow: '0 10px 25px rgba(239, 68, 68, 0.05)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        maxWidth: '600px',
+                        margin: '0 auto'
+                    }}>
+                        <FiAlertTriangle size={64} style={{ color: '#ef4444', marginBottom: '1.5rem' }} />
+                        <h2 style={{ color: '#0f172a', margin: '0 0 0.5rem 0', fontWeight: 800 }}>Không tìm thấy bài Quiz</h2>
+                        <p style={{ color: '#64748b', marginBottom: '2rem', lineHeight: 1.5 }}>
+                            {error || 'Bài quiz này không tồn tại hoặc chưa được giáo viên kích hoạt.'}
+                        </p>
+                        <button
+                            onClick={handleGoBack}
+                            className="stu-btn-save-premium"
+                        >
+                            Quay lại danh sách quiz
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }
 
     return (
         <div className="student-page">
-            {/* Hero Section */}
-            <section className="stu-hero">
+            {/* Header Hero Banner */}
+            <div className="stu-dashboard-header">
                 <div className="stu-container">
-                    <div style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                        backdropFilter: 'blur(10px)',
-                        padding: '2.5rem',
-                        borderRadius: '16px',
-                        border: '1px solid rgba(255, 255, 255, 0.15)'
-                    }}>
-                        <h1 style={{ marginBottom: '1rem', color: '#fff' }}>{quiz.title}</h1>
-                        {quiz.difficulty && (
-                            <span className={`stu-difficulty stu-diff-${(quiz.difficulty || '').toLowerCase()}`} style={{ marginLeft: 0 }}>
-                                {quiz.difficulty}
-                            </span>
-                        )}
-                        <p style={{ marginTop: '1.5rem', color: 'rgba(255, 255, 255, 0.8)', lineHeight: '1.6', fontSize: '1.05rem' }}>
-                            {quiz.description || 'Hãy thử sức với bài quiz này!'}
-                        </p>
+                    <div className="stu-welcome-row">
+                        <div className="stu-welcome-left">
+                            <div className="stu-header-badge">
+                                <FiBookOpen className="stu-badge-icon" />
+                                Chi Tiết Đề Thi
+                            </div>
+                            <h1>{quiz.title}</h1>
+                            <p>Kiểm tra thông số đề thi và đọc kỹ quy chế phòng thi trắc nghiệm trước khi bắt đầu.</p>
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            {/* Quiz Details */}
-            <section className="stu-quizzes-section">
-                <div className="stu-container">
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '1.5rem',
-                        marginBottom: '2.5rem'
-                    }}>
-                        {/* Info Cards */}
-                        <div style={{
-                            padding: '1.5rem',
-                            backgroundColor: '#f8fafc',
-                            borderRadius: '12px',
-                            border: '1px solid #e2e8f0',
-                            textAlign: 'center',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center'
-                        }}>
-                            <FiFileText size={28} style={{ color: '#4f46e5', marginBottom: '0.75rem' }} />
-                            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: '#0f172a' }}>
-                                {quiz.question_count || '0'}
-                            </div>
-                            <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600, marginTop: '0.25rem' }}>Số câu hỏi</div>
+            {/* Main Content Layout */}
+            <div className="stu-quiz-detail-container" style={{ marginTop: '2rem' }}>
+                <div className="stu-quiz-detail-grid">
+                    
+                    {/* Left Column: Title, Description, and Exam Rules */}
+                    <div className="stu-quiz-info-panel">
+                        <div className="stu-quiz-info-header">
+                            <h2 className="stu-quiz-title-main">{quiz.title}</h2>
+                            {quiz.difficulty && (
+                                <span className={`stu-difficulty stu-diff-${(quiz.difficulty || '').toLowerCase()}`} style={{ marginLeft: 0 }}>
+                                    {quiz.difficulty}
+                                </span>
+                            )}
                         </div>
 
-                        <div style={{
-                            padding: '1.5rem',
-                            backgroundColor: '#f8fafc',
-                            borderRadius: '12px',
-                            border: '1px solid #e2e8f0',
-                            textAlign: 'center',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center'
-                        }}>
-                            <FiClock size={28} style={{ color: '#ec4899', marginBottom: '0.75rem' }} />
-                            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: '#0f172a' }}>
-                                {quiz.time_limit || '30'}
-                            </div>
-                            <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600, marginTop: '0.25rem' }}>Phút làm bài</div>
+                        <div>
+                            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: '0 0 0.75rem 0', color: '#1e293b' }}>
+                                Giới thiệu đề thi
+                            </h3>
+                            <p className="stu-quiz-desc-premium">
+                                {getProfessionalDescription(quiz.description)}
+                            </p>
                         </div>
 
-                        <div style={{
-                            padding: '1.5rem',
-                            backgroundColor: '#f8fafc',
-                            borderRadius: '12px',
-                            border: '1px solid #e2e8f0',
-                            textAlign: 'center',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center'
-                        }}>
-                            <FiUser size={28} style={{ color: '#10b981', marginBottom: '0.75rem' }} />
-                            <div style={{ fontSize: '1.1rem', fontWeight: '800', color: '#0f172a', margin: '0.35rem 0' }}>
-                                {quiz.author_name || 'Giáo viên'}
-                            </div>
-                            <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600, marginTop: '0.25rem' }}>Người tạo</div>
+                        {/* Exam Rules Card */}
+                        <div className="stu-quiz-rule-card">
+                            <h4 className="stu-quiz-rule-title">
+                                <FiShield /> Quy chế làm bài trắc nghiệm
+                            </h4>
+                            <ul className="stu-quiz-rule-list">
+                                <li>
+                                    <strong>Thời gian đếm ngược:</strong> Thời gian làm bài thi sẽ bắt đầu chạy lùi ngay sau khi bạn nhấn nút "Bắt đầu làm bài".
+                                </li>
+                                <li>
+                                    <strong>Chống gian lận (Anti-Cheat):</strong> Hệ thống ghi nhận các hành vi chuyển Tab trình duyệt hoặc thoát màn hình thi. Vi phạm sẽ khiến hệ thống <strong>tự động nộp bài và khóa bài thi ngay lập tức</strong>.
+                                </li>
+                                <li>
+                                    <strong>Nộp bài tự động:</strong> Khi hết thời gian làm bài giới hạn, hệ thống sẽ tự nộp kết quả của bạn tại thời điểm đó.
+                                </li>
+                                <li>
+                                    <strong>Giới hạn lượt làm:</strong> Bạn được làm bài thi này tối đa <strong>{quiz.max_attempts || 1} lần</strong>. Kết quả điểm số cao nhất sẽ được ghi nhận.
+                                </li>
+                            </ul>
                         </div>
+                    </div>
 
-                        {quiz.max_attempts && (
-                            <div style={{
-                                padding: '1.5rem',
-                                backgroundColor: '#f8fafc',
-                                borderRadius: '12px',
-                                border: '1px solid #e2e8f0',
-                                textAlign: 'center',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center'
-                            }}>
-                                <FiActivity size={28} style={{ color: '#f59e0b', marginBottom: '0.75rem' }} />
-                                <div style={{ fontSize: '1.6rem', fontWeight: '800', color: '#0f172a' }}>
-                                    {quiz.max_attempts}
+                    {/* Right Column: Sidebar info and actions */}
+                    <div className="stu-quiz-sidebar-panel">
+                        
+                        {/* Meta Info Card */}
+                        <div className="stu-quiz-meta-card">
+                            <h3 className="stu-quiz-meta-title-sidebar">Thông số đề thi</h3>
+                            <div className="stu-quiz-meta-vertical-list">
+                                
+                                {/* Questions Count */}
+                                <div className="stu-quiz-meta-row">
+                                    <div className="stu-quiz-meta-icon-wrapper purple">
+                                        <FiFileText />
+                                    </div>
+                                    <div className="stu-quiz-meta-info-content">
+                                        <span className="stu-quiz-meta-label-side">Số câu hỏi</span>
+                                        <span className="stu-quiz-meta-value-side">{quiz.question_count || '0'} câu</span>
+                                    </div>
                                 </div>
-                                <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600, marginTop: '0.25rem' }}>Lần làm tối đa</div>
+
+                                {/* Time Limit */}
+                                <div className="stu-quiz-meta-row">
+                                    <div className="stu-quiz-meta-icon-wrapper pink">
+                                        <FiClock />
+                                    </div>
+                                    <div className="stu-quiz-meta-info-content">
+                                        <span className="stu-quiz-meta-label-side">Thời gian</span>
+                                        <span className="stu-quiz-meta-value-side">{quiz.time_limit || '30'} phút</span>
+                                    </div>
+                                </div>
+
+                                {/* Author name */}
+                                <div className="stu-quiz-meta-row">
+                                    <div className="stu-quiz-meta-icon-wrapper green">
+                                        <FiUser />
+                                    </div>
+                                    <div className="stu-quiz-meta-info-content">
+                                        <span className="stu-quiz-meta-label-side">Người ra đề</span>
+                                        <span className="stu-quiz-meta-value-side">{quiz.author_name || 'Giáo viên'}</span>
+                                    </div>
+                                </div>
+
+                                {/* Max attempts */}
+                                <div className="stu-quiz-meta-row">
+                                    <div className="stu-quiz-meta-icon-wrapper orange">
+                                        <FiActivity />
+                                    </div>
+                                    <div className="stu-quiz-meta-info-content">
+                                        <span className="stu-quiz-meta-label-side">Lượt làm bài</span>
+                                        <span className="stu-quiz-meta-value-side">Tối đa {quiz.max_attempts || 1} lần</span>
+                                    </div>
+                                </div>
+
                             </div>
-                        )}
-                    </div>
-
-                    {/* Error Message */}
-                    {error && (
-                        <div style={{
-                            padding: '12px 16px',
-                            backgroundColor: '#fee2e2',
-                            color: '#ef4444',
-                            borderRadius: '8px',
-                            marginBottom: '1.5rem',
-                            border: '1px solid #fecaca'
-                        }}>
-                            {error}
                         </div>
-                    )}
 
-                    {/* Start Button */}
-                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', pointerEvents: 'auto' }}>
-                        <button
-                            onClick={handleGoBack}
-                            style={{
-                                padding: '12px 30px',
-                                backgroundColor: '#e2e8f0',
-                                color: '#334155',
-                                border: 'none',
-                                borderRadius: '8px',
-                                fontSize: '1rem',
-                                cursor: 'pointer',
-                                fontWeight: '700',
-                                transition: 'all 0.2s',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.5rem'
-                            }}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#cbd5e1'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
-                        >
-                            <FiArrowLeft /> Quay lại
-                        </button>
-                        <button
-                            onClick={handleStartQuiz}
-                            disabled={starting}
-                            style={{
-                                padding: '12px 40px',
-                                backgroundColor: starting ? '#cbd5e1' : '#4f46e5',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                fontSize: '1rem',
-                                cursor: starting ? 'not-allowed' : 'pointer',
-                                fontWeight: '700',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                boxShadow: starting ? 'none' : '0 4px 14px rgba(79, 70, 229, 0.25)',
-                                transition: 'all 0.2s'
-                            }}
-                            onMouseOver={(e) => { if (!starting) e.currentTarget.style.backgroundColor = '#4338ca'; }}
-                            onMouseOut={(e) => { if (!starting) e.currentTarget.style.backgroundColor = '#4f46e5'; }}
-                        >
-                            {starting ? 'Đang tạo phiên...' : <><FiPlay /> Bắt đầu bài quiz</>}
-                        </button>
+                        {/* Actions Card */}
+                        <div className="stu-quiz-action-card">
+                            <button
+                                onClick={handleStartQuiz}
+                                disabled={starting}
+                                className="stu-btn-save-premium"
+                                style={{ width: '100%', justifyContent: 'center', height: '48px', padding: 0 }}
+                            >
+                                {starting ? (
+                                    <>
+                                        <span className="stu-loading-spinner-btn"></span>
+                                        Đang tạo phiên...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FiPlay /> Bắt đầu làm bài
+                                    </>
+                                )}
+                            </button>
+                            
+                            <button
+                                onClick={handleGoBack}
+                                className="stu-btn-cancel-premium"
+                                style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', height: '48px', padding: 0 }}
+                            >
+                                <FiArrowLeft /> Quay lại danh sách
+                            </button>
+                        </div>
+
                     </div>
+
                 </div>
-            </section>
+            </div>
         </div>
     );
 }

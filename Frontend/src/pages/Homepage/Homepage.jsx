@@ -213,7 +213,7 @@ const Homepage = () => {
               </div>
               <div className="feature-content">
                 <h3>Giám sát chống gian lận</h3>
-                <p>Công nghệ giám sát qua WebSocket kết nối liên tục, tự động phát hiện hành vi thoát màn hình.</p>
+                <p>Công nghệ giám sát thông minh kết nối liên tục, tự động phát hiện hành vi thoát màn hình.</p>
               </div>
             </div>
           </div>

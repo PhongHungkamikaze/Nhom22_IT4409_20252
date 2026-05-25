@@ -49,54 +49,28 @@ export default function TakeQuiz() {
         }
     }, [attemptId, dirty, navigate]);
 
-    // WebSocket: Real-time cheating detection and Visibility Tracking
+    // Real-time cheating detection and Visibility Tracking
     useEffect(() => {
         if (!attemptId) return;
 
-        let newSocket = null;
         let isMounted = true;
 
-        const connect = () => {
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const accessToken = localStorage.getItem('accessToken');
-            const userId = getUserIdFromToken(accessToken) || 'anonymous';
-
-            const wsUrl = `${protocol}//localhost:8000/ws/exam/${attemptId}/${userId}/`;
-            newSocket = new WebSocket(wsUrl);
-
-            newSocket.onmessage = (e) => {
-                if (!isMounted) return;
-                try {
-                    const data = JSON.parse(e.data);
-                    if (data.type === 'violation_alert') {
-                        console.warn('Violation reported for:', data.user);
-                    }
-                } catch (err) {
-                    console.error('Error parsing WS message:', err);
-                }
-            };
-
-            newSocket.onclose = (e) => {
-                if (isMounted && e.code !== 1000) {
-                    setTimeout(connect, 3000);
-                }
-            };
-        };
-
-        connect();
-
-        // Visibility Change Listener (Inside WS effect to use the socket)
-        const handleVisibilityChange = () => {
+        // Visibility Change Listener
+        const handleVisibilityChange = async () => {
             if (document.hidden) {
                 console.warn('SYSTEM: Tab switch detected! Informing system and auto-submitting.');
                 setError('HỆ THỐNG: Phát hiện hành vi chuyển TAB! Bài thi sẽ được nộp tự động ngay lập tức.');
                 
-                // Send real-time notification
-                if (newSocket && newSocket.readyState === WebSocket.OPEN) {
-                    newSocket.send(JSON.stringify({
-                        type: 'violation',
-                        reason: 'Tab switched - Auto submitting',
-                    }));
+                // Report violation via REST API
+                try {
+                    await apiService.request(`/attempts/${attemptId}/report-violation/`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            reason: 'Tab switched - Auto submitting',
+                        }),
+                    });
+                } catch (err) {
+                    console.error('Failed to report violation:', err);
                 }
                 
                 // Perform auto-submission
@@ -108,11 +82,6 @@ export default function TakeQuiz() {
 
         return () => {
             isMounted = false;
-            if (newSocket) {
-                if (newSocket.readyState === WebSocket.OPEN || newSocket.readyState === WebSocket.CONNECTING) {
-                    newSocket.close(1000);
-                }
-            }
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, [attemptId, handleSubmitQuiz]);

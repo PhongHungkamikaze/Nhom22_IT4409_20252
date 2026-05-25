@@ -101,10 +101,42 @@ class AttemptViewSet(PermissionMixin, viewsets.ModelViewSet):
             attempt.status = StatusChoices.Processing
         attempt.save(update_fields=["status"])
         calculate_score.delay(attempt.id)
-        
+
         return response.Response(
-            {"message": f"Submitted with status: {attempt.status}"}, status=status.HTTP_200_OK
+            {"message": f"Submitted with status: {attempt.status}"},
+            status=status.HTTP_200_OK,
         )
+
+    @action(detail=True, methods=["post"], url_path="report-violation")
+    def report_violation(self, request, pk=None):
+        attempt = self.get_object()
+        reason = request.data.get("reason", "Phát hiện chuyển tab/thu nhỏ cửa sổ")
+        user = request.user
+
+        try:
+            from ..models import NotificationType
+            from ..tasks import create_notifications
+
+            teacher_id = attempt.quiz.author_id
+            create_notifications.delay(
+                recipient_ids=[teacher_id, user.id],
+                title=f"Vi phạm phòng thi: {user.username}",
+                content=f"Sinh viên {user.username} đã vi phạm: {reason} trong bài thi '{attempt.quiz.title}'",
+                type=NotificationType.EXAM_VIOLATION,
+                actor_id=user.id,
+                data={
+                    "user_id": user.id,
+                    "teacher_id": teacher_id,
+                    "attempt_id": attempt.id,
+                    "quiz_id": attempt.quiz.id,
+                    "reason": reason,
+                },
+            )
+            return response.Response({"message": "Violation reported"})
+        except Exception as e:
+            return response.Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @action(detail=False, methods=["get"], url_path="current")
     def current(self, request):

@@ -25,20 +25,4 @@ def create_notification(
             data=data or {},
         )
     
-    # Push to WebSocket
-    try:
-        channel_layer = get_channel_layer()
-        serialized = NotificationSerializer(notification).data
-        
-        async_to_sync(channel_layer.group_send)(
-            f"notifications_{notification.recipient_id}",
-            {
-                "type": "notification_created",
-                "notification": serialized
-            }
-        )
-    except Exception as e:
-        # Don't fail the transaction if WS fails
-        print(f"Error pushing notification to WS: {e}")
-        
     return notification

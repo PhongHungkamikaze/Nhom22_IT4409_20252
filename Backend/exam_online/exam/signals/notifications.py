@@ -10,4 +10,5 @@ from ..tasks import send_notification
 def enqueue_send_notification(sender, instance, created, **kwargs):
     if not created:
         return
+    # Đảm bảo Task chỉ chạy sau khi DB đã Commit thành công
     transaction.on_commit(lambda: send_notification.delay(instance.id))

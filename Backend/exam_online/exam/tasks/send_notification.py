@@ -23,3 +23,10 @@ def send_notification(self, notification_id: int):
     )
     n.sent_at = timezone.now()
     n.save(update_fields=["sent_at"])
+    
+    # Sync to Firebase Firestore
+    try:
+        from exam_online.firebase import sync_notification_to_firestore
+        sync_notification_to_firestore(n)
+    except Exception as e:
+        logger.error("Error syncing to Firestore for notification %s: %s", notification_id, e)

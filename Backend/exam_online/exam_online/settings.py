@@ -35,11 +35,7 @@ SECRET_KEY = config(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = [
-    "nhom22-it4409-20252.onrender.com",
-    "localhost",
-    "127.0.0.1",
-]
+ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1', '.onrender.com']
 
 CSRF_TRUSTED_ORIGINS = [
     "https://nhom22-it4409-20252.onrender.com",

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './Teacher.css';
+import '../Admin/Admin.css';
 import apiService from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
@@ -14,15 +15,16 @@ export default function QuestionBank() {
 
     const [ordering, setOrdering] = useState('-id');
     const [typeFilter, setTypeFilter] = useState('all');
-    const [subjectFilter, setSubjectFilter] = useState('all');
+    const [subjectFilter, setSubjectFilter] = useState([]);
+    const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
+    const subjectDropdownRef = useRef(null);
     const [subjects, setSubjects] = useState([]);
 
     const fetchQuestions = async () => {
-        setLoading(true);
         try {
             const params = { search: searchTerm, ordering };
             if (typeFilter !== 'all') params.type = typeFilter;
-            if (subjectFilter !== 'all') params.subject = subjectFilter;
+            if (subjectFilter.length > 0) params.subject__in = subjectFilter.join(',');
             const data = await apiService.getQuestions(params);
             setQuestions(data.results || []);
             setError(null);
@@ -43,6 +45,17 @@ export default function QuestionBank() {
     };
 
     useEffect(() => { fetchSubjects(); }, []);
+
+    // click‑outside handler for subject dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target)) {
+                setIsSubjectDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         const t = setTimeout(fetchQuestions, 500);
@@ -108,10 +121,38 @@ export default function QuestionBank() {
                             <option value="single">Một lựa chọn</option>
                             <option value="multiple">Nhiều lựa chọn</option>
                         </select>
-                        <select className="filter-select" value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)}>
-                            <option value="all">Tất cả môn học</option>
-                            {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                        </select>
+                        <div className={`multi-select-container ${isSubjectDropdownOpen ? 'open' : ''}`} ref={subjectDropdownRef}>
+                            <div
+                                className="filter-select multi-select-trigger"
+                                onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+                            >
+                                <span>{subjectFilter.length === 0 ? 'Tất cả môn học' : `Môn học (${subjectFilter.length})`}</span>
+                                <span className="multi-select-arrow">▼</span>
+                            </div>
+                            {isSubjectDropdownOpen && (
+                                <div className="multi-select-dropdown">
+                                    <div className="multi-select-option" onClick={() => setSubjectFilter([])}>
+                                        <input type="checkbox" checked={subjectFilter.length === 0} onChange={() => {}} />
+                                        <span>Tất cả môn học</span>
+                                    </div>
+                                    {subjects.map(s => {
+                                        const isChecked = subjectFilter.includes(s.id);
+                                        return (
+                                            <div key={s.id} className="multi-select-option" onClick={() => {
+                                                if (isChecked) {
+                                                    setSubjectFilter(subjectFilter.filter(id => id !== s.id));
+                                                } else {
+                                                    setSubjectFilter([...subjectFilter, s.id]);
+                                                }
+                                            }}>
+                                                <input type="checkbox" checked={isChecked} onChange={() => {}} />
+                                                <span>{s.name}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
                         <select className="filter-select" value={ordering} onChange={e => setOrdering(e.target.value)}>
                             <option value="-id">Mới nhất</option>
                             <option value="id">Cũ nhất</option>

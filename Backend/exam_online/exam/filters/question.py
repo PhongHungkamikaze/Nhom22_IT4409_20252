@@ -1,5 +1,11 @@
 import django_filters
+from django_filters import BaseInFilter, NumberFilter
 from ..models import Question
+
+
+class NumberInFilter(BaseInFilter, NumberFilter):
+    pass
+
 
 class QuestionFilter(django_filters.FilterSet):
     class Meta:
@@ -8,7 +14,7 @@ class QuestionFilter(django_filters.FilterSet):
             "id": ["exact", "in"],
             "type": ["exact", "icontains"],
             "content": ["exact", "icontains"],
-            "author": ["exact"],
+            "author": ["exact", "in"],
             "subject": ["exact", "in"],
             "quizzes": ["exact", "in"],
         }

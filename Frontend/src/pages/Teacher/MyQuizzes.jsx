@@ -18,7 +18,11 @@ export default function MyQuizzes() {
     const [subjectFilter, setSubjectFilter] = useState([]);
     const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
     const subjectDropdownRef = useRef(null);
+    const [teacherFilter, setTeacherFilter] = useState([]);
+    const [isTeacherDropdownOpen, setIsTeacherDropdownOpen] = useState(false);
+    const teacherDropdownRef = useRef(null);
     const [subjects, setSubjects] = useState([]);
+    const [teachers, setTeachers] = useState([]);
 
     const fetchQuizzes = async () => {
         setLoading(true);
@@ -30,6 +34,7 @@ export default function MyQuizzes() {
             if (publishedFilter === 'published') params.is_published = true;
             if (publishedFilter === 'draft') params.is_published = false;
             if (subjectFilter.length > 0) params.subject__in = subjectFilter.join(',');
+            if (teacherFilter.length > 0) params.author__in = teacherFilter.join(',');
 
             const data = await apiService.getQuizzes(params);
             setQuizzes(data.results || []);
@@ -40,24 +45,31 @@ export default function MyQuizzes() {
         }
     };
 
-    const fetchSubjects = async () => {
+    const fetchFilters = async () => {
         try {
-            const data = await apiService.getSubjects();
-            setSubjects(Array.isArray(data) ? data : (data.results || []));
+            const [subjData, teachData] = await Promise.all([
+                apiService.getSubjects(),
+                apiService.getUsers({ role: 'teacher' })
+            ]);
+            setSubjects(Array.isArray(subjData) ? subjData : (subjData.results || []));
+            setTeachers(Array.isArray(teachData) ? teachData : (teachData.results || []));
         } catch (err) {
-            console.error('Failed to fetch subjects', err);
+            console.error('Failed to fetch filters', err);
         }
     };
 
     useEffect(() => {
-        fetchSubjects();
+        fetchFilters();
     }, []);
 
-    // click‑outside handler for dropdown
+    // click‑outside handler for dropdowns
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target)) {
                 setIsSubjectDropdownOpen(false);
+            }
+            if (teacherDropdownRef.current && !teacherDropdownRef.current.contains(event.target)) {
+                setIsTeacherDropdownOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -65,12 +77,13 @@ export default function MyQuizzes() {
     }, []);
 
     const subjectFilterString = subjectFilter.join(',');
+    const teacherFilterString = teacherFilter.join(',');
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             fetchQuizzes();
         }, 500);
         return () => clearTimeout(timeoutId);
-    }, [searchTerm, publishedFilter, subjectFilterString, ordering]);
+    }, [searchTerm, publishedFilter, subjectFilterString, teacherFilterString, ordering]);
 
     return (
         <div className="admin-container">
@@ -104,56 +117,107 @@ export default function MyQuizzes() {
                             <option value="draft">Bản nháp</option>
                         </select>
                         <div className={`multi-select-container ${isSubjectDropdownOpen ? 'open' : ''}`} ref={subjectDropdownRef}>
-                        <div
-                            className="filter-select multi-select-trigger"
-                            onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
-                        >
-                            <span>
-                                {subjectFilter.length === 0
-                                    ? 'Tất cả môn học'
-                                    : `Môn học (${subjectFilter.length})`}
-                            </span>
-                            <span className="multi-select-arrow">▼</span>
-                        </div>
-                        {isSubjectDropdownOpen && (
-                            <div className="multi-select-dropdown">
-                                <div
-                                    className="multi-select-option"
-                                    onClick={() => setSubjectFilter([])}
-                                >
-                                    <input
-                                        type="checkbox"
-                                        checked={subjectFilter.length === 0}
-                                        onChange={() => {}}
-                                    />
-                                    <span>Tất cả môn học</span>
-                                </div>
-                                {subjects.map(s => {
-                                    const isChecked = subjectFilter.includes(s.id);
-                                    return (
-                                        <div
-                                            key={s.id}
-                                            className="multi-select-option"
-                                            onClick={() => {
-                                                if (isChecked) {
-                                                    setSubjectFilter(subjectFilter.filter(id => id !== s.id));
-                                                } else {
-                                                    setSubjectFilter([...subjectFilter, s.id]);
-                                                }
-                                            }}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={isChecked}
-                                                onChange={() => {}}
-                                            />
-                                            <span>{s.name}</span>
-                                        </div>
-                                    );
-                                })}
+                            <div
+                                className="filter-select multi-select-trigger"
+                                onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+                            >
+                                <span>
+                                    {subjectFilter.length === 0
+                                        ? 'Tất cả môn học'
+                                        : `Môn học (${subjectFilter.length})`}
+                                </span>
+                                <span className="multi-select-arrow">▼</span>
                             </div>
-                        )}
-                    </div>
+                            {isSubjectDropdownOpen && (
+                                <div className="multi-select-dropdown">
+                                    <div
+                                        className="multi-select-option"
+                                        onClick={() => setSubjectFilter([])}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={subjectFilter.length === 0}
+                                            onChange={() => {}}
+                                        />
+                                        <span>Tất cả môn học</span>
+                                    </div>
+                                    {subjects.map(s => {
+                                        const isChecked = subjectFilter.includes(s.id);
+                                        return (
+                                            <div
+                                                key={s.id}
+                                                className="multi-select-option"
+                                                onClick={() => {
+                                                    if (isChecked) {
+                                                        setSubjectFilter(subjectFilter.filter(id => id !== s.id));
+                                                    } else {
+                                                        setSubjectFilter([...subjectFilter, s.id]);
+                                                    }
+                                                }}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => {}}
+                                                />
+                                                <span>{s.name}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                        <div className={`multi-select-container ${isTeacherDropdownOpen ? 'open' : ''}`} ref={teacherDropdownRef}>
+                            <div
+                                className="filter-select multi-select-trigger"
+                                onClick={() => setIsTeacherDropdownOpen(!isTeacherDropdownOpen)}
+                            >
+                                <span>
+                                    {teacherFilter.length === 0
+                                        ? 'Tất cả giáo viên'
+                                        : `Giáo viên (${teacherFilter.length})`}
+                                </span>
+                                <span className="multi-select-arrow">▼</span>
+                            </div>
+                            {isTeacherDropdownOpen && (
+                                <div className="multi-select-dropdown">
+                                    <div
+                                        className="multi-select-option"
+                                        onClick={() => setTeacherFilter([])}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={teacherFilter.length === 0}
+                                            onChange={() => {}}
+                                        />
+                                        <span>Tất cả giáo viên</span>
+                                    </div>
+                                    {teachers.map(t => {
+                                        const isChecked = teacherFilter.includes(t.id);
+                                        return (
+                                            <div
+                                                key={t.id}
+                                                className="multi-select-option"
+                                                onClick={() => {
+                                                    if (isChecked) {
+                                                        setTeacherFilter(teacherFilter.filter(id => id !== t.id));
+                                                    } else {
+                                                        setTeacherFilter([...teacherFilter, t.id]);
+                                                    }
+                                                }}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => {}}
+                                                />
+                                                <span>{t.username}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
                         <select className="filter-select" value={ordering} onChange={(e) => setOrdering(e.target.value)}>
                             <option value="-created_at">Mới nhất</option>
                             <option value="created_at">Cũ nhất</option>

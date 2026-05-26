@@ -8,13 +8,15 @@ class NumberInFilter(BaseInFilter, NumberFilter):
 
 
 class QuestionFilter(django_filters.FilterSet):
+    subject__in = NumberInFilter(field_name="subject", lookup_expr="in")
+    author__in = NumberInFilter(field_name="author", lookup_expr="in")
+
     class Meta:
         model = Question
         fields = {
             "id": ["exact", "in"],
             "type": ["exact", "icontains"],
             "content": ["exact", "icontains"],
-            "author": ["exact", "in"],
-            "subject": ["exact", "in"],
             "quizzes": ["exact", "in"],
         }
+

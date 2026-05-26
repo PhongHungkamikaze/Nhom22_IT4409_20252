@@ -18,13 +18,18 @@ export default function QuestionBank() {
     const [subjectFilter, setSubjectFilter] = useState([]);
     const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
     const subjectDropdownRef = useRef(null);
+    const [teacherFilter, setTeacherFilter] = useState([]);
+    const [isTeacherDropdownOpen, setIsTeacherDropdownOpen] = useState(false);
+    const teacherDropdownRef = useRef(null);
     const [subjects, setSubjects] = useState([]);
+    const [teachers, setTeachers] = useState([]);
 
     const fetchQuestions = async () => {
         try {
             const params = { search: searchTerm, ordering };
             if (typeFilter !== 'all') params.type = typeFilter;
             if (subjectFilter.length > 0) params.subject__in = subjectFilter.join(',');
+            if (teacherFilter.length > 0) params.author__in = teacherFilter.join(',');
             const data = await apiService.getQuestions(params);
             setQuestions(data.results || []);
             setError(null);
@@ -35,32 +40,41 @@ export default function QuestionBank() {
         }
     };
 
-    const fetchSubjects = async () => {
+    const fetchFilters = async () => {
         try {
-            const data = await apiService.getSubjects();
-            setSubjects(Array.isArray(data) ? data : (data.results || []));
+            const [subjData, teachData] = await Promise.all([
+                apiService.getSubjects(),
+                apiService.getUsers({ role: 'teacher' })
+            ]);
+            setSubjects(Array.isArray(subjData) ? subjData : (subjData.results || []));
+            setTeachers(Array.isArray(teachData) ? teachData : (teachData.results || []));
         } catch (err) {
-            console.error('Failed to fetch subjects', err);
+            console.error('Failed to fetch filters', err);
         }
     };
 
-    useEffect(() => { fetchSubjects(); }, []);
+    useEffect(() => { fetchFilters(); }, []);
 
-    // click‑outside handler for subject dropdown
+    // click‑outside handler for dropdowns
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target)) {
                 setIsSubjectDropdownOpen(false);
+            }
+            if (teacherDropdownRef.current && !teacherDropdownRef.current.contains(event.target)) {
+                setIsTeacherDropdownOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const subjectFilterString = subjectFilter.join(',');
+    const teacherFilterString = teacherFilter.join(',');
     useEffect(() => {
         const t = setTimeout(fetchQuestions, 500);
         return () => clearTimeout(t);
-    }, [searchTerm, typeFilter, subjectFilter, ordering]);
+    }, [searchTerm, typeFilter, subjectFilterString, teacherFilterString, ordering]);
 
     const isAuthor = (q) => {
         if (!user) return false;
@@ -147,6 +161,57 @@ export default function QuestionBank() {
                                             }}>
                                                 <input type="checkbox" checked={isChecked} onChange={() => {}} />
                                                 <span>{s.name}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                        <div className={`multi-select-container ${isTeacherDropdownOpen ? 'open' : ''}`} ref={teacherDropdownRef}>
+                            <div
+                                className="filter-select multi-select-trigger"
+                                onClick={() => setIsTeacherDropdownOpen(!isTeacherDropdownOpen)}
+                            >
+                                <span>
+                                    {teacherFilter.length === 0
+                                        ? 'Tất cả giáo viên'
+                                        : `Giáo viên (${teacherFilter.length})`}
+                                </span>
+                                <span className="multi-select-arrow">▼</span>
+                            </div>
+                            {isTeacherDropdownOpen && (
+                                <div className="multi-select-dropdown">
+                                    <div
+                                        className="multi-select-option"
+                                        onClick={() => setTeacherFilter([])}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={teacherFilter.length === 0}
+                                            onChange={() => {}}
+                                        />
+                                        <span>Tất cả giáo viên</span>
+                                    </div>
+                                    {teachers.map(t => {
+                                        const isChecked = teacherFilter.includes(t.id);
+                                        return (
+                                            <div
+                                                key={t.id}
+                                                className="multi-select-option"
+                                                onClick={() => {
+                                                    if (isChecked) {
+                                                        setTeacherFilter(teacherFilter.filter(id => id !== t.id));
+                                                    } else {
+                                                        setTeacherFilter([...teacherFilter, t.id]);
+                                                    }
+                                                }}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => {}}
+                                                />
+                                                <span>{t.username}</span>
                                             </div>
                                         );
                                     })}

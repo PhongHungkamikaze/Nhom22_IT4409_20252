@@ -4,11 +4,19 @@ from django_filters.rest_framework import DjangoFilterBackend
 from ..models import User
 from ..serializers import UserSerializer
 from ..filters import UserFilter
-from exam.permissions import IsAdminUser
+from exam.permissions import IsAdminUser, IsTeacherUser, PermissionMixin
 
 @extend_schema(tags=["User"])
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(PermissionMixin, viewsets.ModelViewSet):
     queryset = User.objects.all()
+    permission_classes_by_action = {
+        "list": [IsAdminUser | IsTeacherUser],
+        "retrieve": [IsAdminUser],
+        "create": [IsAdminUser],
+        "update": [IsAdminUser],
+        "partial_update": [IsAdminUser],
+        "destroy": [IsAdminUser],
+    }
     permission_classes = [IsAdminUser]
     serializer_class = UserSerializer
     filter_backends = [
@@ -20,3 +28,4 @@ class UserViewSet(viewsets.ModelViewSet):
     ordering_fields = ["id", "username", "role", "date_joined"]
     ordering = ["id"]
     filterset_class = UserFilter
+

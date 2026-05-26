@@ -8,15 +8,17 @@ class NumberInFilter(BaseInFilter, NumberFilter):
 
 
 class QuizFilter(django_filters.FilterSet):
+    subject__in = NumberInFilter(field_name="subject", lookup_expr="in")
+    author__in = NumberInFilter(field_name="author", lookup_expr="in")
+
     class Meta:
         model = Quiz
         fields = {
             "id": ["exact", "in"],
             "title": ["exact", "icontains"],
-            "author": ["exact", "in"],
             "is_published": ["exact"],
             "created_at": ["exact", "gte", "lte"],
             "time_limit": ["exact", "gte", "lte"],
-            "subject": ["exact", "in"],
             "end_time": ["exact", "gte", "lte"],
         }
+

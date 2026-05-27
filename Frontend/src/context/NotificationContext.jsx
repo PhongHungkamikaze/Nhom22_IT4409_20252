@@ -43,19 +43,19 @@ export const NotificationProvider = ({ children }) => {
     let isMounted = true;
     console.log('--- LISTENING FOR SIGNALS AT: user_notifications/' + user.id);
 
-    const colRef = collection(db, "user_notifications", user.id.toString(), "items");
+    const colRef = collection(db, "notifications", user.id.toString(), "items");
     // Lắng nghe items mới nhất
     const q = query(colRef, orderBy("created_at", "desc"), limit(1));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!isMounted) return;
-      
+
       snapshot.docChanges().forEach((change) => {
         // Chỉ xử lý khi có thông báo THÊM MỚI
         if (change.type === "added") {
           const newNotif = change.doc.data();
           console.log('--- FIREBASE SIGNAL: NEW NOTIFICATION ADDED ---', newNotif);
-          
+
           // 1. Refresh list từ API
           fetchNotifications();
 

@@ -9,7 +9,6 @@ export default function Questions() {
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
     const [ordering, setOrdering] = useState('-id');
     const [typeFilter, setTypeFilter] = useState('all');
     const [subjectFilter, setSubjectFilter] = useState([]);
@@ -21,19 +20,31 @@ export default function Questions() {
     const [subjects, setSubjects] = useState([]);
     const [teachers, setTeachers] = useState([]);
 
-    const fetchQuestions = async () => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const pageSize = 10;
+
+    const fetchQuestions = async (page = currentPage) => {
         setLoading(true);
         try {
             const params = {
                 search: searchTerm,
                 ordering: ordering,
+                page: page,
+                page_size: pageSize,
             };
             if (typeFilter !== 'all') params.type = typeFilter;
             if (subjectFilter.length > 0) params.subject__in = subjectFilter.join(',');
             if (teacherFilter.length > 0) params.author__in = teacherFilter.join(',');
 
             const data = await apiService.getQuestions(params);
-            setQuestions(data.results || []);
+            if (data.results) {
+                setQuestions(data.results);
+                setTotalCount(data.count);
+            } else {
+                setQuestions(Array.isArray(data) ? data : []);
+                setTotalCount(Array.isArray(data) ? data.length : 0);
+            }
             setError(null);
         } catch (err) {
             console.error('Failed to fetch questions', err);
@@ -78,21 +89,31 @@ export default function Questions() {
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            fetchQuestions();
+            setCurrentPage(1);
+            fetchQuestions(1);
         }, 500);
         return () => clearTimeout(timeoutId);
     }, [searchTerm, typeFilter, subjectFilterString, teacherFilterString, ordering]);
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+        fetchQuestions(newPage);
+    };
 
     const handleDelete = async (id) => {
         if (!window.confirm('Xác nhận xóa câu hỏi này?')) return;
         try {
             await apiService.deleteQuestion(id);
             setQuestions(prev => prev.filter(q => q.id !== id));
+            setTotalCount(prev => prev - 1);
         } catch (err) {
             console.error('Delete question failed', err);
             alert('Không thể xóa câu hỏi.');
         }
     };
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const hasNextPage = (totalCount > currentPage * pageSize) || (questions.length === pageSize);
 
     const typeLabel = (t) => t === 'single' ? 'Một lựa chọn' : t === 'multiple' ? 'Nhiều lựa chọn' : t;
     const typeColor = (t) => t === 'single' ? 'qb-badge--single' : 'qb-badge--multiple';
@@ -125,35 +146,35 @@ export default function Questions() {
                             <option value="multiple">Nhiều lựa chọn</option>
                         </select>
                         <div className={`multi-select-container ${isSubjectDropdownOpen ? 'open' : ''}`} ref={subjectDropdownRef}>
-                            <div 
-                                className="filter-select multi-select-trigger" 
+                            <div
+                                className="filter-select multi-select-trigger"
                                 onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
                             >
                                 <span>
-                                    {subjectFilter.length === 0 
-                                        ? 'Tất cả môn học' 
+                                    {subjectFilter.length === 0
+                                        ? 'Tất cả môn học'
                                         : `Môn học (${subjectFilter.length})`}
                                 </span>
                                 <span className="multi-select-arrow">▼</span>
                             </div>
                             {isSubjectDropdownOpen && (
                                 <div className="multi-select-dropdown">
-                                    <div 
+                                    <div
                                         className="multi-select-option"
                                         onClick={() => setSubjectFilter([])}
                                     >
-                                        <input 
-                                            type="checkbox" 
-                                            checked={subjectFilter.length === 0} 
-                                            onChange={() => {}}
+                                        <input
+                                            type="checkbox"
+                                            checked={subjectFilter.length === 0}
+                                            onChange={() => { }}
                                         />
                                         <span>Tất cả môn học</span>
                                     </div>
                                     {subjects.map(s => {
                                         const isChecked = subjectFilter.includes(s.id);
                                         return (
-                                            <div 
-                                                key={s.id} 
+                                            <div
+                                                key={s.id}
                                                 className="multi-select-option"
                                                 onClick={() => {
                                                     if (isChecked) {
@@ -163,10 +184,10 @@ export default function Questions() {
                                                     }
                                                 }}
                                             >
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={isChecked} 
-                                                    onChange={() => {}}
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => { }}
                                                 />
                                                 <span>{s.name}</span>
                                             </div>
@@ -176,35 +197,35 @@ export default function Questions() {
                             )}
                         </div>
                         <div className={`multi-select-container ${isTeacherDropdownOpen ? 'open' : ''}`} ref={teacherDropdownRef}>
-                            <div 
-                                className="filter-select multi-select-trigger" 
+                            <div
+                                className="filter-select multi-select-trigger"
                                 onClick={() => setIsTeacherDropdownOpen(!isTeacherDropdownOpen)}
                             >
                                 <span>
-                                    {teacherFilter.length === 0 
-                                        ? 'Tất cả giáo viên' 
+                                    {teacherFilter.length === 0
+                                        ? 'Tất cả giáo viên'
                                         : `Giáo viên (${teacherFilter.length})`}
                                 </span>
                                 <span className="multi-select-arrow">▼</span>
                             </div>
                             {isTeacherDropdownOpen && (
                                 <div className="multi-select-dropdown">
-                                    <div 
+                                    <div
                                         className="multi-select-option"
                                         onClick={() => setTeacherFilter([])}
                                     >
-                                        <input 
-                                            type="checkbox" 
-                                            checked={teacherFilter.length === 0} 
-                                            onChange={() => {}}
+                                        <input
+                                            type="checkbox"
+                                            checked={teacherFilter.length === 0}
+                                            onChange={() => { }}
                                         />
                                         <span>Tất cả giáo viên</span>
                                     </div>
                                     {teachers.map(t => {
                                         const isChecked = teacherFilter.includes(t.id);
                                         return (
-                                            <div 
-                                                key={t.id} 
+                                            <div
+                                                key={t.id}
                                                 className="multi-select-option"
                                                 onClick={() => {
                                                     if (isChecked) {
@@ -214,10 +235,10 @@ export default function Questions() {
                                                     }
                                                 }}
                                             >
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={isChecked} 
-                                                    onChange={() => {}}
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => { }}
                                                 />
                                                 <span>{t.username}</span>
                                             </div>
@@ -247,81 +268,118 @@ export default function Questions() {
                         <p>Không tìm thấy câu hỏi nào.</p>
                     </div>
                 ) : (
-                    <div className="qb-list">
-                        {questions.map((q, idx) => {
-                            const correctChoices = (q.choices || []).filter(c => c.is_correct);
-                            const wrongChoices = (q.choices || []).filter(c => !c.is_correct);
-                            return (
-                                <div className="qb-card" key={q.id}>
-                                    {/* Left accent bar */}
-                                    <div className={`qb-card__accent ${typeColor(q.type)}`} />
+                    <>
+                        <div className="qb-list">
+                            {questions.map((q, idx) => {
+                                const correctChoices = (q.choices || []).filter(c => c.is_correct);
+                                const wrongChoices = (q.choices || []).filter(c => !c.is_correct);
+                                return (
+                                    <div className="qb-card" key={q.id}>
+                                        {/* Left accent bar */}
+                                        <div className={`qb-card__accent ${typeColor(q.type)}`} />
 
-                                    <div className="qb-card__body">
-                                        {/* Top row */}
-                                        <div className="qb-card__top">
-                                            <div className="qb-card__meta">
-                                                <span className="qb-index">#{idx + 1}</span>
-                                                <span className={`qb-badge ${typeColor(q.type)}`}>
-                                                    {q.type === 'single' ? '◉' : '☑'} {typeLabel(q.type)}
+                                        <div className="qb-card__body">
+                                            {/* Top row */}
+                                            <div className="qb-card__top">
+                                                <div className="qb-card__meta">
+                                                    <span className="qb-index">#{(currentPage - 1) * pageSize + idx + 1}</span>
+                                                    <span className={`qb-badge ${typeColor(q.type)}`}>
+                                                        {q.type === 'single' ? '◉' : '☑'} {typeLabel(q.type)}
+                                                    </span>
+                                                    {q.subject_name && (
+                                                        <span className="qb-subject">📖 {q.subject_name}</span>
+                                                    )}
+                                                </div>
+                                                <div className="qb-card__actions">
+                                                    <Link to={`/admin/questions/${q.id}`} className="qb-btn qb-btn--detail">
+                                                        Chi tiết
+                                                    </Link>
+                                                    <button className="qb-btn qb-btn--delete" onClick={() => handleDelete(q.id)}>
+                                                        Xóa
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Question content */}
+                                            <p className="qb-card__content">{q.content}</p>
+
+                                            {/* Choices */}
+                                            {q.choices && q.choices.length > 0 && (
+                                                <div className="qb-choices">
+                                                    {q.choices.map((c, ci) => (
+                                                        <div
+                                                            key={c.id}
+                                                            className={`qb-choice ${c.is_correct ? 'qb-choice--correct' : 'qb-choice--wrong'}`}
+                                                        >
+                                                            <span className="qb-choice__letter">
+                                                                {String.fromCharCode(65 + ci)}
+                                                            </span>
+                                                            <span className="qb-choice__text">{c.content}</span>
+                                                            {c.is_correct && <span className="qb-choice__tick">✓</span>}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* Footer */}
+                                            <div className="qb-card__footer">
+                                                <span className="qb-author">
+                                                    👤 {q.author_name || q.author_username || 'Ẩn danh'}
                                                 </span>
-                                                {q.subject_name && (
-                                                    <span className="qb-subject">📖 {q.subject_name}</span>
-                                                )}
+                                                <span className="qb-stats">
+                                                    <span className="qb-stat qb-stat--correct">✓ {correctChoices.length} đúng</span>
+                                                    <span className="qb-stat qb-stat--wrong">✗ {wrongChoices.length} sai</span>
+                                                </span>
                                             </div>
-                                            <div className="qb-card__actions">
-                                                <Link to={`/admin/questions/${q.id}`} className="qb-btn qb-btn--detail">
-                                                    Chi tiết
-                                                </Link>
-                                                <button className="qb-btn qb-btn--delete" onClick={() => handleDelete(q.id)}>
-                                                    Xóa
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Question content */}
-                                        <p className="qb-card__content">{q.content}</p>
-
-                                        {/* Choices */}
-                                        {q.choices && q.choices.length > 0 && (
-                                            <div className="qb-choices">
-                                                {q.choices.map((c, ci) => (
-                                                    <div
-                                                        key={c.id}
-                                                        className={`qb-choice ${c.is_correct ? 'qb-choice--correct' : 'qb-choice--wrong'}`}
-                                                    >
-                                                        <span className="qb-choice__letter">
-                                                            {String.fromCharCode(65 + ci)}
-                                                        </span>
-                                                        <span className="qb-choice__text">{c.content}</span>
-                                                        {c.is_correct && <span className="qb-choice__tick">✓</span>}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {/* Footer */}
-                                        <div className="qb-card__footer">
-                                            <span className="qb-author">
-                                                👤 {q.author_name || q.author_username || 'Ẩn danh'}
-                                            </span>
-                                            <span className="qb-stats">
-                                                <span className="qb-stat qb-stat--correct">✓ {correctChoices.length} đúng</span>
-                                                <span className="qb-stat qb-stat--wrong">✗ {wrongChoices.length} sai</span>
-                                            </span>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
+                                );
+                            })}
+                        </div>
 
-                <div className="pagination">
-                    <span className="pagination-info">Hiển thị {questions.length} câu hỏi</span>
-                    <div className="pagination-controls">
-                        <button className="page-btn active">1</button>
-                    </div>
-                </div>
+                        {totalCount > 0 && (
+                            <div className="pagination">
+                                <span className="pagination-info">Hiển thị {questions.length} trên tổng số {totalCount} câu hỏi</span>
+                                <div className="pagination-controls">
+                                    <button
+                                        className="page-btn"
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        Trước
+                                    </button>
+
+                                    {Array.from({ length: totalPages }).map((_, index) => {
+                                        const pageNum = index + 1;
+                                        if (totalPages > 7) {
+                                            if (pageNum !== 1 && pageNum !== totalPages && Math.abs(pageNum - currentPage) > 2) {
+                                                if (Math.abs(pageNum - currentPage) === 3) return <span key={pageNum}>...</span>;
+                                                return null;
+                                            }
+                                        }
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
+                                                onClick={() => handlePageChange(pageNum)}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    })}
+
+                                    <button
+                                        className="page-btn"
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={!hasNextPage}
+                                    >
+                                        Sau
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
         </div>
     );

@@ -12,11 +12,25 @@ export default function Subjects() {
     const [currentSubject, setCurrentSubject] = useState({ name: '', description: '' });
     const [isEdit, setIsEdit] = useState(false);
 
-    const fetchSubjects = async () => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const pageSize = 10;
+
+    const fetchSubjects = async (page = currentPage) => {
         setLoading(true);
         try {
-            const data = await apiService.getSubjects();
-            setSubjects(Array.isArray(data) ? data : (data.results || []));
+            const params = {
+                page: page,
+                page_size: pageSize,
+            };
+            const data = await apiService.getSubjects(params);
+            if (data.results) {
+                setSubjects(data.results);
+                setTotalCount(data.count);
+            } else {
+                setSubjects(Array.isArray(data) ? data : []);
+                setTotalCount(Array.isArray(data) ? data.length : 0);
+            }
             setError(null);
         } catch (err) {
             console.error('Failed to load subjects', err);
@@ -27,14 +41,20 @@ export default function Subjects() {
     };
 
     useEffect(() => {
-        fetchSubjects();
+        fetchSubjects(1);
     }, []);
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+        fetchSubjects(newPage);
+    };
 
     const handleDelete = async (id) => {
         if (!window.confirm('Bạn có chắc chắn muốn xóa môn học này?')) return;
         try {
             await apiService.deleteSubject(id);
             setSubjects(subjects.filter(s => s.id !== id));
+            setTotalCount(prev => prev - 1);
             toast.success('Xóa môn học thành công!');
         } catch (err) {
             console.error('Delete failed', err);
@@ -53,12 +73,15 @@ export default function Subjects() {
                 toast.success('Thêm mới môn học thành công!');
             }
             setIsModalOpen(false);
-            fetchSubjects();
+            fetchSubjects(currentPage);
         } catch (err) {
             console.error('Save failed', err);
             toast.error('Thao tác thất bại.');
         }
     };
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const hasNextPage = (totalCount > currentPage * pageSize) || (subjects.length === pageSize);
 
     const openAddModal = () => {
         setCurrentSubject({ name: '', description: '' });
@@ -88,37 +111,81 @@ export default function Subjects() {
             <div className="admin-card">
                 {loading && <p style={{ padding: '20px' }}>Đang tải...</p>}
                 {error && <p className="error-message" style={{ padding: '20px' }}>{error}</p>}
-                
+
                 {!loading && (
-                    <div className="table-responsive">
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Tên môn học</th>
-                                    <th>Mô tả</th>
-                                    <th>Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {subjects.map(subject => (
-                                    <tr key={subject.id}>
-                                        <td>{subject.id}</td>
-                                        <td><strong>{subject.name}</strong></td>
-                                        <td>{subject.description || '-'}</td>
-                                        <td>
-                                            <div className="action-group">
-                                                <button className="text-btn" onClick={() => openEditModal(subject)}>Sửa</button>
-                                                <button className="text-btn danger" onClick={() => handleDelete(subject.id)}>Xóa</button>
-                                            </div>
-                                        </td>
+                    <>
+                        <div className="table-responsive">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên môn học</th>
+                                        <th>Mô tả</th>
+                                        <th>Hành động</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {subjects.map(subject => (
+                                        <tr key={subject.id}>
+                                            <td>{subject.id}</td>
+                                            <td><strong>{subject.name}</strong></td>
+                                            <td>{subject.description || '-'}</td>
+                                            <td>
+                                                <div className="action-group">
+                                                    <button className="text-btn" onClick={() => openEditModal(subject)}>Sửa</button>
+                                                    <button className="text-btn danger" onClick={() => handleDelete(subject.id)}>Xóa</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {subjects.length === 0 && (
+                                        <tr>
+                                            <td colSpan="4" className="empty-state">Không có môn học nào.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {totalCount > 0 && (
+                            <div className="pagination">
+                                <span className="pagination-info">Hiển thị {subjects.length} trên tổng số {totalCount} môn học</span>
+                                <div className="pagination-controls">
+                                    <button
+                                        className="page-btn"
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        Trước
+                                    </button>
+
+                                    {Array.from({ length: totalPages }).map((_, index) => {
+                                        const pageNum = index + 1;
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
+                                                onClick={() => handlePageChange(pageNum)}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    })}
+
+                                    <button
+                                        className="page-btn"
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={!hasNextPage}
+                                    >
+                                        Sau
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
+
 
             {isModalOpen && (
                 <div className="modal-overlay" style={{
@@ -132,22 +199,22 @@ export default function Subjects() {
                         <form onSubmit={handleSave}>
                             <div className="form-group" style={{ marginBottom: '15px' }}>
                                 <label style={{ display: 'block', marginBottom: '5px' }}>Tên môn học *</label>
-                                <input 
-                                    type="text" 
-                                    className="filter-select" 
+                                <input
+                                    type="text"
+                                    className="filter-select"
                                     style={{ width: '100%', padding: '10px' }}
                                     value={currentSubject.name}
-                                    onChange={(e) => setCurrentSubject({...currentSubject, name: e.target.value})}
+                                    onChange={(e) => setCurrentSubject({ ...currentSubject, name: e.target.value })}
                                     required
                                 />
                             </div>
                             <div className="form-group" style={{ marginBottom: '15px' }}>
                                 <label style={{ display: 'block', marginBottom: '5px' }}>Mô tả</label>
-                                <textarea 
-                                    className="filter-select" 
+                                <textarea
+                                    className="filter-select"
                                     style={{ width: '100%', padding: '10px', height: '100px' }}
                                     value={currentSubject.description || ''}
-                                    onChange={(e) => setCurrentSubject({...currentSubject, description: e.target.value})}
+                                    onChange={(e) => setCurrentSubject({ ...currentSubject, description: e.target.value })}
                                 />
                             </div>
                             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>

@@ -11,22 +11,34 @@ export default function Users() {
     const [error, setError] = useState(null);
     const [roleFilter, setRoleFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [ordering, setOrdering] = useState('-id');
 
-    const [ordering, setOrdering] = useState('id');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const pageSize = 10;
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (page = currentPage) => {
         setLoading(true);
         try {
             const params = {
                 search: searchTerm,
                 ordering: ordering,
+                page: page,
+                page_size: pageSize,
             };
             if (roleFilter !== 'all') params.role = roleFilter;
             if (statusFilter !== 'all') params.is_active = statusFilter === 'active';
 
             const data = await apiService.getUsers(params);
-            const list = Array.isArray(data) ? data : (data.results || []);
-            setUsers(list);
+
+            // Handle both array/paginated response
+            if (data.results) {
+                setUsers(data.results);
+                setTotalCount(data.count);
+            } else {
+                setUsers(Array.isArray(data) ? data : []);
+                setTotalCount(Array.isArray(data) ? data.length : 0);
+            }
             setError(null);
         } catch (err) {
             console.error('Failed to load users', err);
@@ -38,21 +50,31 @@ export default function Users() {
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            fetchUsers();
+            setCurrentPage(1);
+            fetchUsers(1);
         }, 500); // Debounce search
         return () => clearTimeout(timeoutId);
     }, [searchTerm, roleFilter, statusFilter, ordering]);
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+        fetchUsers(newPage);
+    };
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this user?')) return;
         try {
             await apiService.deleteUser(id);
             setUsers(prev => prev.filter(u => u.id !== id));
+            setTotalCount(prev => prev - 1);
         } catch (err) {
             console.error('Delete failed', err);
             alert('Failed to delete user');
         }
     };
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const hasNextPage = (totalCount > currentPage * pageSize) || (users.length === pageSize);
 
     return (
         <div className="admin-container">
@@ -68,8 +90,6 @@ export default function Users() {
             </header>
 
             <div className="admin-card">
-                {loading && <p>Loading users...</p>}
-                {error && <p className="error-message">Error: {error}</p>}
                 <div className="table-controls">
                     <div className="search-bar">
                         <span className="search-icon">🔍</span>
@@ -102,10 +122,11 @@ export default function Users() {
                     </div>
                 </div>
 
-                {loading && <p style={{ padding: '20px' }}>Loading users...</p>}
-                {error && <p className="error-message" style={{ padding: '20px' }}>Error: {error}</p>}
-                
-                {!loading && !error && (
+                {loading ? (
+                    <p style={{ padding: '20px' }}>Loading users...</p>
+                ) : error ? (
+                    <p className="error-message" style={{ padding: '20px' }}>Error: {error}</p>
+                ) : (
                     <div className="table-responsive">
                         <table className="table">
                             <thead>
@@ -151,13 +172,50 @@ export default function Users() {
                     </div>
                 )}
 
-                <div className="pagination">
-                    <span className="pagination-info">Hiển thị {users.length} người dùng</span>
-                    <div className="pagination-controls">
-                        <button className="page-btn active">1</button>
+                {totalCount > 0 && (
+                    <div className="pagination">
+                        <span className="pagination-info">Hiển thị {users.length} trên tổng số {totalCount} người dùng</span>
+                        <div className="pagination-controls">
+                            <button
+                                className="page-btn"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                Trước
+                            </button>
+
+                            {Array.from({ length: totalPages }).map((_, index) => {
+                                const pageNum = index + 1;
+                                // Basic logic to show limited page numbers if there are too many
+                                if (totalPages > 7) {
+                                    if (pageNum !== 1 && pageNum !== totalPages && Math.abs(pageNum - currentPage) > 2) {
+                                        if (Math.abs(pageNum - currentPage) === 3) return <span key={pageNum}>...</span>;
+                                        return null;
+                                    }
+                                }
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
+                                        onClick={() => handlePageChange(pageNum)}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                );
+                            })}
+
+                            <button
+                                className="page-btn"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={!hasNextPage}
+                            >
+                                Sau
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );
+
 }

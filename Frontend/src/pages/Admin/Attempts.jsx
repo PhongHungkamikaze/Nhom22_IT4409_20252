@@ -14,13 +14,29 @@ export default function Attempts() {
 
     const [quizSorting, setQuizSorting] = useState('-id');
     const [attemptSorting, setAttemptSorting] = useState('-started_at');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [attemptPage, setAttemptPage] = useState(1);
+    const [attemptTotalCount, setAttemptTotalCount] = useState(0);
+    const pageSize = 10;
 
-    const fetchQuizzes = async () => {
+    const fetchQuizzes = async (page = currentPage) => {
         try {
             setLoading(true);
-            const params = { search: searchTerm, ordering: quizSorting };
+            const params = {
+                search: searchTerm,
+                ordering: quizSorting,
+                page: page,
+                page_size: pageSize
+            };
             const data = await apiService.getQuizzes(params);
-            setQuizzes(data.results || []);
+            if (data.results) {
+                setQuizzes(data.results);
+                setTotalCount(data.count);
+            } else {
+                setQuizzes(Array.isArray(data) ? data : []);
+                setTotalCount(Array.isArray(data) ? data.length : 0);
+            }
         } catch (err) {
             console.error('Failed to fetch quizzes', err);
             setError('Không thể tải danh sách bài thi');
@@ -29,17 +45,25 @@ export default function Attempts() {
         }
     };
 
-    const fetchAttempts = async () => {
+    const fetchAttempts = async (page = attemptPage) => {
         if (!selectedQuiz) return;
         try {
             setAttemptsLoading(true);
-            const params = { 
+            const params = {
                 quiz: selectedQuiz.id,
                 search: searchTerm,
-                ordering: attemptSorting
+                ordering: attemptSorting,
+                page: page,
+                page_size: pageSize
             };
             const data = await apiService.getAttempts(params);
-            setAttempts(data.results || []);
+            if (data.results) {
+                setAttempts(data.results);
+                setAttemptTotalCount(data.count);
+            } else {
+                setAttempts(Array.isArray(data) ? data : []);
+                setAttemptTotalCount(Array.isArray(data) ? data.length : 0);
+            }
         } catch (err) {
             console.error('Failed to fetch attempts', err);
             setError('Không thể tải kết quả bài làm');
@@ -51,13 +75,30 @@ export default function Attempts() {
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             if (selectedQuiz) {
-                fetchAttempts();
+                setAttemptPage(1);
+                fetchAttempts(1);
             } else {
-                fetchQuizzes();
+                setCurrentPage(1);
+                fetchQuizzes(1);
             }
         }, 500);
         return () => clearTimeout(timeoutId);
     }, [searchTerm, selectedQuiz, quizSorting, attemptSorting]);
+
+    const handleQuizPageChange = (newPage) => {
+        setCurrentPage(newPage);
+        fetchQuizzes(newPage);
+    };
+
+    const handleAttemptPageChange = (newPage) => {
+        setAttemptPage(newPage);
+        fetchAttempts(newPage);
+    };
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const hasNextQuizPage = (totalCount > currentPage * pageSize) || (quizzes.length === pageSize);
+    const attemptTotalPages = Math.ceil(attemptTotalCount / pageSize);
+    const hasNextAttemptPage = (attemptTotalCount > attemptPage * pageSize) || (attempts.length === pageSize);
 
     // --- QUIZ SELECTION VIEW ---
     if (!selectedQuiz) {
@@ -115,8 +156,8 @@ export default function Attempts() {
                                             <td>{quiz.author_name || quiz.teacher_name || '-'}</td>
                                             <td>{quiz.attempts_count || '-'}</td>
                                             <td>
-                                                <button 
-                                                    className="text-btn" 
+                                                <button
+                                                    className="text-btn"
                                                     onClick={() => setSelectedQuiz(quiz)}
                                                 >
                                                     Xem kết quả thí sinh →
@@ -130,6 +171,42 @@ export default function Attempts() {
                             </tbody>
                         </table>
                     </div>
+
+                    {totalCount > 0 && (
+                        <div className="pagination">
+                            <span className="pagination-info">Hiển thị {quizzes.length} trên tổng số {totalCount} bài thi</span>
+                            <div className="pagination-controls">
+                                <button
+                                    className="page-btn"
+                                    onClick={() => handleQuizPageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    Trước
+                                </button>
+
+                                {Array.from({ length: totalPages }).map((_, index) => {
+                                    const pageNum = index + 1;
+                                    return (
+                                        <button
+                                            key={pageNum}
+                                            className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
+                                            onClick={() => handleQuizPageChange(pageNum)}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    );
+                                })}
+
+                                    <button
+                                        className="page-btn"
+                                        onClick={() => handleQuizPageChange(currentPage + 1)}
+                                        disabled={!hasNextQuizPage}
+                                    >
+                                        Sau
+                                    </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -219,6 +296,42 @@ export default function Attempts() {
                         </tbody>
                     </table>
                 </div>
+
+                {attemptTotalCount > 0 && (
+                    <div className="pagination">
+                        <span className="pagination-info">Hiển thị {attempts.length} trên tổng số {attemptTotalCount} lượt làm bài</span>
+                        <div className="pagination-controls">
+                            <button
+                                className="page-btn"
+                                onClick={() => handleAttemptPageChange(attemptPage - 1)}
+                                disabled={attemptPage === 1}
+                            >
+                                Trước
+                            </button>
+
+                            {Array.from({ length: attemptTotalPages }).map((_, index) => {
+                                const pageNum = index + 1;
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        className={`page-btn ${attemptPage === pageNum ? 'active' : ''}`}
+                                        onClick={() => handleAttemptPageChange(pageNum)}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                );
+                            })}
+
+                            <button
+                                className="page-btn"
+                                onClick={() => handleAttemptPageChange(attemptPage + 1)}
+                                disabled={!hasNextAttemptPage}
+                            >
+                                Sau
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

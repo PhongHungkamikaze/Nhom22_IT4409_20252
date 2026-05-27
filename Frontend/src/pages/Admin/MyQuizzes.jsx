@@ -20,12 +20,18 @@ export default function MyQuizzes() {
     const [subjects, setSubjects] = useState([]);
     const [teachers, setTeachers] = useState([]);
 
-    const fetchQuizzes = async () => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const pageSize = 10;
+
+    const fetchQuizzes = async (page = currentPage) => {
         setLoading(true);
         try {
             const params = {
                 search: searchTerm,
                 ordering: ordering,
+                page: page,
+                page_size: pageSize,
             };
             if (publishedFilter === 'published') params.is_published = true;
             if (publishedFilter === 'draft') params.is_published = false;
@@ -33,7 +39,13 @@ export default function MyQuizzes() {
             if (teacherFilter.length > 0) params.author__in = teacherFilter.join(',');
 
             const data = await apiService.getQuizzes(params);
-            setQuizzes(Array.isArray(data.results) ? data.results : []);
+            if (data.results) {
+                setQuizzes(data.results);
+                setTotalCount(data.count);
+            } else {
+                setQuizzes(Array.isArray(data) ? data : []);
+                setTotalCount(Array.isArray(data) ? data.length : 0);
+            }
         } catch (err) {
             console.error('Failed to fetch quizzes', err);
         } finally {
@@ -76,10 +88,19 @@ export default function MyQuizzes() {
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            fetchQuizzes();
+            setCurrentPage(1);
+            fetchQuizzes(1);
         }, 500);
         return () => clearTimeout(timeoutId);
     }, [searchTerm, publishedFilter, subjectFilterString, teacherFilterString, ordering]);
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+        fetchQuizzes(newPage);
+    };
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const hasNextPage = (totalCount > currentPage * pageSize) || (quizzes.length === pageSize);
 
     return (
 
@@ -109,35 +130,35 @@ export default function MyQuizzes() {
                             <option value="draft">Chưa xuất bản</option>
                         </select>
                         <div className={`multi-select-container ${isSubjectDropdownOpen ? 'open' : ''}`} ref={subjectDropdownRef}>
-                            <div 
-                                className="filter-select multi-select-trigger" 
+                            <div
+                                className="filter-select multi-select-trigger"
                                 onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
                             >
                                 <span>
-                                    {subjectFilter.length === 0 
-                                        ? 'Tất cả môn học' 
+                                    {subjectFilter.length === 0
+                                        ? 'Tất cả môn học'
                                         : `Môn học (${subjectFilter.length})`}
                                 </span>
                                 <span className="multi-select-arrow">▼</span>
                             </div>
                             {isSubjectDropdownOpen && (
                                 <div className="multi-select-dropdown">
-                                    <div 
+                                    <div
                                         className="multi-select-option"
                                         onClick={() => setSubjectFilter([])}
                                     >
-                                        <input 
-                                            type="checkbox" 
-                                            checked={subjectFilter.length === 0} 
-                                            onChange={() => {}}
+                                        <input
+                                            type="checkbox"
+                                            checked={subjectFilter.length === 0}
+                                            onChange={() => { }}
                                         />
                                         <span>Tất cả môn học</span>
                                     </div>
                                     {subjects.map(s => {
                                         const isChecked = subjectFilter.includes(s.id);
                                         return (
-                                            <div 
-                                                key={s.id} 
+                                            <div
+                                                key={s.id}
                                                 className="multi-select-option"
                                                 onClick={() => {
                                                     if (isChecked) {
@@ -147,10 +168,10 @@ export default function MyQuizzes() {
                                                     }
                                                 }}
                                             >
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={isChecked} 
-                                                    onChange={() => {}}
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => { }}
                                                 />
                                                 <span>{s.name}</span>
                                             </div>
@@ -160,35 +181,35 @@ export default function MyQuizzes() {
                             )}
                         </div>
                         <div className={`multi-select-container ${isTeacherDropdownOpen ? 'open' : ''}`} ref={teacherDropdownRef}>
-                            <div 
-                                className="filter-select multi-select-trigger" 
+                            <div
+                                className="filter-select multi-select-trigger"
                                 onClick={() => setIsTeacherDropdownOpen(!isTeacherDropdownOpen)}
                             >
                                 <span>
-                                    {teacherFilter.length === 0 
-                                        ? 'Tất cả giáo viên' 
+                                    {teacherFilter.length === 0
+                                        ? 'Tất cả giáo viên'
                                         : `Giáo viên (${teacherFilter.length})`}
                                 </span>
                                 <span className="multi-select-arrow">▼</span>
                             </div>
                             {isTeacherDropdownOpen && (
                                 <div className="multi-select-dropdown">
-                                    <div 
+                                    <div
                                         className="multi-select-option"
                                         onClick={() => setTeacherFilter([])}
                                     >
-                                        <input 
-                                            type="checkbox" 
-                                            checked={teacherFilter.length === 0} 
-                                            onChange={() => {}}
+                                        <input
+                                            type="checkbox"
+                                            checked={teacherFilter.length === 0}
+                                            onChange={() => { }}
                                         />
                                         <span>Tất cả giáo viên</span>
                                     </div>
                                     {teachers.map(t => {
                                         const isChecked = teacherFilter.includes(t.id);
                                         return (
-                                            <div 
-                                                key={t.id} 
+                                            <div
+                                                key={t.id}
                                                 className="multi-select-option"
                                                 onClick={() => {
                                                     if (isChecked) {
@@ -198,10 +219,10 @@ export default function MyQuizzes() {
                                                     }
                                                 }}
                                             >
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={isChecked} 
-                                                    onChange={() => {}}
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => { }}
                                                 />
                                                 <span>{t.username}</span>
                                             </div>
@@ -265,12 +286,47 @@ export default function MyQuizzes() {
                     </table>
                 </div>
 
-                <div className="pagination">
-                    <span className="pagination-info">Hiển thị {quizzes.length} bài thi</span>
-                    <div className="pagination-controls">
-                        <button className="page-btn active">1</button>
+                {totalCount > 0 && (
+                    <div className="pagination">
+                        <span className="pagination-info">Hiển thị {quizzes.length} trên tổng số {totalCount} bài thi</span>
+                        <div className="pagination-controls">
+                            <button
+                                className="page-btn"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                Trước
+                            </button>
+
+                            {Array.from({ length: totalPages }).map((_, index) => {
+                                const pageNum = index + 1;
+                                if (totalPages > 7) {
+                                    if (pageNum !== 1 && pageNum !== totalPages && Math.abs(pageNum - currentPage) > 2) {
+                                        if (Math.abs(pageNum - currentPage) === 3) return <span key={pageNum}>...</span>;
+                                        return null;
+                                    }
+                                }
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
+                                        onClick={() => handlePageChange(pageNum)}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                );
+                            })}
+
+                            <button
+                                className="page-btn"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={!hasNextPage}
+                            >
+                                Sau
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

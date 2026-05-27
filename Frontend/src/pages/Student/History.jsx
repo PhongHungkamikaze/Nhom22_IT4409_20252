@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { 
-    FiHome, 
-    FiBookOpen, 
-    FiActivity, 
-    FiAward, 
-    FiCheckCircle, 
-    FiClock, 
-    FiEye, 
-    FiCalendar, 
-    FiFileText 
+import {
+    FiHome,
+    FiBookOpen,
+    FiActivity,
+    FiAward,
+    FiCheckCircle,
+    FiClock,
+    FiEye,
+    FiCalendar,
+    FiFileText
 } from 'react-icons/fi';
 import './Student.css';
 
@@ -21,26 +21,55 @@ export default function History() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [filter, setFilter] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sorting, setSorting] = useState('-started_at');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const pageSize = 10;
+
+    const fetchAttempts = async (page = currentPage) => {
+        try {
+            setLoading(true);
+            const params = {
+                search: searchTerm,
+                ordering: sorting,
+                page: page,
+                page_size: pageSize
+            };
+            const data = await apiService.getAttempts(params);
+            if (data.results) {
+                setAttempts(data.results);
+                setTotalCount(data.count);
+            } else {
+                setAttempts(Array.isArray(data) ? data : []);
+                setTotalCount(Array.isArray(data) ? data.length : 0);
+            }
+            setError(null);
+        } catch (err) {
+            console.error('Failed to fetch attempts:', err);
+            setError('Không thể tải lịch sử làm bài');
+            setAttempts([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // READ: Fetch all attempts
     useEffect(() => {
-        const fetchAttempts = async () => {
-            try {
-                setLoading(true);
-                const data = await apiService.getAttempts();
-                const attemptList = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
-                setAttempts(attemptList);
-                setError(null);
-            } catch (err) {
-                console.error('Failed to fetch attempts:', err);
-                setError('Không thể tải lịch sử làm bài');
-                setAttempts([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchAttempts();
-    }, []);
+        const timeoutId = setTimeout(() => {
+            setCurrentPage(1);
+            fetchAttempts(1);
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, sorting]);
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+        fetchAttempts(newPage);
+    };
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const hasNextPage = (totalCount > currentPage * pageSize) || (attempts.length === pageSize);
 
     // Filter attempts
     const filteredAttempts = attempts.filter(attempt => {
@@ -128,7 +157,7 @@ export default function History() {
                                 {attempts.filter(a => a.status === 'completed').length > 0
                                     ? (
                                         (attempts.filter(a => a.status === 'completed').reduce((sum, a) => sum + (parseFloat(a.score) || 0), 0) / attempts.filter(a => a.status === 'completed').length).toFixed(1)
-                                      )
+                                    )
                                     : '0.0'}
                             </div>
                             <div className="stu-stat-label">Điểm trung bình tích lũy</div>
@@ -146,7 +175,7 @@ export default function History() {
             {/* Filter & Content Section */}
             <section className="stu-quizzes-section" style={{ paddingTop: '1.5rem' }}>
                 <div className="stu-container">
-                    
+
                     {/* Segmented Controls Filters */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
                         <div className="stu-history-filters-premium">
@@ -190,7 +219,7 @@ export default function History() {
                         </div>
                     ) : (
                         <div className="stu-history-card-premium">
-                            
+
                             {/* Mobile-friendly list for smaller screens */}
                             <div className="stu-history-list-mobile">
                                 {filteredAttempts.map((attempt) => {
@@ -291,6 +320,42 @@ export default function History() {
                                     </tbody>
                                 </table>
                             </div>
+
+                            {totalCount > 0 && (
+                                <div className="pagination" style={{ padding: '1rem', borderTop: '1px solid #eee' }}>
+                                    <span className="pagination-info">Hiển thị {attempts.length} trên tổng số {totalCount} lượt làm bài</span>
+                                    <div className="pagination-controls">
+                                        <button
+                                            className="page-btn"
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        >
+                                            Trước
+                                        </button>
+
+                                        {Array.from({ length: totalPages }).map((_, index) => {
+                                            const pageNum = index + 1;
+                                            return (
+                                                <button
+                                                    key={pageNum}
+                                                    className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
+                                                    onClick={() => handlePageChange(pageNum)}
+                                                >
+                                                    {pageNum}
+                                                </button>
+                                            );
+                                        })}
+
+                                        <button
+                                            className="page-btn"
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={!hasNextPage}
+                                        >
+                                            Sau
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

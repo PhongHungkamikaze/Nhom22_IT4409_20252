@@ -29,4 +29,5 @@ class SubjectViewSet(PermissionMixin, viewsets.ModelViewSet):
         "list": [IsTeacherUser | IsAdminUser],
         "retrieve": [IsTeacherUser | IsAdminUser],
     }
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsTeacherUser | IsAdminUser]
+

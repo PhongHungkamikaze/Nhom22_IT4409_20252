@@ -31,6 +31,7 @@ export default function TeacherQuizEdit() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [timeLimit, setTimeLimit] = useState('');
+    const [maxAttempts, setMaxAttempts] = useState('1');
     const [isPublished, setIsPublished] = useState(false);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -134,6 +135,7 @@ export default function TeacherQuizEdit() {
                 setTitle(data.title || '');
                 setDescription(data.description || '');
                 setTimeLimit(data.time_limit ? String(data.time_limit) : (data.duration ? String(data.duration) : ''));
+                setMaxAttempts(data.max_attempts ? String(data.max_attempts) : '1');
                 setIsPublished(Boolean(data.is_published));
 
                 await loadAvailable(initialQuestions);
@@ -225,6 +227,7 @@ export default function TeacherQuizEdit() {
                 title: title.trim(),
                 description: description.trim(),
                 time_limit: Number(timeLimit) || 0,
+                max_attempts: Number(maxAttempts) || 1,
                 is_published: Boolean(isPublished),
                 question_ids: questionIds,
             });
@@ -272,6 +275,10 @@ export default function TeacherQuizEdit() {
                             <tr>
                                 <td style={{ fontWeight: 600 }}>Time limit (minutes)</td>
                                 <td><input type="number" min={0} value={timeLimit} onChange={e => setTimeLimit(e.target.value)} /></td>
+                            </tr>
+                            <tr>
+                                <td style={{ fontWeight: 600 }}>Số lần làm bài (Max attempts)</td>
+                                <td><input type="number" min={1} value={maxAttempts} onChange={e => setMaxAttempts(e.target.value)} /></td>
                             </tr>
                             <tr>
                                 <td style={{ fontWeight: 600 }}>Published</td>

@@ -18,6 +18,7 @@ const EditQuiz = () => {
     subject: '',
     time_limit: 60,
     pass_score: 70,
+    max_attempts: 1,
     is_published: false
   });
   const [subjects, setSubjects] = useState([]);
@@ -41,6 +42,7 @@ const EditQuiz = () => {
         subject: quizData.subject || '',
         time_limit: quizData.time_limit || 60,
         pass_score: quizData.pass_score || 70,
+        max_attempts: quizData.max_attempts || 1,
         is_published: quizData.is_published || false
       });
       
@@ -128,6 +130,17 @@ const EditQuiz = () => {
             value={formData.time_limit}
             onChange={handleChange}
             min="0"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Số lần làm bài (Lượt làm bài)</label>
+          <input 
+            type="number" 
+            name="max_attempts"
+            value={formData.max_attempts}
+            onChange={handleChange}
+            min="1"
           />
         </div>
 

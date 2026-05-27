@@ -55,6 +55,10 @@ export default function TeacherQuizDetail() {
                                 <div className="meta-value">{quiz.time_limit ?? quiz.duration ?? '—'}</div>
                             </div>
                             <div className="meta-card">
+                                <strong>Max attempts</strong>
+                                <div className="meta-value">{quiz.max_attempts ?? 1}</div>
+                            </div>
+                            <div className="meta-card">
                                 <strong>Author</strong>
                                 <div className="meta-value">{quiz.author_name}</div>
                             </div>

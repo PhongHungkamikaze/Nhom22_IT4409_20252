@@ -38,47 +38,60 @@ export const NotificationProvider = ({ children }) => {
 
   // Firestore Real-time Listener
   useEffect(() => {
-    if (!isAuthenticated || !user?.id) return;
+    if (!isAuthenticated || !user?.id) {
+      console.log('--- NOTIFICATION LISTENER: Skipping (not auth or no user id)', { isAuthenticated, userId: user?.id });
+      return;
+    }
 
     let isMounted = true;
-    console.log('--- LISTENING FOR SIGNALS AT: user_notifications/' + user.id);
+    console.log(`--- LISTENING FOR NOTIFICATIONS AT: notifications/${user.id}/items`);
 
-    const colRef = collection(db, "notifications", user.id.toString(), "items");
-    // Lắng nghe items mới nhất
-    const q = query(colRef, orderBy("created_at", "desc"), limit(1));
+    try {
+      const colRef = collection(db, "notifications", user.id.toString(), "items");
+      // Lắng nghe items mới nhất
+      const q = query(colRef, orderBy("created_at", "desc"), limit(1));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      if (!isMounted) return;
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        if (!isMounted) return;
 
-      snapshot.docChanges().forEach((change) => {
-        // Chỉ xử lý khi có thông báo THÊM MỚI
-        if (change.type === "added") {
-          const newNotif = change.doc.data();
-          console.log('--- FIREBASE SIGNAL: NEW NOTIFICATION ADDED ---', newNotif);
-
-          // 1. Refresh list từ API
-          fetchNotifications();
-
-          // 2. Hiển thị thông báo trình duyệt (Browser Notification) - GIỐNG CODE CŨ CỦA BẠN
-          if (Notification.permission === 'granted') {
-            new Notification(newNotif.title || "Thông báo mới", {
-              body: newNotif.content || "Bạn có một thông báo mới trong hệ thống",
-              icon: '/favicon.ico'
-            });
-          }
+        if (snapshot.empty) {
+          console.log('--- FIREBASE SIGNAL: Snapshot empty (no notifications yet)');
+          return;
         }
+
+        snapshot.docChanges().forEach((change) => {
+          // Chỉ xử lý khi có item THÊM MỚI
+          if (change.type === "added") {
+            const newNotif = change.doc.data();
+            console.log('--- FIREBASE SIGNAL: NEW NOTIFICATION ADDED ---', newNotif);
+
+            // Kiểm tra xem đây có phải là bản ghi mới thực sự (không phải snapshot đầu tiên của thông báo cũ)
+            // Hoặc đơn giản là cứ refresh cho chắc cũng được
+            fetchNotifications();
+
+            // Hiển thị thông báo trình duyệt
+            if (Notification.permission === 'granted') {
+              new Notification(newNotif.title || "Thông báo mới", {
+                body: newNotif.content || "Bạn có một thông báo mới trong hệ thống",
+                icon: '/favicon.ico'
+              });
+            }
+          }
+        });
+      }, (error) => {
+        console.error('--- FIRESTORE LISTENER ERROR:', error);
       });
-    }, (error) => {
-      console.error('--- FIRESTORE LISTENER ERROR:', error);
-    });
 
-    // Load initial data
-    fetchNotifications();
+      // Load initial data from API
+      fetchNotifications();
 
-    return () => {
-      isMounted = false;
-      unsubscribe();
-    };
+      return () => {
+        isMounted = false;
+        unsubscribe();
+      };
+    } catch (err) {
+      console.error('--- FIRESTORE SETUP ERROR:', err);
+    }
   }, [isAuthenticated, user?.id, fetchNotifications]);
 
   const markAllRead = async () => {

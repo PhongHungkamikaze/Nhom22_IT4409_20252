@@ -225,10 +225,10 @@ const Header = () => {
                             <FiBookOpen /> {t('quizzes')} {t('of_me') || ''}
                           </Link>
                           <Link to="/teacher/questions" className="dropdown-item">
-                            <FiPieChart /> Ngân hàng câu hỏi
+                            <FiPieChart /> {t('question_bank')}
                           </Link>
                           <Link to="/teacher/attempts" className="dropdown-item">
-                            <FiCheckCircle /> Xem Attempts
+                            <FiCheckCircle /> {t('view_attempts')}
                           </Link>
                         </>
                       )}
@@ -237,10 +237,10 @@ const Header = () => {
                       {user?.role === 'admin' && (
                         <>
                           <Link to="/admin/users" className="dropdown-item">
-                            <FiUser /> Quản lý người dùng
+                            <FiUser /> {t('manage_users')}
                           </Link>
                           <Link to="/admin/quizzes" className="dropdown-item">
-                            <FiBookOpen /> Quản lý Quiz
+                            <FiBookOpen /> {t('manage_quizzes')}
                           </Link>
                         </>
                       )}
@@ -257,8 +257,8 @@ const Header = () => {
             </>
           ) : (
             <div className="auth-group">
-              <Link to="/login" className="login-link">Đăng nhập</Link>
-              <Link to="/register" className="register-btn">Bắt đầu ngay</Link>
+              <Link to="/login" className="login-link">{t('login')}</Link>
+              <Link to="/register" className="register-btn">{t('get_started')}</Link>
             </div>
           )}
 

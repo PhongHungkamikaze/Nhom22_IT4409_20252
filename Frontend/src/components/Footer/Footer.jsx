@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import './Footer.css';
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa'; // Import icon
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { t } = useTranslation();
 
   return (
     <footer className="footer">
@@ -11,7 +13,7 @@ const Footer = () => {
         <div className="footer-section">
           <div className="footer-logo">
             <h3>QuizMaster</h3>
-            <p>Nền tảng thi trực tuyến hàng đầu Việt Nam</p>
+            <p>{t('footer.tagline')}</p>
           </div>
           <div className="social-links">
             {/* 2. Sử dụng như các thẻ đóng mở */}
@@ -32,40 +34,40 @@ const Footer = () => {
 
         {/* Quick Links */}
         <div className="footer-section">
-          <h4>Liên kết nhanh</h4>
+          <h4>{t('footer.quick_links')}</h4>
           <ul className="footer-links">
-            <li><a href="#home">Trang chủ</a></li>
-            <li><a href="#quizzes">Bài quiz</a></li>
-            <li><a href="#about">Giới thiệu</a></li>
-            <li><a href="#contact">Liên hệ</a></li>
+            <li><a href="#home">{t('footer.home')}</a></li>
+            <li><a href="#quizzes">{t('footer.quizzes')}</a></li>
+            <li><a href="#about">{t('footer.about')}</a></li>
+            <li><a href="#contact">{t('footer.contact')}</a></li>
           </ul>
         </div>
 
         {/* Features */}
         <div className="footer-section">
-          <h4>Tính năng</h4>
+          <h4>{t('footer.features')}</h4>
           <ul className="footer-links">
-            <li><a href="#create-quiz">Tạo bài quiz</a></li>
-            <li><a href="#analytics">Thống kê chi tiết</a></li>
-            <li><a href="#reports">Báo cáo kết quả</a></li>
+            <li><a href="#create-quiz">{t('footer.create_quiz')}</a></li>
+            <li><a href="#analytics">{t('footer.analytics')}</a></li>
+            <li><a href="#reports">{t('footer.reports')}</a></li>
             <li><a href="#api">API Documentation</a></li>
           </ul>
         </div>
 
         {/* Support */}
         <div className="footer-section">
-          <h4>Hỗ trợ</h4>
+          <h4>{t('footer.support')}</h4>
           <ul className="footer-links">
-            <li><a href="#help">Trung tâm trợ giúp</a></li>
-            <li><a href="#faq">Câu hỏi thường gặp</a></li>
-            <li><a href="#privacy">Chính sách bảo mật</a></li>
-            <li><a href="#terms">Điều khoản sử dụng</a></li>
+            <li><a href="#help">{t('footer.help_center')}</a></li>
+            <li><a href="#faq">{t('footer.faq')}</a></li>
+            <li><a href="#privacy">{t('footer.privacy')}</a></li>
+            <li><a href="#terms">{t('footer.terms')}</a></li>
           </ul>
         </div>
 
         {/* Contact Info */}
         <div className="footer-section">
-          <h4>Liên hệ</h4>
+          <h4>{t('footer.contact_title')}</h4>
           <div className="contact-info">
             <p>📧 support@quizmaster.vn</p>
             <p>📞 (+84) 123 456 789</p>

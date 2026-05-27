@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import apiService from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -21,6 +22,7 @@ export default function Result() {
     const { attemptId } = useParams();
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { t, i18n } = useTranslation();
 
     const [attempt, setAttempt] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -36,7 +38,7 @@ export default function Result() {
                 setError(null);
             } catch (err) {
                 console.error('Failed to fetch result:', err);
-                setError('Không thể tải kết quả bài quiz');
+                setError(t('student_result.error_load'));
                 setAttempt(null);
             } finally {
                 setLoading(false);
@@ -52,44 +54,45 @@ export default function Result() {
     const getResultStatus = (score) => {
         if (score >= 8) {
             return { 
-                label: 'Xuất sắc!', 
+                label: t('student_result.excellent'), 
                 color: '#10b981', 
                 icon: <FiAward className="stu-result-badge-icon" style={{ color: '#10b981' }} />,
                 bgFill: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                message: 'Tuyệt vời! Bạn làm rất tốt. Tiếp tục phát huy nhé!'
+                message: t('student_result.excellent_msg')
             };
         }
         if (score >= 7) {
             return { 
-                label: 'Khá tốt', 
+                label: t('student_result.good'), 
                 color: '#3b82f6', 
                 icon: <FiSmile className="stu-result-badge-icon" style={{ color: '#3b82f6' }} />,
                 bgFill: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                message: 'Kết quả khá tốt! Bạn hãy ôn tập thêm để đạt điểm tối đa.'
+                message: t('student_result.good_msg')
             };
         }
         if (score >= 5) {
             return { 
-                label: 'Đạt yêu cầu', 
+                label: t('student_result.pass'), 
                 color: '#f59e0b', 
                 icon: <FiMeh className="stu-result-badge-icon" style={{ color: '#f59e0b' }} />,
                 bgFill: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                message: 'Bạn đã đạt yêu cầu trung bình. Cần cố gắng ôn tập thêm các câu sai.'
+                message: t('student_result.pass_msg')
             };
         }
         return { 
-            label: 'Cần cải thiện', 
+            label: t('student_result.fail'), 
             color: '#ef4444', 
             icon: <FiAlertCircle className="stu-result-badge-icon" style={{ color: '#ef4444' }} />,
             bgFill: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-            message: 'Điểm số chưa đạt yêu cầu. Hãy ôn lại bài và thử lại ở lượt sau nhé!'
+            message: t('student_result.fail_msg')
         };
     };
 
     // Format date
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('vi-VN', {
+        const locale = i18n.language === 'en' ? 'en-US' : 'vi-VN';
+        return date.toLocaleDateString(locale, {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -103,7 +106,7 @@ export default function Result() {
             <div className="student-page">
                 <section className="stu-loading">
                     <div className="stu-spinner"></div>
-                    <p>Đang tải kết quả bài làm...</p>
+                    <p>{t('student_result.loading')}</p>
                 </section>
             </div>
         );
@@ -116,8 +119,8 @@ export default function Result() {
                     <div className="stu-container">
                         <div className="stu-welcome-row">
                             <div className="stu-welcome-left">
-                                <h1>Lỗi hệ thống</h1>
-                                <p>Đã xảy ra sự cố trong quá trình tải dữ liệu điểm số của bài quiz này.</p>
+                                <h1>{t('student_result.error_title')}</h1>
+                                <p>{t('student_result.error_desc')}</p>
                             </div>
                         </div>
                     </div>
@@ -138,13 +141,13 @@ export default function Result() {
                         margin: '0 auto'
                     }}>
                         <FiAlertCircle size={64} style={{ color: '#ef4444', marginBottom: '1.5rem' }} />
-                        <h2 style={{ color: '#0f172a', margin: '0 0 0.5rem 0', fontWeight: 800 }}>Không tìm thấy kết quả</h2>
-                        <p style={{ color: '#64748b', marginBottom: '2rem' }}>{error || 'Mã bài thi không tồn tại hoặc đã bị xóa.'}</p>
+                        <h2 style={{ color: '#0f172a', margin: '0 0 0.5rem 0', fontWeight: 800 }}>{t('student_result.not_found')}</h2>
+                        <p style={{ color: '#64748b', marginBottom: '2rem' }}>{error || t('student_result.not_found_desc')}</p>
                         <button
                             onClick={() => navigate('/student/history')}
                             className="stu-btn-save-premium"
                         >
-                            Quay lại lịch sử làm bài
+                            {t('student_result.back_to_history')}
                         </button>
                     </div>
                 </div>
@@ -163,10 +166,10 @@ export default function Result() {
                         <div className="stu-welcome-left">
                             <div className="stu-header-badge">
                                 <FiAward className="stu-badge-icon" />
-                                Kết Quả Bài Thi
+                                {t('student_result.badge')}
                             </div>
-                            <h1>Báo cáo điểm số của bạn</h1>
-                            <p>Chúc mừng bạn đã hoàn thành bài thi! Dưới đây là thông tin chi tiết về điểm số của lượt làm bài này.</p>
+                            <h1>{t('student_result.title')}</h1>
+                            <p>{t('student_result.subtitle')}</p>
                         </div>
                     </div>
                 </div>
@@ -184,9 +187,9 @@ export default function Result() {
                     
                     {/* Score display */}
                     <div className="stu-result-subtitle">
-                        Bạn đạt được <span className="stu-result-score-highlight" style={{ color: resultStatus.color }}>
+                        {t('student_result.score_text')} <span className="stu-result-score-highlight" style={{ color: resultStatus.color }}>
                             {(attempt.score || 0).toFixed(1)}
-                        </span> / 10 điểm
+                        </span> {t('student_result.score_unit')}
                     </div>
 
                     {/* Progress track */}
@@ -211,21 +214,21 @@ export default function Result() {
                 {/* DETAILS CARD */}
                 <div className="stu-result-details-card">
                     <h3 className="stu-result-details-title">
-                        <FiFileText style={{ color: '#4f46e5' }} /> Chi tiết lượt làm bài
+                        <FiFileText style={{ color: '#4f46e5' }} /> {t('student_result.details_title')}
                     </h3>
                     <div className="stu-result-details-grid">
                         
                         {/* Quiz Title */}
                         <div className="stu-result-detail-box">
-                            <div className="stu-result-detail-label">Tên bài thi</div>
+                            <div className="stu-result-detail-label">{t('student_result.quiz_name')}</div>
                             <div className="stu-result-detail-value">
-                                {attempt.quiz_title || 'Bài trắc nghiệm'}
+                                {attempt.quiz_title || t('student_result.default_quiz_name')}
                             </div>
                         </div>
 
                         {/* Started Time */}
                         <div className="stu-result-detail-box">
-                            <div className="stu-result-detail-label">Thời gian bắt đầu</div>
+                            <div className="stu-result-detail-label">{t('student_result.start_time')}</div>
                             <div className="stu-result-detail-value">
                                 <FiClock style={{ color: '#94a3b8' }} />
                                 {formatDate(attempt.started_at)}
@@ -234,16 +237,16 @@ export default function Result() {
 
                         {/* Status */}
                         <div className="stu-result-detail-box">
-                            <div className="stu-result-detail-label">Trạng thái</div>
+                            <div className="stu-result-detail-label">{t('student_result.status')}</div>
                             <div className="stu-result-detail-value" style={{ color: '#10b981' }}>
                                 <FiCheckCircle /> 
-                                {attempt.status === 'completed' ? 'Đã nộp bài' : attempt.status}
+                                {attempt.status === 'completed' ? t('student_result.submitted') : attempt.status}
                             </div>
                         </div>
 
                         {/* Student Account */}
                         <div className="stu-result-detail-box">
-                            <div className="stu-result-detail-label">Thí sinh</div>
+                            <div className="stu-result-detail-label">{t('student_result.candidate')}</div>
                             <div className="stu-result-detail-value">
                                 <FiUser style={{ color: '#94a3b8' }} />
                                 {attempt.username || user?.username}
@@ -260,21 +263,21 @@ export default function Result() {
                             to="/student/history" 
                             className="stu-btn-action-result stu-btn-action-result-secondary"
                         >
-                            <FiPieChart /> Xem lịch sử làm bài
+                            <FiPieChart /> {t('student_result.view_history')}
                         </Link>
                         
                         <Link 
                             to="/student/quizzes" 
                             className="stu-btn-action-result stu-btn-action-result-primary"
                         >
-                            <FiBookOpen /> Làm bài quiz khác
+                            <FiBookOpen /> {t('student_result.try_another')}
                         </Link>
 
                         <Link 
                             to="/student" 
                             className="stu-btn-action-result stu-btn-action-result-success"
                         >
-                            <FiHome /> Quay về Trang chủ
+                            <FiHome /> {t('student_result.go_home')}
                         </Link>
                     </div>
                 </div>

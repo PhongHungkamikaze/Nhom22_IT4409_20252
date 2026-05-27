@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import apiService from '../../services/api';
 import './Register.css';
 
 const Register = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -28,11 +30,11 @@ const Register = () => {
 
   const validateForm = () => {
     if (formData.password !== formData.confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp!');
+      setError(t('register_page.error_password_mismatch'));
       return false;
     }
     if (formData.password.length < 6) {
-      setError('Mật khẩu phải có ít nhất 6 ký tự!');
+      setError(t('register_page.error_password_short'));
       return false;
     }
     return true;
@@ -59,19 +61,19 @@ const Register = () => {
 
       await apiService.register(registrationData);
       setSuccess(true);
-      alert('Đăng ký thành công! Hãy đăng nhập để tiếp tục.');
+      alert(t('register_page.register_success_alert'));
     } catch (error) {
       if (error.response?.data) {
         const errorData = error.response.data;
         if (errorData.username) {
-          setError('Tên đăng nhập đã tồn tại!');
+          setError(t('register_page.error_username_exists'));
         } else if (errorData.email) {
-          setError('Email đã được sử dụng!');
+          setError(t('register_page.error_email_exists'));
         } else {
-          setError('Có lỗi xảy ra! Vui lòng thử lại.');
+          setError(t('register_page.error_generic'));
         }
       } else {
-        setError('Không thể kết nối đến server!');
+        setError(t('register_page.error_connection'));
       }
     } finally {
       setLoading(false);
@@ -85,10 +87,10 @@ const Register = () => {
           <div className="register-card">
             <div className="success-message">
               <div className="success-icon">✅</div>
-              <h2>Đăng ký thành công!</h2>
-              <p>Tài khoản của bạn đã được tạo thành công.</p>
+              <h2>{t('register_page.success_title')}</h2>
+              <p>{t('register_page.success_desc')}</p>
               <Link to="/login" className="login-btn">
-                Đăng nhập ngay
+                {t('register_page.login_now')}
               </Link>
             </div>
           </div>
@@ -104,8 +106,8 @@ const Register = () => {
           {/* Header */}
           <div className="register-header">
             <div className="logo">📚 QuizMaster</div>
-            <h2>Đăng ký</h2>
-            <p>Tạo tài khoản để bắt đầu hành trình học tập!</p>
+            <h2>{t('register_page.title')}</h2>
+            <p>{t('register_page.subtitle')}</p>
           </div>
 
           {/* Form */}
@@ -118,79 +120,79 @@ const Register = () => {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="first_name">Họ</label>
+                <label htmlFor="first_name">{t('register_page.first_name')}</label>
                 <input
                   type="text"
                   id="first_name"
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  placeholder="Nhập họ"
+                  placeholder={t('register_page.first_name_placeholder')}
                   required
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="last_name">Tên</label>
+                <label htmlFor="last_name">{t('register_page.last_name')}</label>
                 <input
                   type="text"
                   id="last_name"
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  placeholder="Nhập tên"
+                  placeholder={t('register_page.last_name_placeholder')}
                   required
                 />
               </div>
             </div>
 
             <div className="form-group">
-              <label htmlFor="username">Tên đăng nhập</label>
+              <label htmlFor="username">{t('register_page.username_label')}</label>
               <input
                 type="text"
                 id="username"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                placeholder="Nhập tên đăng nhập"
+                placeholder={t('register_page.username_placeholder')}
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">{t('register_page.email_label')}</label>
               <input
                 type="email"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Nhập địa chỉ email"
+                placeholder={t('register_page.email_placeholder')}
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Mật khẩu</label>
+              <label htmlFor="password">{t('register_page.password_label')}</label>
               <input
                 type="password"
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+                placeholder={t('register_page.password_placeholder')}
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
+              <label htmlFor="confirmPassword">{t('register_page.confirm_password')}</label>
               <input
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="Nhập lại mật khẩu"
+                placeholder={t('register_page.confirm_password_placeholder')}
                 required
               />
             </div>
@@ -198,7 +200,7 @@ const Register = () => {
             <div className="form-options">
               <label className="checkbox">
                 <input type="checkbox" required />
-                <span>Tôi đồng ý với <a href="#terms">Điều khoản sử dụng</a></span>
+                <span>{t('register_page.agree_terms')} <a href="#terms">{t('register_page.terms_link')}</a></span>
               </label>
             </div>
 
@@ -207,22 +209,22 @@ const Register = () => {
               className="register-btn"
               disabled={loading}
             >
-              {loading ? '🔄 Đang đăng ký...' : 'Tạo tài khoản'}
+              {loading ? `🔄 ${t('register_page.registering')}` : t('register_page.create_account')}
             </button>
           </form>
 
           {/* Footer */}
           <div className="register-footer">
             <p>
-              Đã có tài khoản?
-              <Link to="/login" className="login-link"> Đăng nhập</Link>
+              {t('register_page.have_account')}
+              <Link to="/login" className="login-link"> {t('register_page.login_link')}</Link>
             </p>
           </div>
 
           {/* Social Register */}
           <div className="social-register">
             <div className="divider">
-              <span>Hoặc đăng ký với</span>
+              <span>{t('register_page.or_register_with')}</span>
             </div>
             <div className="social-buttons">
               <button className="social-btn google">

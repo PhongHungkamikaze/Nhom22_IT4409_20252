@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import apiService from '../../services/api';
 import {
   FiBookOpen,
@@ -18,6 +19,7 @@ import './Homepage.css';
 
 const Homepage = () => {
   const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     total_quizzes: 0,
     total_users: 0,
@@ -61,20 +63,20 @@ const Homepage = () => {
       <section className="hero">
         <div className="hero-content">
           <div className="hero-text">
-            <h1>Nền tảng thi trực tuyến <span className="highlight">hàng đầu</span></h1>
-            <p>Trải nghiệm làm bài thi trực tuyến mượt mà, đánh giá năng lực chính xác và kết quả tức thì với hệ thống QuizMaster.</p>
+            <h1>{t('homepage.hero_title')} <span className="highlight">{t('homepage.hero_highlight')}</span></h1>
+            <p>{t('homepage.hero_desc')}</p>
             <div className="hero-buttons">
               {isAuthenticated ? (
                 <Link to={getDashboardPath()} className="btn-hero-primary">
-                  Đến Bảng điều khiển <FiArrowRight style={{ marginLeft: '8.5px', verticalAlign: 'middle' }} />
+                  {t('homepage.go_dashboard')} <FiArrowRight style={{ marginLeft: '8.5px', verticalAlign: 'middle' }} />
                 </Link>
               ) : (
                 <>
                   <Link to="/register" className="btn-hero-primary">
-                    Đăng ký ngay <FiArrowRight style={{ marginLeft: '8.5px', verticalAlign: 'middle' }} />
+                    {t('homepage.register_now')} <FiArrowRight style={{ marginLeft: '8.5px', verticalAlign: 'middle' }} />
                   </Link>
                   <Link to="/login" className="btn-hero-secondary">
-                    Đăng nhập
+                    {t('login')}
                   </Link>
                 </>
               )}
@@ -102,15 +104,15 @@ const Homepage = () => {
           <div className="stats-grid">
             <div className="stat-item">
               <div className="stat-number">{stats.total_quizzes}+</div>
-              <div className="stat-label">Bài quiz</div>
+              <div className="stat-label">{t('homepage.stat_quizzes')}</div>
             </div>
             <div className="stat-item">
               <div className="stat-number">{stats.total_users}+</div>
-              <div className="stat-label">Người dùng</div>
+              <div className="stat-label">{t('homepage.stat_users')}</div>
             </div>
             <div className="stat-item">
               <div className="stat-number">{stats.completed_attempts}+</div>
-              <div className="stat-label">Bài thi hoàn thành</div>
+              <div className="stat-label">{t('homepage.stat_completed')}</div>
             </div>
           </div>
         </div>
@@ -119,28 +121,28 @@ const Homepage = () => {
       {/* Audiences Section */}
       <section className="audiences">
         <div className="container">
-          <h2 className="section-title">Đối tượng phục vụ</h2>
+          <h2 className="section-title">{t('homepage.audience_title')}</h2>
           <div className="audiences-grid">
             <div className="audience-card">
               <div className="audience-icon-wrapper purple">
                 <FiUser />
               </div>
-              <h3>Học viên</h3>
-              <p>Tham gia làm bài thi thử trực tuyến, tự ôn tập kiến thức, quản lý kết quả điểm số và lịch sử hoạt động để nâng cao năng lực học tập một cách chủ động.</p>
+              <h3>{t('homepage.audience_student')}</h3>
+              <p>{t('homepage.audience_student_desc')}</p>
             </div>
             <div className="audience-card">
               <div className="audience-icon-wrapper orange">
                 <FiEdit />
               </div>
-              <h3>Giáo viên</h3>
-              <p>Quản lý ngân hàng câu hỏi đa dạng, soạn đề thi trắc nghiệm linh hoạt, tự động chấm điểm và theo dõi chi tiết bảng điểm của từng học sinh.</p>
+              <h3>{t('homepage.audience_teacher')}</h3>
+              <p>{t('homepage.audience_teacher_desc')}</p>
             </div>
             <div className="audience-card">
               <div className="audience-icon-wrapper green">
                 <FiShield />
               </div>
-              <h3>Quản trị viên</h3>
-              <p>Quản trị hệ thống toàn diện, kiểm duyệt tài khoản, đảm bảo hệ thống bảo mật ổn định và an toàn với hệ thống chống gian lận thông minh.</p>
+              <h3>{t('homepage.audience_admin')}</h3>
+              <p>{t('homepage.audience_admin_desc')}</p>
             </div>
           </div>
         </div>
@@ -149,27 +151,27 @@ const Homepage = () => {
       {/* Workflow Section */}
       <section className="workflow">
         <div className="container">
-          <h2 className="section-title">Quy trình hoạt động</h2>
+          <h2 className="section-title">{t('homepage.workflow_title')}</h2>
           <div className="workflow-grid">
             <div className="workflow-step">
               <div className="workflow-number">01</div>
-              <h3>Đăng ký tài khoản</h3>
-              <p>Tạo tài khoản học tập hoặc giảng dạy cá nhân chỉ trong vài bước đơn giản.</p>
+              <h3>{t('homepage.step1_title')}</h3>
+              <p>{t('homepage.step1_desc')}</p>
             </div>
             <div className="workflow-step">
               <div className="workflow-number">02</div>
-              <h3>Chọn / Thiết lập đề thi</h3>
-              <p>Học viên lựa chọn bài quiz; giáo viên biên soạn đề từ ngân hàng câu hỏi sẵn có.</p>
+              <h3>{t('homepage.step2_title')}</h3>
+              <p>{t('homepage.step2_desc')}</p>
             </div>
             <div className="workflow-step">
               <div className="workflow-number">03</div>
-              <h3>Làm bài thi trực tuyến</h3>
-              <p>Làm bài thi với giao diện thông minh, tự động tính giờ và cảnh báo gian lận.</p>
+              <h3>{t('homepage.step3_title')}</h3>
+              <p>{t('homepage.step3_desc')}</p>
             </div>
             <div className="workflow-step">
               <div className="workflow-number">04</div>
-              <h3>Nhận kết quả tức thì</h3>
-              <p>Nhận điểm số ngay sau khi nộp kèm báo cáo giải thích chi tiết từng câu trả lời.</p>
+              <h3>{t('homepage.step4_title')}</h3>
+              <p>{t('homepage.step4_desc')}</p>
             </div>
           </div>
         </div>
@@ -178,15 +180,15 @@ const Homepage = () => {
       {/* Features Section */}
       <section className="features">
         <div className="container">
-          <h2 className="section-title">Tính năng nổi bật</h2>
+          <h2 className="section-title">{t('homepage.features_title')}</h2>
           <div className="features-grid">
             <div className="feature-item">
               <div className="feature-item-icon-wrap">
                 <FiZap />
               </div>
               <div className="feature-content">
-                <h3>Nhanh chóng</h3>
-                <p>Giao diện tối ưu, phản hồi tức thì, trải nghiệm làm bài mượt mà không bị gián đoạn.</p>
+                <h3>{t('homepage.feature_fast')}</h3>
+                <p>{t('homepage.feature_fast_desc')}</p>
               </div>
             </div>
             <div className="feature-item">
@@ -194,8 +196,8 @@ const Homepage = () => {
                 <FiLock />
               </div>
               <div className="feature-content">
-                <h3>Bảo mật thông tin</h3>
-                <p>Dữ liệu bài làm và thông tin cá nhân của người dùng được bảo vệ tuyệt đối.</p>
+                <h3>{t('homepage.feature_secure')}</h3>
+                <p>{t('homepage.feature_secure_desc')}</p>
               </div>
             </div>
             <div className="feature-item">
@@ -203,8 +205,8 @@ const Homepage = () => {
                 <FiBarChart2 />
               </div>
               <div className="feature-content">
-                <h3>Phân tích chi tiết</h3>
-                <p>Báo cáo phổ điểm trực quan, thống kê điểm số và theo dõi biểu đồ tiến độ làm bài.</p>
+                <h3>{t('homepage.feature_analytics')}</h3>
+                <p>{t('homepage.feature_analytics_desc')}</p>
               </div>
             </div>
             <div className="feature-item">
@@ -212,8 +214,8 @@ const Homepage = () => {
                 <FiShield />
               </div>
               <div className="feature-content">
-                <h3>Giám sát chống gian lận</h3>
-                <p>Công nghệ giám sát thông minh kết nối liên tục, tự động phát hiện hành vi thoát màn hình.</p>
+                <h3>{t('homepage.feature_anticheat')}</h3>
+                <p>{t('homepage.feature_anticheat_desc')}</p>
               </div>
             </div>
           </div>

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import apiService from '../../services/api';
 import { FiBookOpen, FiHelpCircle, FiClock, FiInbox, FiSearch, FiAward, FiEdit3 } from 'react-icons/fi';
 import './Student.css';
 import Pagination from '../../components/common/Pagination';
 
 export default function QuizList() {
+    const { t } = useTranslation();
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -31,7 +33,7 @@ export default function QuizList() {
             setError(null);
         } catch (err) {
             console.error('Failed to fetch quizzes:', err);
-            setError('Không thể tải danh sách bài quiz');
+            setError(t('student_quiz_list.error_load'));
             setQuizzes([]);
             setTotalCount(0);
         } finally {
@@ -61,21 +63,21 @@ export default function QuizList() {
                         <div className="stu-welcome-left">
                             <div className="stu-header-badge">
                                 <FiAward className="stu-badge-icon" />
-                                <span>Hệ thống Đánh giá Năng lực</span>
+                                <span>{t('student_quiz_list.badge')}</span>
                             </div>
                             <h1 className="stu-header-title">
                                 <FiBookOpen className="stu-title-icon" />
-                                Danh Sách Bài Quiz
+                                {t('student_quiz_list.title')}
                             </h1>
                             <p className="stu-header-subtitle">
-                                Chọn một bài quiz dưới đây để bắt đầu thử sức và đánh giá năng lực của bạn.
+                                {t('student_quiz_list.subtitle')}
                             </p>
                         </div>
                         <div className="stu-welcome-quote-card">
                             <FiEdit3 className="stu-quote-icon" />
                             <div className="stu-quote-content">
-                                <h4>Rèn Luyện Mỗi Ngày</h4>
-                                <p>Thành công không phải là ngẫu nhiên, đó là sự chuẩn bị và kiên trì rèn luyện.</p>
+                                <h4>{t('student_quiz_list.quote_title')}</h4>
+                                <p>{t('student_quiz_list.quote_text')}</p>
                             </div>
                         </div>
                     </div>
@@ -96,7 +98,7 @@ export default function QuizList() {
                         }} />
                         <input
                             type="text"
-                            placeholder="Tìm kiếm bài quiz..."
+                            placeholder={t('student_quiz_list.search_placeholder')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="stu-search-input"
@@ -134,19 +136,19 @@ export default function QuizList() {
                     {loading ? (
                         <div className="stu-loading">
                             <div className="stu-spinner"></div>
-                            <p>Đang tải bài quiz...</p>
+                            <p>{t('student_quiz_list.loading')}</p>
                         </div>
                     ) : quizzes.length === 0 ? (
                         <div className="stu-empty">
                             <div className="stu-empty-icon-wrap">
                                 <FiInbox size={40} className="stu-empty-icon" />
                             </div>
-                            <p>{searchTerm ? 'Không tìm thấy bài quiz nào' : 'Chưa có bài quiz nào khả dụng'}</p>
+                            <p>{searchTerm ? t('student_quiz_list.no_results') : t('student_quiz_list.no_quizzes')}</p>
                         </div>
                     ) : (
                         <>
                             <div style={{ marginBottom: '1rem', color: '#64748b', fontSize: '0.95rem', fontWeight: 500 }}>
-                                Tìm thấy {totalCount} bài quiz
+                                {t('pagination.found_count', { count: totalCount })}
                             </div>
                             <div className="stu-quizzes-grid">
                                 {quizzes.map(quiz => (
@@ -160,22 +162,22 @@ export default function QuizList() {
                                             )}
                                         </div>
                                         <p className="stu-quiz-desc">
-                                            {quiz.description || 'Hãy thử sức với bài quiz này!'}
+                                            {quiz.description || t('student_dashboard.default_desc')}
                                         </p>
                                         <div className="stu-quiz-info">
                                             <span>
-                                                <FiHelpCircle className="stu-quiz-info-icon" /> {quiz.questions_count || quiz.question_count || '?'} câu hỏi
+                                                <FiHelpCircle className="stu-quiz-info-icon" /> {quiz.questions_count || quiz.question_count || '?'} {t('student_dashboard.questions_count')}
                                             </span>
                                             <span>
-                                                <FiClock className="stu-quiz-info-icon" /> {quiz.time_limit || quiz.duration || '30'} phút
+                                                <FiClock className="stu-quiz-info-icon" /> {quiz.time_limit || quiz.duration || '30'} {t('student_dashboard.minutes')}
                                             </span>
                                         </div>
                                         <div className="stu-quiz-footer">
                                             <span className="stu-quiz-author">
-                                                Bởi: {quiz.author || quiz.teacher_name || quiz.created_by || 'Giáo viên'}
+                                                {t('student_dashboard.by_author', { name: quiz.author || quiz.teacher_name || quiz.created_by || t('student_dashboard.default_author') })}
                                             </span>
                                             <Link to={`/student/quizzes/${quiz.id}`} className="stu-quiz-start-btn">
-                                                Xem chi tiết
+                                                {t('student_dashboard.view_details')}
                                             </Link>
                                         </div>
                                     </div>
@@ -184,7 +186,7 @@ export default function QuizList() {
 
                             {/* Pagination Controls */}
                             {Math.ceil(totalCount / pageSize) > 1 && (
-                                <Pagination 
+                                <Pagination
                                     currentPage={currentPage}
                                     totalPages={Math.ceil(totalCount / pageSize)}
                                     onPageChange={handlePageChange}

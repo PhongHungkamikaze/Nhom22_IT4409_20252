@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Teacher.css';
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 import apiService from '../../services/api';
+import Pagination from '../../components/common/Pagination';
 
 export default function Attempts() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -97,9 +98,7 @@ export default function Attempts() {
     };
 
     const totalPages = Math.ceil(totalCount / pageSize);
-    const hasNextQuizPage = (totalCount > currentPage * pageSize) || (quizzes.length === pageSize);
     const attemptTotalPages = Math.ceil(attemptTotalCount / pageSize);
-    const hasNextAttemptPage = (attemptTotalCount > attemptPage * pageSize) || (attempts.length === pageSize);
 
     // --- QUIZ SELECTION VIEW ---
     if (!selectedQuiz) {
@@ -174,39 +173,14 @@ export default function Attempts() {
                     </div>
 
                     {totalCount > 0 && (
-                        <div className="pagination">
-                            <span className="pagination-info">Hiển thị {quizzes.length} trên tổng số {totalCount} bài thi</span>
-                            <div className="pagination-controls">
-                                <button
-                                    className="page-btn"
-                                    onClick={() => handleQuizPageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                >
-                                    Trước
-                                </button>
-
-                                {Array.from({ length: totalPages }).map((_, index) => {
-                                    const pageNum = index + 1;
-                                    return (
-                                        <button
-                                            key={pageNum}
-                                            className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
-                                            onClick={() => handleQuizPageChange(pageNum)}
-                                        >
-                                            {pageNum}
-                                        </button>
-                                    );
-                                })}
-
-                                <button
-                                    className="page-btn"
-                                    onClick={() => handleQuizPageChange(currentPage + 1)}
-                                    disabled={!hasNextQuizPage}
-                                >
-                                    Sau
-                                </button>
-                            </div>
-                        </div>
+                        <Pagination 
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handleQuizPageChange}
+                            totalCount={totalCount}
+                            pageSize={pageSize}
+                            itemLabel="bài thi"
+                        />
                     )}
                 </div>
             </div>
@@ -328,39 +302,14 @@ export default function Attempts() {
                 </div>
 
                 {attemptTotalCount > 0 && (
-                    <div className="pagination">
-                        <span className="pagination-info">Hiển thị {attempts.length} trên tổng số {attemptTotalCount} lượt làm bài</span>
-                        <div className="pagination-controls">
-                            <button
-                                className="page-btn"
-                                onClick={() => handleAttemptPageChange(attemptPage - 1)}
-                                disabled={attemptPage === 1}
-                            >
-                                Trước
-                            </button>
-
-                            {Array.from({ length: attemptTotalPages }).map((_, index) => {
-                                const pageNum = index + 1;
-                                return (
-                                    <button
-                                        key={pageNum}
-                                        className={`page-btn ${attemptPage === pageNum ? 'active' : ''}`}
-                                        onClick={() => handleAttemptPageChange(pageNum)}
-                                    >
-                                        {pageNum}
-                                    </button>
-                                );
-                            })}
-
-                            <button
-                                className="page-btn"
-                                onClick={() => handleAttemptPageChange(attemptPage + 1)}
-                                disabled={!hasNextAttemptPage}
-                            >
-                                Sau
-                            </button>
-                        </div>
-                    </div>
+                    <Pagination 
+                        currentPage={attemptPage}
+                        totalPages={attemptTotalPages}
+                        onPageChange={handleAttemptPageChange}
+                        totalCount={attemptTotalCount}
+                        pageSize={pageSize}
+                        itemLabel="lượt làm bài"
+                    />
                 )}
             </div>
         </div>

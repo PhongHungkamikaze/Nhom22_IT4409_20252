@@ -4,6 +4,7 @@ import apiService from '../../services/api';
 import './Teacher.css';
 import '../Admin/Admin.css';
 import { useAuth } from '../../context/AuthContext';
+import Pagination from '../../components/common/Pagination';
 
 // Fetch ALL pages từ một paginated API
 async function fetchAllPages(fetchFn, params = {}) {
@@ -554,70 +555,29 @@ export default function TeacherQuizEdit() {
                             </tbody>
                         </table>
                     </div>
-
                     {/* Pagination */}
-                    {
-                        totalPages > 1 && (
-                            <div className="pagination" style={{ marginTop: 16 }}>
-                                <span className="pagination-info">
-                                    Trang {availPage}/{totalPages} · {filteredAvail.length} câu hỏi
-                                </span>
-                                <div className="pagination-controls">
-                                    <button
-                                        className="page-btn"
-                                        disabled={availPage === 1}
-                                        onClick={() => setAvailPage(1)}
-                                    >«</button>
-                                    <button
-                                        className="page-btn"
-                                        disabled={availPage === 1}
-                                        onClick={() => setAvailPage(p => p - 1)}
-                                    >‹</button>
-
-                                    {/* Page numbers */}
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1)
-                                        .filter(p => p === 1 || p === totalPages || Math.abs(p - availPage) <= 2)
-                                        .reduce((acc, p, idx, arr) => {
-                                            if (idx > 0 && p - arr[idx - 1] > 1) acc.push('...');
-                                            acc.push(p);
-                                            return acc;
-                                        }, [])
-                                        .map((p, i) => p === '...'
-                                            ? <span key={`dots-${i}`} style={{ padding: '0 4px', color: '#9ca3af' }}>…</span>
-                                            : <button
-                                                key={p}
-                                                className={`page-btn ${availPage === p ? 'active' : ''}`}
-                                                onClick={() => setAvailPage(p)}
-                                            >{p}</button>
-                                        )
-                                    }
-
-                                    <button
-                                        className="page-btn"
-                                        disabled={availPage === totalPages}
-                                        onClick={() => setAvailPage(p => p + 1)}
-                                    >›</button>
-                                    <button
-                                        className="page-btn"
-                                        disabled={availPage === totalPages}
-                                        onClick={() => setAvailPage(totalPages)}
-                                    >»</button>
-                                </div>
-                            </div>
-                        )
-                    }
-                </section >
+                    {totalPages > 1 && (
+                        <Pagination
+                            currentPage={availPage}
+                            totalPages={totalPages}
+                            onPageChange={setAvailPage}
+                            totalCount={filteredAvail.length}
+                            pageSize={PAGE_SIZE}
+                            itemLabel="câu hỏi"
+                        />
+                    )}
+                </section>
 
                 {/* ── Save / Cancel ── */}
-                < div className="form-actions" style={{ justifyContent: 'flex-end', marginTop: 28 }}>
+                <div className="form-actions" style={{ justifyContent: 'flex-end', marginTop: 28 }}>
                     <button className="primary-btn" type="button" onClick={handleSave} disabled={saving}>
                         {saving ? 'Đang lưu...' : '💾 Lưu tất cả'}
                     </button>
                     <button type="button" className="secondary-btn" onClick={() => navigate(-1)} disabled={saving}>
                         Hủy
                     </button>
-                </div >
-            </div >
-        </div >
+                </div>
+            </div>
+        </div>
     );
 }

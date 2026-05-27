@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import apiService from '../../services/api';
 import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
+import Pagination from '../../components/common/Pagination';
 import './Admin.css';
 
 export default function Subjects() {
@@ -81,7 +82,6 @@ export default function Subjects() {
     };
 
     const totalPages = Math.ceil(totalCount / pageSize);
-    const hasNextPage = (totalCount > currentPage * pageSize) || (subjects.length === pageSize);
 
     const openAddModal = () => {
         setCurrentSubject({ name: '', description: '' });
@@ -148,39 +148,14 @@ export default function Subjects() {
                         </div>
 
                         {totalCount > 0 && (
-                            <div className="pagination">
-                                <span className="pagination-info">Hiển thị {subjects.length} trên tổng số {totalCount} môn học</span>
-                                <div className="pagination-controls">
-                                    <button
-                                        className="page-btn"
-                                        onClick={() => handlePageChange(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                    >
-                                        Trước
-                                    </button>
-
-                                    {Array.from({ length: totalPages }).map((_, index) => {
-                                        const pageNum = index + 1;
-                                        return (
-                                            <button
-                                                key={pageNum}
-                                                className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
-                                                onClick={() => handlePageChange(pageNum)}
-                                            >
-                                                {pageNum}
-                                            </button>
-                                        );
-                                    })}
-
-                                    <button
-                                        className="page-btn"
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                        disabled={!hasNextPage}
-                                    >
-                                        Sau
-                                    </button>
-                                </div>
-                            </div>
+                            <Pagination 
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                                totalCount={totalCount}
+                                pageSize={pageSize}
+                                itemLabel="môn học"
+                            />
                         )}
                     </>
                 )}

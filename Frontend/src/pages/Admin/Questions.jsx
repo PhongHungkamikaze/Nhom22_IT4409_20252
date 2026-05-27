@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
 import './Admin.css';
+import Pagination from '../../components/common/Pagination';
 import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
 
 export default function Questions() {
@@ -113,7 +114,6 @@ export default function Questions() {
     };
 
     const totalPages = Math.ceil(totalCount / pageSize);
-    const hasNextPage = (totalCount > currentPage * pageSize) || (questions.length === pageSize);
 
     const typeLabel = (t) => t === 'single' ? 'Một lựa chọn' : t === 'multiple' ? 'Nhiều lựa chọn' : t;
     const typeColor = (t) => t === 'single' ? 'qb-badge--single' : 'qb-badge--multiple';
@@ -338,45 +338,14 @@ export default function Questions() {
                         </div>
 
                         {totalCount > 0 && (
-                            <div className="pagination">
-                                <span className="pagination-info">Hiển thị {questions.length} trên tổng số {totalCount} câu hỏi</span>
-                                <div className="pagination-controls">
-                                    <button
-                                        className="page-btn"
-                                        onClick={() => handlePageChange(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                    >
-                                        Trước
-                                    </button>
-
-                                    {Array.from({ length: totalPages }).map((_, index) => {
-                                        const pageNum = index + 1;
-                                        if (totalPages > 7) {
-                                            if (pageNum !== 1 && pageNum !== totalPages && Math.abs(pageNum - currentPage) > 2) {
-                                                if (Math.abs(pageNum - currentPage) === 3) return <span key={pageNum}>...</span>;
-                                                return null;
-                                            }
-                                        }
-                                        return (
-                                            <button
-                                                key={pageNum}
-                                                className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
-                                                onClick={() => handlePageChange(pageNum)}
-                                            >
-                                                {pageNum}
-                                            </button>
-                                        );
-                                    })}
-
-                                    <button
-                                        className="page-btn"
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                        disabled={!hasNextPage}
-                                    >
-                                        Sau
-                                    </button>
-                                </div>
-                            </div>
+                            <Pagination 
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                                totalCount={totalCount}
+                                pageSize={pageSize}
+                                itemLabel="câu hỏi"
+                            />
                         )}
                     </>
                 )}

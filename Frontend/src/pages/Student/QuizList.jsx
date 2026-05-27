@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import apiService from '../../services/api';
 import { FiBookOpen, FiHelpCircle, FiClock, FiInbox, FiSearch, FiAward, FiEdit3 } from 'react-icons/fi';
 import './Student.css';
+import Pagination from '../../components/common/Pagination';
 
 export default function QuizList() {
     const [quizzes, setQuizzes] = useState([]);
@@ -183,41 +184,14 @@ export default function QuizList() {
 
                             {/* Pagination Controls */}
                             {Math.ceil(totalCount / pageSize) > 1 && (
-                                <div className="stu-pagination">
-                                    <span className="stu-pagination-info">
-                                        Hiển thị trang {currentPage} / {Math.ceil(totalCount / pageSize)} (Tổng số {totalCount} bài quiz)
-                                    </span>
-                                    <div className="stu-pagination-controls">
-                                        <button
-                                            className="stu-page-btn"
-                                            onClick={() => handlePageChange(currentPage - 1)}
-                                            disabled={currentPage === 1}
-                                        >
-                                            Trước
-                                        </button>
-
-                                        {Array.from({ length: Math.ceil(totalCount / pageSize) }).map((_, index) => {
-                                            const pageNum = index + 1;
-                                            return (
-                                                <button
-                                                    key={pageNum}
-                                                    className={`stu-page-btn ${currentPage === pageNum ? 'is-active' : ''}`}
-                                                    onClick={() => handlePageChange(pageNum)}
-                                                >
-                                                    {pageNum}
-                                                </button>
-                                            );
-                                        })}
-
-                                        <button
-                                            className="stu-page-btn"
-                                            onClick={() => handlePageChange(currentPage + 1)}
-                                            disabled={currentPage === Math.ceil(totalCount / pageSize)}
-                                        >
-                                            Sau
-                                        </button>
-                                    </div>
-                                </div>
+                                <Pagination 
+                                    currentPage={currentPage}
+                                    totalPages={Math.ceil(totalCount / pageSize)}
+                                    onPageChange={handlePageChange}
+                                    totalCount={totalCount}
+                                    pageSize={pageSize}
+                                    itemLabel="bài quiz"
+                                />
                             )}
                         </>
                     )}

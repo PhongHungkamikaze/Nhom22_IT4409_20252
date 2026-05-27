@@ -5,6 +5,7 @@ import './NotificationManagement.css';
 import QuickSystem from '../../../components/Admin/QuickSystem/QuickSystem';
 import TeacherQuickSystem from '../../../components/Teacher/QuickSystem/QuickSystem';
 import StudentQuickSystem from '../../../components/Student/QuickSystem/QuickSystem';
+import Pagination from '../../../components/common/Pagination';
 
 const NotificationManagement = ({ role }) => {
     const [notifications, setNotifications] = useState([]);
@@ -205,26 +206,14 @@ const NotificationManagement = ({ role }) => {
                     </table>
                 </div>
 
-                <div className="pagination">
-                    <span className="pagination-info">Trang {page} / {totalPages}</span>
-                    <div className="pagination-controls">
-                        <button
-                            className="page-btn"
-                            disabled={page === 1}
-                            onClick={() => setPage(p => p - 1)}
-                        >
-                            Trước
-                        </button>
-                        <button className="page-btn active">{page}</button>
-                        <button
-                            className="page-btn"
-                            disabled={page === totalPages}
-                            onClick={() => setPage(p => p + 1)}
-                        >
-                            Sau
-                        </button>
-                    </div>
-                </div>
+                <Pagination 
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                    totalCount={notifications.length} // Count of items on current page if totalCount not available
+                    pageSize={15}
+                    itemLabel="thông báo"
+                />
             </div>
         </div>
     );

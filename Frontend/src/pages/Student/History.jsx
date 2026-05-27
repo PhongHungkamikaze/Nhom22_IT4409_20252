@@ -13,6 +13,7 @@ import {
     FiCalendar,
     FiFileText
 } from 'react-icons/fi';
+import Pagination from '../../components/common/Pagination';
 import './Student.css';
 
 export default function History() {
@@ -34,7 +35,8 @@ export default function History() {
                 search: searchTerm,
                 ordering: sorting,
                 page: page,
-                page_size: pageSize
+                page_size: pageSize,
+                status: filter === 'all' ? undefined : filter
             };
             const data = await apiService.getAttempts(params);
             if (data.results) {
@@ -61,7 +63,7 @@ export default function History() {
             fetchAttempts(1);
         }, 500);
         return () => clearTimeout(timeoutId);
-    }, [searchTerm, sorting]);
+    }, [searchTerm, sorting, filter]);
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
@@ -69,14 +71,6 @@ export default function History() {
     };
 
     const totalPages = Math.ceil(totalCount / pageSize);
-    const hasNextPage = (totalCount > currentPage * pageSize) || (attempts.length === pageSize);
-
-    // Filter attempts
-    const filteredAttempts = attempts.filter(attempt => {
-        if (filter === 'completed') return attempt.status === 'completed';
-        if (filter === 'ongoing') return attempt.status === 'ongoing';
-        return true;
-    });
 
     // Get status badge
     const getStatusBadge = (status) => {
@@ -147,7 +141,7 @@ export default function History() {
                 <div className="stu-container">
                     <div className="stu-stats-grid">
                         <div className="stu-stat-item">
-                            <div className="stu-stat-number">{filteredAttempts.length}</div>
+                            <div className="stu-stat-number">{totalCount}</div>
                             <div className="stu-stat-label">
                                 {filter === 'all' ? 'Tổng số lượt làm' : filter === 'completed' ? 'Đã hoàn thành' : 'Đang thực hiện'}
                             </div>
@@ -201,7 +195,7 @@ export default function History() {
                     )}
 
                     {/* Attempts Table/List Card */}
-                    {filteredAttempts.length === 0 ? (
+                    {attempts.length === 0 ? (
                         <div className="stu-empty" style={{ background: '#ffffff', borderRadius: '20px', padding: '4rem 2rem', border: '1px solid #eef2f6' }}>
                             <div className="stu-empty-icon-wrap">
                                 <FiFileText size={40} className="stu-empty-icon" />
@@ -222,7 +216,7 @@ export default function History() {
 
                             {/* Mobile-friendly list for smaller screens */}
                             <div className="stu-history-list-mobile">
-                                {filteredAttempts.map((attempt) => {
+                                {attempts.map((attempt) => {
                                     const statusBadge = getStatusBadge(attempt.status);
                                     return (
                                         <div key={attempt.id} className="stu-history-item-mobile">
@@ -272,7 +266,7 @@ export default function History() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredAttempts.map((attempt) => {
+                                        {attempts.map((attempt) => {
                                             const statusBadge = getStatusBadge(attempt.status);
                                             return (
                                                 <tr key={attempt.id}>
@@ -322,39 +316,14 @@ export default function History() {
                             </div>
 
                             {totalCount > 0 && (
-                                <div className="pagination" style={{ padding: '1rem', borderTop: '1px solid #eee' }}>
-                                    <span className="pagination-info">Hiển thị {attempts.length} trên tổng số {totalCount} lượt làm bài</span>
-                                    <div className="pagination-controls">
-                                        <button
-                                            className="page-btn"
-                                            onClick={() => handlePageChange(currentPage - 1)}
-                                            disabled={currentPage === 1}
-                                        >
-                                            Trước
-                                        </button>
-
-                                        {Array.from({ length: totalPages }).map((_, index) => {
-                                            const pageNum = index + 1;
-                                            return (
-                                                <button
-                                                    key={pageNum}
-                                                    className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
-                                                    onClick={() => handlePageChange(pageNum)}
-                                                >
-                                                    {pageNum}
-                                                </button>
-                                            );
-                                        })}
-
-                                        <button
-                                            className="page-btn"
-                                            onClick={() => handlePageChange(currentPage + 1)}
-                                            disabled={!hasNextPage}
-                                        >
-                                            Sau
-                                        </button>
-                                    </div>
-                                </div>
+                                <Pagination 
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={handlePageChange}
+                                    totalCount={totalCount}
+                                    pageSize={pageSize}
+                                    itemLabel="lượt làm bài"
+                                />
                             )}
                         </div>
                     )}

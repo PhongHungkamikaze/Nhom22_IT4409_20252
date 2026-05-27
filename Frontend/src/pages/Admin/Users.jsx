@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import './Admin.css';
 import QuickSystem from '../../components/Admin/QuickSystem/QuickSystem';
 import apiService from '../../services/api';
+import Pagination from '../../components/common/Pagination';
 
 export default function Users() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -74,7 +75,6 @@ export default function Users() {
     };
 
     const totalPages = Math.ceil(totalCount / pageSize);
-    const hasNextPage = (totalCount > currentPage * pageSize) || (users.length === pageSize);
 
     return (
         <div className="admin-container">
@@ -173,46 +173,14 @@ export default function Users() {
                 )}
 
                 {totalCount > 0 && (
-                    <div className="pagination">
-                        <span className="pagination-info">Hiển thị {users.length} trên tổng số {totalCount} người dùng</span>
-                        <div className="pagination-controls">
-                            <button
-                                className="page-btn"
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                            >
-                                Trước
-                            </button>
-
-                            {Array.from({ length: totalPages }).map((_, index) => {
-                                const pageNum = index + 1;
-                                // Basic logic to show limited page numbers if there are too many
-                                if (totalPages > 7) {
-                                    if (pageNum !== 1 && pageNum !== totalPages && Math.abs(pageNum - currentPage) > 2) {
-                                        if (Math.abs(pageNum - currentPage) === 3) return <span key={pageNum}>...</span>;
-                                        return null;
-                                    }
-                                }
-                                return (
-                                    <button
-                                        key={pageNum}
-                                        className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
-                                        onClick={() => handlePageChange(pageNum)}
-                                    >
-                                        {pageNum}
-                                    </button>
-                                );
-                            })}
-
-                            <button
-                                className="page-btn"
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={!hasNextPage}
-                            >
-                                Sau
-                            </button>
-                        </div>
-                    </div>
+                    <Pagination 
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                        totalCount={totalCount}
+                        pageSize={pageSize}
+                        itemLabel="người dùng"
+                    />
                 )}
             </div>
         </div>

@@ -35,9 +35,6 @@ class NotificationViewSet(
         return NotificationFilter
 
     def get_queryset(self):
-        user = self.request.user
-        if user.role == UserRole.Admin:
-            return Notification.all_objects.all()
         return Notification.objects.filter(recipient=self.request.user)
 
     def get_serializer_class(self):

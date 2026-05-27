@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
 import './Teacher.css';
+import '../Admin/Admin.css';
 import { useAuth } from '../../context/AuthContext';
 
 // Fetch ALL pages từ một paginated API
@@ -43,17 +44,39 @@ export default function TeacherQuizEdit() {
     const [availPage, setAvailPage] = useState(1);
     const [availSearch, setAvailSearch] = useState('');
 
+    const [typeFilter, setTypeFilter] = useState('all');
+    const [subjectFilter, setSubjectFilter] = useState([]);
+    const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
+    const subjectDropdownRef = useRef(null);
+    const [teacherFilter, setTeacherFilter] = useState([]);
+    const [isTeacherDropdownOpen, setIsTeacherDropdownOpen] = useState(false);
+    const teacherDropdownRef = useRef(null);
+    const [subjects, setSubjects] = useState([]);
+    const [teachers, setTeachers] = useState([]);
+
     // Filtered + paginated available questions
     const filteredAvail = availableQuestions.filter(q => {
-        if (!availSearch.trim()) return true;
-        const content = (q.content || q.question || q.title || '').toLowerCase();
-        return content.includes(availSearch.toLowerCase());
+        // Search filter
+        if (availSearch.trim()) {
+            const content = (q.content || q.question || q.title || '').toLowerCase();
+            if (!content.includes(availSearch.toLowerCase())) return false;
+        }
+        // Type filter
+        if (typeFilter !== 'all' && q.type !== typeFilter) return false;
+        // Subject filter
+        if (subjectFilter.length > 0 && !subjectFilter.includes(q.subject)) return false;
+        // Teacher filter
+        if (teacherFilter.length > 0) {
+            const qAuthorId = q.author || q.author_id;
+            if (!teacherFilter.includes(qAuthorId)) return false;
+        }
+        return true;
     });
     const totalPages = Math.ceil(filteredAvail.length / PAGE_SIZE);
     const pagedAvail = filteredAvail.slice((availPage - 1) * PAGE_SIZE, availPage * PAGE_SIZE);
 
-    // Reset về trang 1 khi search thay đổi
-    useEffect(() => { setAvailPage(1); }, [availSearch]);
+    // Reset về trang 1 khi search hoặc filter thay đổi
+    useEffect(() => { setAvailPage(1); }, [availSearch, typeFilter, subjectFilter, teacherFilter]);
 
     const loadAvailable = useCallback(async (existingQuestions) => {
         setLoadingAvailable(true);
@@ -71,10 +94,32 @@ export default function TeacherQuizEdit() {
         }
     }, []);
 
+    // click‑outside handler for dropdowns
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target)) {
+                setIsSubjectDropdownOpen(false);
+            }
+            if (teacherDropdownRef.current && !teacherDropdownRef.current.contains(event.target)) {
+                setIsTeacherDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     useEffect(() => {
         const load = async () => {
             try {
                 setLoading(true);
+                // Fetch filters
+                const [subjData, teachData] = await Promise.all([
+                    apiService.getSubjects(),
+                    apiService.getUsers({ role: 'teacher' })
+                ]);
+                setSubjects(Array.isArray(subjData) ? subjData : (subjData.results || []));
+                setTeachers(Array.isArray(teachData) ? teachData : (teachData.results || []));
+
                 const data = await apiService.getQuiz(id);
                 setQuiz(data);
 
@@ -314,43 +359,137 @@ export default function TeacherQuizEdit() {
                             ({filteredAvail.length} câu{availSearch ? ' khớp tìm kiếm' : ''})
                         </span>
                     </h3>
-
                     {/* Toolbar */}
-                    <div className="qe-toolbar">
-                        <div className="search-bar" style={{ flex: 1, maxWidth: 360 }}>
-                            <span className="search-icon">🔍</span>
-                            <input
-                                type="text"
-                                placeholder="Tìm câu hỏi..."
-                                value={availSearch}
-                                onChange={e => setAvailSearch(e.target.value)}
-                            />
-                        </div>
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div className="qe-toolbar" style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'stretch', marginBottom: 16 }}>
+                        {/* First row: Search bar, Reload, and Select all on page */}
+                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                            <div className="search-bar" style={{ flex: 1, minWidth: 260 }}>
+                                <span className="search-icon">🔍</span>
+                                <input
+                                    type="text"
+                                    placeholder="Tìm câu hỏi..."
+                                    value={availSearch}
+                                    onChange={e => setAvailSearch(e.target.value)}
+                                />
+                            </div>
                             <button className="secondary-btn" type="button" onClick={reloadAvailable} disabled={loadingAvailable}>
                                 {loadingAvailable ? 'Đang tải...' : '↺ Tải lại'}
                             </button>
                             <button className="secondary-btn" type="button" onClick={selectAllOnPage}>
                                 Chọn trang này
                             </button>
-                            {selectedCount > 0 && (
-                                <>
-                                    <button className="secondary-btn" type="button" onClick={deselectAll}>
-                                        Bỏ chọn tất cả
-                                    </button>
-                                    <button
-                                        className="primary-btn"
-                                        type="button"
-                                        onClick={handleAddSelected}
-                                        disabled={addingExisting}
+                        </div>
+                        {/* Second row: Filters and batch action buttons */}
+                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                {selectedCount > 0 && (
+                                    <>
+                                        <button className="secondary-btn" type="button" onClick={deselectAll}>
+                                            Bỏ chọn tất cả
+                                        </button>
+                                        <button
+                                            className="primary-btn"
+                                            type="button"
+                                            onClick={handleAddSelected}
+                                            disabled={addingExisting}
+                                        >
+                                            {addingExisting ? 'Đang thêm...' : `✚ Thêm ${selectedCount} câu đã chọn`}
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                            <div className="filter-group" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: 0, marginLeft: 'auto' }}>
+                                <select className="filter-select" value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
+                                    <option value="all">Tất cả loại câu</option>
+                                    <option value="single">Một lựa chọn</option>
+                                    <option value="multiple">Nhiều lựa chọn</option>
+                                </select>
+                                <div className={`multi-select-container ${isSubjectDropdownOpen ? 'open' : ''}`} ref={subjectDropdownRef}>
+                                    <div
+                                        className="filter-select multi-select-trigger"
+                                        onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
                                     >
-                                        {addingExisting ? 'Đang thêm...' : `✚ Thêm ${selectedCount} câu đã chọn`}
-                                    </button>
-                                </>
-                            )}
+                                        <span>{subjectFilter.length === 0 ? 'Tất cả môn học' : `Môn học (${subjectFilter.length})`}</span>
+                                        <span className="multi-select-arrow">▼</span>
+                                    </div>
+                                    {isSubjectDropdownOpen && (
+                                        <div className="multi-select-dropdown">
+                                            <div className="multi-select-option" onClick={() => setSubjectFilter([])}>
+                                                <input type="checkbox" checked={subjectFilter.length === 0} onChange={() => {}} />
+                                                <span>Tất cả môn học</span>
+                                            </div>
+                                            {subjects.map(s => {
+                                                const isChecked = subjectFilter.includes(s.id);
+                                                return (
+                                                    <div key={s.id} className="multi-select-option" onClick={() => {
+                                                        if (isChecked) {
+                                                            setSubjectFilter(subjectFilter.filter(id => id !== s.id));
+                                                        } else {
+                                                            setSubjectFilter([...subjectFilter, s.id]);
+                                                        }
+                                                    }}>
+                                                        <input type="checkbox" checked={isChecked} onChange={() => {}} />
+                                                        <span>{s.name}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className={`multi-select-container ${isTeacherDropdownOpen ? 'open' : ''}`} ref={teacherDropdownRef}>
+                                    <div
+                                        className="filter-select multi-select-trigger"
+                                        onClick={() => setIsTeacherDropdownOpen(!isTeacherDropdownOpen)}
+                                    >
+                                        <span>
+                                            {teacherFilter.length === 0
+                                                ? 'Tất cả giáo viên'
+                                                : `Giáo viên (${teacherFilter.length})`}
+                                        </span>
+                                        <span className="multi-select-arrow">▼</span>
+                                    </div>
+                                    {isTeacherDropdownOpen && (
+                                        <div className="multi-select-dropdown">
+                                            <div
+                                                className="multi-select-option"
+                                                onClick={() => setTeacherFilter([])}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={teacherFilter.length === 0}
+                                                    onChange={() => {}}
+                                                />
+                                                <span>Tất cả giáo viên</span>
+                                            </div>
+                                            {teachers.map(t => {
+                                                const isChecked = teacherFilter.includes(t.id);
+                                                return (
+                                                    <div
+                                                        key={t.id}
+                                                        className="multi-select-option"
+                                                        onClick={() => {
+                                                            if (isChecked) {
+                                                                setTeacherFilter(teacherFilter.filter(id => id !== t.id));
+                                                            } else {
+                                                                setTeacherFilter([...teacherFilter, t.id]);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isChecked}
+                                                            onChange={() => {}}
+                                                        />
+                                                        <span>{t.username}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
-
                     {/* Table */}
                     <div className="table-responsive" style={{ marginTop: 12 }}>
                         <table className="table">

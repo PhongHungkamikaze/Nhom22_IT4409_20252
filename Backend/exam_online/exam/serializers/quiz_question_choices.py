@@ -30,6 +30,9 @@ class ChoiceSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     choices = ChoiceSerializer(many=True)
     author_name = serializers.CharField(source="author.username", read_only=True)
+    subject_name = serializers.CharField(
+        source="subject.name", read_only=True, default=None
+    )
 
     class Meta:
         model = Question
@@ -40,7 +43,9 @@ class QuestionSerializer(serializers.ModelSerializer):
             "author_name",
             "choices",
             "subject",
+            "subject_name",
         ]
+
 
     def validate(self, data):
         type_question = data.get("type")

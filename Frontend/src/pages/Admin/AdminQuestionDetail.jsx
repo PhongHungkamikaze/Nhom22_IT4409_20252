@@ -43,10 +43,14 @@ export default function AdminQuestionDetail() {
             </header>
 
             <div className="admin-card">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 24 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16, marginBottom: 24 }}>
                     <div style={{ padding: 16, background: '#f8fafc', borderRadius: 12, border: '1px solid #e2e8f0' }}>
                         <strong style={{ color: '#64748b', fontSize: '0.85rem', textTransform: 'uppercase' }}>Type</strong>
                         <div style={{ marginTop: 6, fontWeight: 600, color: '#0f172a' }}>{question.type}</div>
+                    </div>
+                    <div style={{ padding: 16, background: '#f8fafc', borderRadius: 12, border: '1px solid #e2e8f0' }}>
+                        <strong style={{ color: '#64748b', fontSize: '0.85rem', textTransform: 'uppercase' }}>Subject</strong>
+                        <div style={{ marginTop: 6, fontWeight: 600, color: '#0f172a' }}>{question.subject_name || '-'}</div>
                     </div>
                     <div style={{ padding: 16, background: '#f8fafc', borderRadius: 12, border: '1px solid #e2e8f0' }}>
                         <strong style={{ color: '#64748b', fontSize: '0.85rem', textTransform: 'uppercase' }}>Author</strong>

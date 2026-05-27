@@ -66,6 +66,10 @@ export default function TeacherQuestionDetail() {
                                 <div className="meta-value">{question.type}</div>
                             </div>
                             <div className="meta-card">
+                                <strong>Subject</strong>
+                                <div className="meta-value">{question.subject_name || '-'}</div>
+                            </div>
+                            <div className="meta-card">
                                 <strong>Author</strong>
                                 <div className="meta-value">{question.author_name || question.author || '-'}</div>
                             </div>

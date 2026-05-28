@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import apiService from '../../services/api';
 import { 
     FiFileText, 
@@ -17,6 +18,7 @@ import './Student.css';
 export default function QuizDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [quiz, setQuiz] = useState(null);
     const [loading, setLoading] = useState(true);
     const [starting, setStarting] = useState(false);
@@ -34,7 +36,7 @@ export default function QuizDetail() {
                 setError(null);
             } catch (err) {
                 console.error('Failed to fetch quiz:', err);
-                const errorMsg = err.message || 'Không thể tải chi tiết bài quiz. Bài quiz có thể chưa được công bố (published).';
+                const errorMsg = err.message || t('student_quiz_detail.error_load');
                 setError(errorMsg);
                 setQuiz(null);
             } finally {
@@ -51,8 +53,9 @@ export default function QuizDetail() {
             lowerDesc === 'hãy thử sức với bài quiz này!' || 
             lowerDesc === 'hãy thử sức với bài quiz này đi' ||
             lowerDesc === 'hãy thử sức với bài quiz này' ||
+            lowerDesc === 'try this quiz!' ||
             lowerDesc.includes('hãy thử sức')) {
-            return 'Bài thi này được thiết kế nhằm mục đích kiểm tra và đánh giá một cách toàn diện kiến thức tích lũy của bạn đối với nội dung môn học. Vui lòng kiểm tra kỹ các thông số đề thi và đọc rõ quy chế phòng thi bên dưới trước khi chính thức bắt đầu làm bài để đạt kết quả tối ưu nhất.';
+            return t('student_quiz_detail.default_desc');
         }
         return desc;
     };
@@ -68,11 +71,11 @@ export default function QuizDetail() {
                 // Navigate to TakeQuiz page with attempt ID
                 navigate(`/student/take-quiz/${attemptId}`, { state: { quizId: id } });
             } else {
-                setError('Không thể tạo phiên làm bài thi. Vui lòng kiểm tra lại quyền truy cập.');
+                setError(t('student_quiz_detail.error_create_session'));
             }
         } catch (err) {
             console.error('Failed to start quiz:', err);
-            setError(err.message || 'Không thể bắt đầu thực hiện bài quiz này.');
+            setError(err.message || t('student_quiz_detail.error_start'));
         } finally {
             setStarting(false);
         }
@@ -88,7 +91,7 @@ export default function QuizDetail() {
             <div className="student-page">
                 <section className="stu-loading">
                     <div className="stu-spinner"></div>
-                    <p>Đang tải chi tiết đề thi...</p>
+                    <p>{t('student_quiz_detail.loading')}</p>
                 </section>
             </div>
         );
@@ -101,8 +104,8 @@ export default function QuizDetail() {
                     <div className="stu-container">
                         <div className="stu-welcome-row">
                             <div className="stu-welcome-left">
-                                <h1>Chi Tiết Bài Quiz</h1>
-                                <p>Đã xảy ra lỗi trong quá trình hiển thị thông tin bài kiểm tra.</p>
+                                <h1>{t('student_quiz_detail.error_title')}</h1>
+                                <p>{t('student_quiz_detail.error_desc')}</p>
                             </div>
                         </div>
                     </div>
@@ -123,15 +126,15 @@ export default function QuizDetail() {
                         margin: '0 auto'
                     }}>
                         <FiAlertTriangle size={64} style={{ color: '#ef4444', marginBottom: '1.5rem' }} />
-                        <h2 style={{ color: '#0f172a', margin: '0 0 0.5rem 0', fontWeight: 800 }}>Không tìm thấy bài Quiz</h2>
+                        <h2 style={{ color: '#0f172a', margin: '0 0 0.5rem 0', fontWeight: 800 }}>{t('student_quiz_detail.not_found')}</h2>
                         <p style={{ color: '#64748b', marginBottom: '2rem', lineHeight: 1.5 }}>
-                            {error || 'Bài quiz này không tồn tại hoặc chưa được giáo viên kích hoạt.'}
+                            {error || t('student_quiz_detail.not_found_desc')}
                         </p>
                         <button
                             onClick={handleGoBack}
                             className="stu-btn-save-premium"
                         >
-                            Quay lại danh sách quiz
+                            {t('student_quiz_detail.back_to_list')}
                         </button>
                     </div>
                 </div>
@@ -148,10 +151,10 @@ export default function QuizDetail() {
                         <div className="stu-welcome-left">
                             <div className="stu-header-badge">
                                 <FiBookOpen className="stu-badge-icon" />
-                                Chi Tiết Đề Thi
+                                {t('student_quiz_detail.badge')}
                             </div>
                             <h1>{quiz.title}</h1>
-                            <p>Kiểm tra thông số đề thi và đọc kỹ quy chế phòng thi trắc nghiệm trước khi bắt đầu.</p>
+                            <p>{t('student_quiz_detail.check_info')}</p>
                         </div>
                     </div>
                 </div>
@@ -174,7 +177,7 @@ export default function QuizDetail() {
 
                         <div>
                             <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: '0 0 0.75rem 0', color: '#1e293b' }}>
-                                Giới thiệu đề thi
+                                {t('student_quiz_detail.intro_title')}
                             </h3>
                             <p className="stu-quiz-desc-premium">
                                 {getProfessionalDescription(quiz.description)}
@@ -184,20 +187,20 @@ export default function QuizDetail() {
                         {/* Exam Rules Card */}
                         <div className="stu-quiz-rule-card">
                             <h4 className="stu-quiz-rule-title">
-                                <FiShield /> Quy chế làm bài trắc nghiệm
+                                <FiShield /> {t('student_quiz_detail.rules_title')}
                             </h4>
                             <ul className="stu-quiz-rule-list">
                                 <li>
-                                    <strong>Thời gian đếm ngược:</strong> Thời gian làm bài thi sẽ bắt đầu chạy lùi ngay sau khi bạn nhấn nút "Bắt đầu làm bài".
+                                    <strong>{t('student_quiz_detail.rule_timer')}</strong> {t('student_quiz_detail.rule_timer_desc')}
                                 </li>
                                 <li>
-                                    <strong>Chống gian lận (Anti-Cheat):</strong> Hệ thống ghi nhận các hành vi chuyển Tab trình duyệt hoặc thoát màn hình thi. Vi phạm sẽ khiến hệ thống <strong>tự động nộp bài và khóa bài thi ngay lập tức</strong>.
+                                    <strong>{t('student_quiz_detail.rule_anticheat')}</strong> {t('student_quiz_detail.rule_anticheat_desc')} <strong>{t('student_quiz_detail.rule_anticheat_action')}</strong>.
                                 </li>
                                 <li>
-                                    <strong>Nộp bài tự động:</strong> Khi hết thời gian làm bài giới hạn, hệ thống sẽ tự nộp kết quả của bạn tại thời điểm đó.
+                                    <strong>{t('student_quiz_detail.rule_autosubmit')}</strong> {t('student_quiz_detail.rule_autosubmit_desc')}
                                 </li>
                                 <li>
-                                    <strong>Giới hạn lượt làm:</strong> Bạn được làm bài thi này tối đa <strong>{quiz.max_attempts || 1} lần</strong>. Kết quả điểm số cao nhất sẽ được ghi nhận.
+                                    <strong>{t('student_quiz_detail.rule_max_attempts')}</strong> {t('student_quiz_detail.rule_max_attempts_desc')} <strong>{t('student_quiz_detail.rule_max_attempts_times', { count: quiz.max_attempts || 1 })}</strong>. {t('student_quiz_detail.rule_max_attempts_note')}
                                 </li>
                             </ul>
                         </div>
@@ -208,7 +211,7 @@ export default function QuizDetail() {
                         
                         {/* Meta Info Card */}
                         <div className="stu-quiz-meta-card">
-                            <h3 className="stu-quiz-meta-title-sidebar">Thông số đề thi</h3>
+                            <h3 className="stu-quiz-meta-title-sidebar">{t('student_quiz_detail.meta_title')}</h3>
                             <div className="stu-quiz-meta-vertical-list">
                                 
                                 {/* Questions Count */}
@@ -217,8 +220,8 @@ export default function QuizDetail() {
                                         <FiFileText />
                                     </div>
                                     <div className="stu-quiz-meta-info-content">
-                                        <span className="stu-quiz-meta-label-side">Số câu hỏi</span>
-                                        <span className="stu-quiz-meta-value-side">{quiz.question_count || '0'} câu</span>
+                                        <span className="stu-quiz-meta-label-side">{t('student_quiz_detail.question_count')}</span>
+                                        <span className="stu-quiz-meta-value-side">{quiz.question_count || '0'} {t('student_quiz_detail.questions_unit')}</span>
                                     </div>
                                 </div>
 
@@ -228,8 +231,8 @@ export default function QuizDetail() {
                                         <FiClock />
                                     </div>
                                     <div className="stu-quiz-meta-info-content">
-                                        <span className="stu-quiz-meta-label-side">Thời gian</span>
-                                        <span className="stu-quiz-meta-value-side">{quiz.time_limit || '30'} phút</span>
+                                        <span className="stu-quiz-meta-label-side">{t('student_quiz_detail.time_limit')}</span>
+                                        <span className="stu-quiz-meta-value-side">{quiz.time_limit || '30'} {t('student_quiz_detail.minutes')}</span>
                                     </div>
                                 </div>
 
@@ -239,8 +242,8 @@ export default function QuizDetail() {
                                         <FiUser />
                                     </div>
                                     <div className="stu-quiz-meta-info-content">
-                                        <span className="stu-quiz-meta-label-side">Người ra đề</span>
-                                        <span className="stu-quiz-meta-value-side">{quiz.author_name || 'Giáo viên'}</span>
+                                        <span className="stu-quiz-meta-label-side">{t('student_quiz_detail.author')}</span>
+                                        <span className="stu-quiz-meta-value-side">{quiz.author_name || t('student_quiz_detail.default_author')}</span>
                                     </div>
                                 </div>
 
@@ -250,8 +253,8 @@ export default function QuizDetail() {
                                         <FiActivity />
                                     </div>
                                     <div className="stu-quiz-meta-info-content">
-                                        <span className="stu-quiz-meta-label-side">Lượt làm bài</span>
-                                        <span className="stu-quiz-meta-value-side">Tối đa {quiz.max_attempts || 1} lần</span>
+                                        <span className="stu-quiz-meta-label-side">{t('student_quiz_detail.max_attempts')}</span>
+                                        <span className="stu-quiz-meta-value-side">{t('student_quiz_detail.max_attempts_value', { count: quiz.max_attempts || 1 })}</span>
                                     </div>
                                 </div>
 
@@ -269,11 +272,11 @@ export default function QuizDetail() {
                                 {starting ? (
                                     <>
                                         <span className="stu-loading-spinner-btn"></span>
-                                        Đang tạo phiên...
+                                        {t('student_quiz_detail.creating_session')}
                                     </>
                                 ) : (
                                     <>
-                                        <FiPlay /> Bắt đầu làm bài
+                                        <FiPlay /> {t('student_quiz_detail.start_quiz')}
                                     </>
                                 )}
                             </button>
@@ -283,7 +286,7 @@ export default function QuizDetail() {
                                 className="stu-btn-cancel-premium"
                                 style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', height: '48px', padding: 0 }}
                             >
-                                <FiArrowLeft /> Quay lại danh sách
+                                <FiArrowLeft /> {t('student_quiz_detail.back_to_list_btn')}
                             </button>
                         </div>
 

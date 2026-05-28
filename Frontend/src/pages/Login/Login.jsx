@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import apiService from '../../services/api';
 import toast from 'react-hot-toast';
 import './Login.css';
@@ -8,6 +9,7 @@ import './Login.css';
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -48,14 +50,14 @@ const Login = () => {
         else if (role === 'teacher') redirectTo = '/teacher';
         else if (role === 'student') redirectTo = '/student';
 
-        toast.success('Đăng nhập thành công!');
+        toast.success(t('login_page.login_success'));
         navigate(redirectTo);
       } else {
         throw new Error('No access token in response');
       }
     } catch (error) {
       console.error('Login error:', error); // Debug log
-      setError('Tên đăng nhập hoặc mật khẩu không đúng!');
+      setError(t('login_page.login_error'));
     } finally {
       setLoading(false);
     }
@@ -68,8 +70,8 @@ const Login = () => {
           {/* Header */}
           <div className="login-header">
             <div className="logo">📚 QuizMaster</div>
-            <h2>Đăng nhập</h2>
-            <p>Chào mừng bạn quay lại!</p>
+            <h2>{t('login_page.title')}</h2>
+            <p>{t('login_page.welcome_back')}</p>
           </div>
 
           {/* Form */}
@@ -81,27 +83,27 @@ const Login = () => {
             )}
 
             <div className="form-group">
-              <label htmlFor="username">Tên đăng nhập</label>
+              <label htmlFor="username">{t('login_page.username_label')}</label>
               <input
                 type="text"
                 id="username"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                placeholder="Nhập tên đăng nhập"
+                placeholder={t('login_page.username_placeholder')}
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Mật khẩu</label>
+              <label htmlFor="password">{t('login_page.password_label')}</label>
               <input
                 type="password"
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Nhập mật khẩu"
+                placeholder={t('login_page.password_placeholder')}
                 required
               />
             </div>
@@ -109,9 +111,9 @@ const Login = () => {
             <div className="form-options">
               <label className="checkbox">
                 <input type="checkbox" />
-                <span>Ghi nhớ đăng nhập</span>
+                <span>{t('login_page.remember_me')}</span>
               </label>
-              <a href="#forgot" className="forgot-link">Quên mật khẩu?</a>
+              <a href="#forgot" className="forgot-link">{t('login_page.forgot_password')}</a>
             </div>
 
             <button
@@ -119,22 +121,22 @@ const Login = () => {
               className="login-btn"
               disabled={loading}
             >
-              {loading ? '🔄 Đang đăng nhập...' : 'Đăng nhập'}
+              {loading ? `🔄 ${t('login_page.logging_in')}` : t('login_page.login_btn')}
             </button>
           </form>
 
           {/* Footer */}
           <div className="login-footer">
             <p>
-              Chưa có tài khoản?
-              <Link to="/register" className="signup-link"> Đăng ký ngay</Link>
+              {t('login_page.no_account')}
+              <Link to="/register" className="signup-link"> {t('login_page.register_link')}</Link>
             </p>
           </div>
 
           {/* Social Login */}
           <div className="social-login">
             <div className="divider">
-              <span>Hoặc đăng nhập với</span>
+              <span>{t('login_page.or_login_with')}</span>
             </div>
             <div className="social-buttons">
               <button className="social-btn google">

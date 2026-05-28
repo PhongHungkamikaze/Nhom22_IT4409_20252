@@ -9,12 +9,15 @@ const resources = {
     vi: { translation: vi },
 };
 
+// Load persisted language from localStorage
+const savedLng = localStorage.getItem('i18nextLng') || localStorage.getItem('language') || 'vi';
+
 i18n
     .use(initReactI18next)
     .init({
         resources,
-        lng: 'vi', // default language
-        fallbackLng: 'en',
+        lng: savedLng,
+        fallbackLng: 'vi',
         interpolation: { escapeValue: false },
     });
 

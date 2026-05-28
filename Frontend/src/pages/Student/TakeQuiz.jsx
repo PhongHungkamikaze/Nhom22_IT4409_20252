@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import apiService from '../../services/api';
 import { getUserIdFromToken } from '../../utils/jwt';
 import { FiClock, FiCheckCircle, FiAlertTriangle, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
@@ -8,6 +9,7 @@ import './TakeQuiz.css';
 export default function TakeQuiz() {
     const { attemptId } = useParams();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [attempt, setAttempt] = useState(null);
     const [questions, setQuestions] = useState([]);
@@ -26,16 +28,15 @@ export default function TakeQuiz() {
     const handleSubmitQuiz = useCallback(async (isAuto = false, submitStatus = null) => {
         if (!isAuto) {
             const unsavedCount = Object.values(dirty).filter(v => v).length;
-            let msg = 'Bạn xác nhận nộp bài thi? Kết quả sẽ được tính điểm ngay lập tức.';
+            let msg = t('student_take_quiz.confirm_submit');
             if (unsavedCount > 0) {
-                msg = `Bạn còn ${unsavedCount} câu chưa lưu. Các thay đổi này sẽ KHÔNG được tính. Vẫn tiếp tục nộp bài?`;
+                msg = t('student_take_quiz.unsaved_warning', { count: unsavedCount });
             }
             if (!window.confirm(msg)) return;
         }
 
         try {
             setSubmitting(true);
-            // Call API directly to be 100% sure the body is passed
             await apiService.request(`/attempts/${attemptId}/submit/`, {
                 method: 'POST',
                 body: JSON.stringify(submitStatus ? { status: submitStatus } : {}),
@@ -43,11 +44,11 @@ export default function TakeQuiz() {
             navigate(`/student/result/${attemptId}`);
         } catch (err) {
             console.error('Failed to submit quiz:', err);
-            setError('Không thể nộp bài. Vui lòng kiểm tra lại kết nối!');
+            setError(t('student_take_quiz.submit_error'));
         } finally {
             setSubmitting(false);
         }
-    }, [attemptId, dirty, navigate]);
+    }, [attemptId, dirty, navigate, t]);
 
     // Real-time cheating detection and Visibility Tracking
     useEffect(() => {
@@ -59,7 +60,7 @@ export default function TakeQuiz() {
         const handleVisibilityChange = async () => {
             if (document.hidden) {
                 console.warn('SYSTEM: Tab switch detected! Informing system and auto-submitting.');
-                setError('HỆ THỐNG: Phát hiện hành vi chuyển TAB! Bài thi sẽ được nộp tự động ngay lập tức.');
+                setError(t('student_take_quiz.tab_switch'));
                 
                 // Report violation via REST API
                 try {
@@ -84,7 +85,7 @@ export default function TakeQuiz() {
             isMounted = false;
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [attemptId, handleSubmitQuiz]);
+    }, [attemptId, handleSubmitQuiz, t]);
 
     // READ: Fetch attempt and questions data
     useEffect(() => {
@@ -109,13 +110,13 @@ export default function TakeQuiz() {
                 setError(null);
             } catch (err) {
                 console.error('Failed to fetch:', err);
-                setError('Không thể tải bài thi.');
+                setError(t('student_take_quiz.load_error'));
             } finally {
                 setLoading(false);
             }
         };
         fetchAttemptData();
-    }, [attemptId]);
+    }, [attemptId, t]);
 
     // Timer effect
     useEffect(() => {
@@ -180,7 +181,7 @@ export default function TakeQuiz() {
             setSaveSuccess(prev => ({ ...prev, [questionId]: true }));
             setTimeout(() => setSaveSuccess(prev => ({ ...prev, [questionId]: false })), 3000);
         } catch (err) {
-            setError('Lỗi khi lưu câu trả lời.');
+            setError(t('student_take_quiz.save_error'));
         } finally {
             setSaving(prev => ({ ...prev, [questionId]: false }));
         }
@@ -195,14 +196,14 @@ export default function TakeQuiz() {
     const handleExit = () => {
         const hasUnsaved = Object.values(dirty).some(v => v);
         if (hasUnsaved) {
-            if (window.confirm('Cảnh báo: Bạn có thay đổi chưa lưu. Vẫn thoát?')) navigate('/student/quizzes');
+            if (window.confirm(t('student_take_quiz.exit_unsaved'))) navigate('/student/quizzes');
         } else {
             navigate('/student/quizzes');
         }
     };
 
-    if (loading) return <div className="take-quiz-container"><div className="stu-loading"><div className="stu-spinner"></div><p>Đang chuẩn bị đề thi...</p></div></div>;
-    if (error || !attempt) return <div className="student-page"><h2>{error || 'Lỗi dữ liệu'}</h2><button onClick={() => navigate('/student/quizzes')}>Quay lại</button></div>;
+    if (loading) return <div className="take-quiz-container"><div className="stu-loading"><div className="stu-spinner"></div><p>{t('student_take_quiz.loading')}</p></div></div>;
+    if (error || !attempt) return <div className="student-page"><h2>{error || t('student_take_quiz.error_data')}</h2><button onClick={() => navigate('/student/quizzes')}>{t('student_take_quiz.back')}</button></div>;
 
     const currentQuestion = questions[currentQuestionIndex];
     if (!currentQuestion) return null;
@@ -213,7 +214,7 @@ export default function TakeQuiz() {
                 <div className="stu-container exam-header-content">
                     <div className="exam-title-section">
                         <button onClick={handleExit} className="exit-btn">
-                            <FiX style={{ marginRight: '6px' }} /> Thoát
+                            <FiX style={{ marginRight: '6px' }} /> {t('student_take_quiz.exit')}
                         </button>
                         <h2>{attempt?.quiz_title}</h2>
                     </div>
@@ -231,7 +232,7 @@ export default function TakeQuiz() {
             <main className="stu-container exam-layout">
                 <aside className="exam-sidebar">
                     <div className="sidebar-title">
-                        <span>Tiến độ</span>
+                        <span>{t('student_take_quiz.progress')}</span>
                         <span style={{ color: '#6366f1', fontWeight: '800' }}>{progress}%</span>
                     </div>
                     <div className="question-grid">
@@ -249,8 +250,8 @@ export default function TakeQuiz() {
 
                 <div className="question-card-container">
                     <div className="question-card">
-                        <div className="question-type-badge">{currentQuestion.type === 'multiple' ? '☑ Nhiều lựa chọn' : '○ Một lựa chọn'}</div>
-                        <h3 className="question-text">Câu {currentQuestionIndex + 1}: {currentQuestion.content}</h3>
+                        <div className="question-type-badge">{currentQuestion.type === 'multiple' ? `☑ ${t('student_take_quiz.multiple_choice')}` : `○ ${t('student_take_quiz.single_choice')}`}</div>
+                        <h3 className="question-text">{t('student_take_quiz.question_number', { number: currentQuestionIndex + 1 })} {currentQuestion.content}</h3>
                         <div className="choices-container">
                             {currentQuestion.choices?.map(choice => (
                                 <div
@@ -267,20 +268,20 @@ export default function TakeQuiz() {
                             <div>
                                 {saveSuccess[currentQuestion.id] ? (
                                     <span className="status-text status-saved">
-                                        <FiCheckCircle style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Đã lưu
+                                        <FiCheckCircle style={{ marginRight: '4px', verticalAlign: 'middle' }} /> {t('student_take_quiz.saved')}
                                     </span>
                                 ) : dirty[currentQuestion.id] ? (
                                     <span className="status-text status-dirty">
-                                        <FiAlertTriangle style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Chưa lưu
+                                        <FiAlertTriangle style={{ marginRight: '4px', verticalAlign: 'middle' }} /> {t('student_take_quiz.unsaved')}
                                     </span>
                                 ) : savedAnswers[currentQuestion.id]?.length > 0 ? (
                                     <span className="status-text status-saved" style={{ opacity: 0.7 }}>
-                                        <FiCheckCircle style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Đã lưu
+                                        <FiCheckCircle style={{ marginRight: '4px', verticalAlign: 'middle' }} /> {t('student_take_quiz.saved')}
                                     </span>
                                 ) : ''}
                             </div>
                             <button className="save-btn" disabled={saving[currentQuestion.id] || !dirty[currentQuestion.id]} onClick={() => handleSaveAnswer(currentQuestion.id)}>
-                                {saving[currentQuestion.id] ? 'Đang lưu...' : 'Lưu câu trả lời'}
+                                {saving[currentQuestion.id] ? t('student_take_quiz.saving') : t('student_take_quiz.save_answer')}
                             </button>
                         </div>
                     </div>
@@ -291,14 +292,14 @@ export default function TakeQuiz() {
                 <div className="stu-container action-bar-content">
                     <div className="nav-group">
                         <button className="nav-btn" disabled={currentQuestionIndex === 0} onClick={() => setCurrentQuestionIndex(p => p - 1)}>
-                            <FiChevronLeft style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Quay lại
+                            <FiChevronLeft style={{ marginRight: '4px', verticalAlign: 'middle' }} /> {t('student_take_quiz.prev')}
                         </button>
                         <button className="nav-btn" disabled={currentQuestionIndex === questions.length - 1} onClick={() => setCurrentQuestionIndex(p => p + 1)}>
-                            Tiếp theo <FiChevronRight style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                            {t('student_take_quiz.next')} <FiChevronRight style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
                         </button>
                     </div>
                     <button className="submit-btn" disabled={submitting} onClick={() => handleSubmitQuiz()}>
-                        {submitting ? 'Đang nộp...' : 'Nộp bài thi'}
+                        {submitting ? t('student_take_quiz.submitting') : t('student_take_quiz.submit_quiz')}
                     </button>
                 </div>
             </footer>

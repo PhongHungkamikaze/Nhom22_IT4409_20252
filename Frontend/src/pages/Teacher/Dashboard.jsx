@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import apiService from '../../services/api';
 import './Teacher.css';
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
@@ -8,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 export default function Dashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [stats, setStats]     = useState(null);
     const [recentQuizzes, setRecentQuizzes] = useState([]);
@@ -57,41 +59,46 @@ export default function Dashboard() {
 
     const statCards = stats ? [
         {
-            label: 'Bài Quiz của tôi',
+            label: t('teacher_dashboard.my_quizzes'),
             value: stats.totalQuizzes,
             icon: '📝',
             color: 'blue',
             link: '/teacher/quizzes',
-            hint: 'Xem tất cả quiz',
+            hint: t('teacher_dashboard.view_all_quizzes'),
         },
         {
-            label: 'Học sinh tham gia',
+            label: t('teacher_dashboard.students_joined'),
             value: stats.totalStudents,
             icon: '👨‍🎓',
             color: 'green',
             link: '/teacher/attempts',
-            hint: 'Xem danh sách',
+            hint: t('teacher_dashboard.view_list'),
         },
         {
-            label: 'Tổng lượt thi',
+            label: t('teacher_dashboard.total_attempts'),
             value: stats.totalAttempts,
             icon: '🎯',
             color: 'purple',
             link: '/teacher/attempts',
-            hint: 'Xem chi tiết',
+            hint: t('teacher_dashboard.view_details'),
         },
         {
-            label: 'Điểm trung bình',
+            label: t('teacher_dashboard.avg_score'),
             value: stats.avgScore,
             icon: '⭐',
             color: 'orange',
             link: '/teacher/attempts',
-            hint: 'Xem attempts',
+            hint: t('teacher_dashboard.view_attempts_link'),
         },
     ] : [];
 
     const statusLabel = (s) => {
-        const map = { completed: 'Hoàn thành', ongoing: 'Đang làm', processing: 'Đang chấm', error: 'Lỗi' };
+        const map = {
+            completed: t('teacher_dashboard.status_completed'),
+            ongoing: t('teacher_dashboard.status_ongoing'),
+            processing: t('teacher_dashboard.status_processing'),
+            error: t('teacher_dashboard.status_error')
+        };
         return map[s] || s;
     };
     const statusClass = (s) => {
@@ -103,15 +110,15 @@ export default function Dashboard() {
         <div className="admin-container">
             <header className="admin-header">
                 <div>
-                    <h1 className="admin-title">Teacher Dashboard</h1>
-                    <p className="admin-subtitle">Quản lý bài thi và theo dõi kết quả học sinh.</p>
+                    <h1 className="admin-title">{t('teacher_dashboard.title')}</h1>
+                    <p className="admin-subtitle">{t('teacher_dashboard.subtitle')}</p>
                 </div>
                 <div className="header-buttons-group">
                     <Link to="/teacher/quizzes/create" style={{ textDecoration: 'none' }}>
-                        <button className="primary-btn">➕ Tạo Quiz mới</button>
+                        <button className="primary-btn">➕ {t('teacher_dashboard.create_quiz')}</button>
                     </Link>
                     <Link to="/teacher/questions/add" style={{ textDecoration: 'none' }}>
-                        <button className="primary-btn">📝 Thêm câu hỏi</button>
+                        <button className="primary-btn">📝 {t('teacher_dashboard.add_question')}</button>
                     </Link>
                 </div>
             </header>
@@ -124,7 +131,7 @@ export default function Dashboard() {
                     Array.from({ length: 4 }).map((_, i) => (
                         <div key={i} className="stat-card" style={{ opacity: 0.4 }}>
                             <div className="stat-icon">⏳</div>
-                            <div className="stat-info"><h3>—</h3><p>Đang tải...</p></div>
+                            <div className="stat-info"><h3>—</h3><p>{t('teacher_dashboard.loading')}</p></div>
                         </div>
                     ))
                 ) : statCards.map((s, i) => (
@@ -149,13 +156,13 @@ export default function Dashboard() {
                 {/* Recent quizzes */}
                 <div className="admin-card db-panel">
                     <div className="db-panel__header">
-                        <h3 className="db-panel__title">📚 Quiz gần đây</h3>
-                        <Link to="/teacher/quizzes" className="db-panel__link">Xem tất cả →</Link>
+                        <h3 className="db-panel__title">📚 {t('teacher_dashboard.recent_quizzes')}</h3>
+                        <Link to="/teacher/quizzes" className="db-panel__link">{t('teacher_dashboard.view_all')}</Link>
                     </div>
                     {loading ? (
-                        <div className="db-loading">Đang tải...</div>
+                        <div className="db-loading">{t('teacher_dashboard.loading')}</div>
                     ) : recentQuizzes.length === 0 ? (
-                        <div className="db-empty">Chưa có quiz nào.</div>
+                        <div className="db-empty">{t('teacher_dashboard.no_quizzes')}</div>
                     ) : (
                         <div className="db-quiz-list">
                             {recentQuizzes.map(q => (
@@ -167,8 +174,8 @@ export default function Dashboard() {
                                     <div className="db-quiz-item__info">
                                         <span className="db-quiz-item__title">{q.title}</span>
                                         <span className="db-quiz-item__meta">
-                                            {q.questions_count ?? (q.questions?.length ?? 0)} câu hỏi
-                                            {q.time_limit ? ` · ${q.time_limit} phút` : ''}
+                                            {q.questions_count ?? (q.questions?.length ?? 0)} {t('teacher_dashboard.questions_count')}
+                                            {q.time_limit ? ` · ${q.time_limit} ${t('teacher_dashboard.minutes')}` : ''}
                                         </span>
                                     </div>
                                     <div className="db-quiz-item__right">
@@ -192,13 +199,13 @@ export default function Dashboard() {
                 {/* Recent attempts */}
                 <div className="admin-card db-panel">
                     <div className="db-panel__header">
-                        <h3 className="db-panel__title">🎯 Lượt thi gần đây</h3>
-                        <Link to="/teacher/attempts" className="db-panel__link">Xem tất cả →</Link>
+                        <h3 className="db-panel__title">🎯 {t('teacher_dashboard.recent_attempts')}</h3>
+                        <Link to="/teacher/attempts" className="db-panel__link">{t('teacher_dashboard.view_all')}</Link>
                     </div>
                     {loading ? (
-                        <div className="db-loading">Đang tải...</div>
+                        <div className="db-loading">{t('teacher_dashboard.loading')}</div>
                     ) : recentAttempts.length === 0 ? (
-                        <div className="db-empty">Chưa có lượt thi nào.</div>
+                        <div className="db-empty">{t('teacher_dashboard.no_attempts')}</div>
                     ) : (
                         <div className="db-attempt-list">
                             {recentAttempts.map(a => (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import apiService from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -18,6 +19,7 @@ import './Student.css';
 
 export default function History() {
     const { user } = useAuth();
+    const { t, i18n } = useTranslation();
     const [attempts, setAttempts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -58,11 +60,37 @@ export default function History() {
 
     // READ: Fetch all attempts
     useEffect(() => {
+        const fetchAttempts = async (page = 1) => {
+            try {
+                setLoading(true);
+
+                const data = await apiService.getAttempts();
+
+                const attemptList = Array.isArray(data.results)
+                    ? data.results
+                    : Array.isArray(data)
+                        ? data
+                        : [];
+
+                setAttempts(attemptList);
+                setError(null);
+            } catch (err) {
+                console.error('Failed to fetch attempts:', err);
+
+                setError(t('student_history.error_load'));
+                setAttempts([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         const timeoutId = setTimeout(() => {
             setCurrentPage(1);
             fetchAttempts(1);
         }, 500);
+
         return () => clearTimeout(timeoutId);
+
     }, [searchTerm, sorting, filter]);
 
     const handlePageChange = (newPage) => {
@@ -76,13 +104,13 @@ export default function History() {
     const getStatusBadge = (status) => {
         switch (status?.toLowerCase()) {
             case 'completed':
-                return { label: 'Hoàn thành', className: 'is-completed' };
+                return { label: t('student_history.status_completed'), className: 'is-completed' };
             case 'processing':
-                return { label: 'Đang xử lý', className: 'is-processing' };
+                return { label: t('student_history.status_processing'), className: 'is-processing' };
             case 'ongoing':
-                return { label: 'Đang làm', className: 'is-ongoing' };
+                return { label: t('student_history.status_ongoing'), className: 'is-ongoing' };
             default:
-                return { label: status || 'Không xác định', className: 'is-unknown' };
+                return { label: status || t('student_history.status_unknown'), className: 'is-unknown' };
         }
     };
 
@@ -98,7 +126,8 @@ export default function History() {
     // Format date
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('vi-VN', {
+        const locale = i18n.language === 'en' ? 'en-US' : 'vi-VN';
+        return date.toLocaleDateString(locale, {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -112,7 +141,7 @@ export default function History() {
             <div className="student-page">
                 <section className="stu-loading">
                     <div className="stu-spinner"></div>
-                    <p>Đang tải lịch sử làm bài của bạn...</p>
+                    <p>{t('student_history.loading')}</p>
                 </section>
             </div>
         );
@@ -127,10 +156,10 @@ export default function History() {
                         <div className="stu-welcome-left">
                             <div className="stu-header-badge">
                                 <FiActivity className="stu-badge-icon" />
-                                Lịch Sử Hoạt Động
+                                {t('student_history.badge')}
                             </div>
-                            <h1>Lịch sử làm bài của bạn</h1>
-                            <p>Xem lại tất cả kết quả, điểm số và chi tiết các bài kiểm tra trắc nghiệm bạn đã từng làm.</p>
+                            <h1>{t('student_history.title')}</h1>
+                            <p>{t('student_history.subtitle')}</p>
                         </div>
                     </div>
                 </div>
@@ -143,7 +172,7 @@ export default function History() {
                         <div className="stu-stat-item">
                             <div className="stu-stat-number">{totalCount}</div>
                             <div className="stu-stat-label">
-                                {filter === 'all' ? 'Tổng số lượt làm' : filter === 'completed' ? 'Đã hoàn thành' : 'Đang thực hiện'}
+                                {filter === 'all' ? t('student_history.total_attempts') : filter === 'completed' ? t('student_history.completed') : t('student_history.in_progress')}
                             </div>
                         </div>
                         <div className="stu-stat-item">
@@ -154,13 +183,13 @@ export default function History() {
                                     )
                                     : '0.0'}
                             </div>
-                            <div className="stu-stat-label">Điểm trung bình tích lũy</div>
+                            <div className="stu-stat-label">{t('student_history.average_score')}</div>
                         </div>
                         <div className="stu-stat-item">
                             <div className="stu-stat-number">
                                 {attempts.filter(a => a.status === 'completed' && parseFloat(a.score) >= 5.0).length}
                             </div>
-                            <div className="stu-stat-label">Bài đạt yêu cầu (&gt;= 5.0)</div>
+                            <div className="stu-stat-label">{t('student_history.passed_count')}</div>
                         </div>
                     </div>
                 </div>
@@ -179,9 +208,9 @@ export default function History() {
                                     onClick={() => setFilter(filterOption)}
                                     className={`stu-filter-btn-premium${filter === filterOption ? ' active' : ''}`}
                                 >
-                                    {filterOption === 'all' && 'Tất cả lượt làm'}
-                                    {filterOption === 'completed' && 'Đã hoàn thành'}
-                                    {filterOption === 'ongoing' && 'Đang làm dở'}
+                                    {filterOption === 'all' && t('student_history.filter_all')}
+                                    {filterOption === 'completed' && t('student_history.filter_completed')}
+                                    {filterOption === 'ongoing' && t('student_history.filter_ongoing')}
                                 </button>
                             ))}
                         </div>
@@ -202,13 +231,13 @@ export default function History() {
                             </div>
                             <p style={{ fontWeight: 700, fontSize: '1.1rem', color: '#1e293b' }}>
                                 {filter === 'all'
-                                    ? 'Bạn chưa từng tham gia làm bài quiz nào.'
+                                    ? t('student_history.no_attempts_all')
                                     : filter === 'completed'
-                                        ? 'Không có bài quiz nào ở trạng thái đã hoàn thành.'
-                                        : 'Không có bài quiz nào đang thực hiện dở.'}
+                                        ? t('student_history.no_attempts_completed')
+                                        : t('student_history.no_attempts_ongoing')}
                             </p>
                             <Link to="/student/quizzes" className="stu-quiz-start-btn" style={{ marginTop: '1.5rem', display: 'inline-block' }}>
-                                Bắt đầu làm Quiz ngay
+                                {t('student_history.start_quiz_now')}
                             </Link>
                         </div>
                     ) : (
@@ -242,10 +271,10 @@ export default function History() {
                                                 </div>
                                                 {attempt.status === 'completed' ? (
                                                     <Link to={`/student/result/${attempt.id}`} className="stu-history-btn-detail">
-                                                        <FiEye /> Kết quả
+                                                        <FiEye /> {t('student_history.result')}
                                                     </Link>
                                                 ) : (
-                                                    <span className="is-muted" style={{ fontSize: '0.9rem' }}>Chưa nộp bài</span>
+                                                    <span className="is-muted" style={{ fontSize: '0.9rem' }}>{t('student_history.not_submitted')}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -258,11 +287,11 @@ export default function History() {
                                 <table className="stu-history-table-premium">
                                     <thead>
                                         <tr>
-                                            <th>Bài Kiểm Tra</th>
-                                            <th>Thời Gian Bắt Đầu</th>
-                                            <th style={{ textAlign: 'center' }}>Trạng Thái</th>
-                                            <th style={{ textAlign: 'center' }}>Điểm Số</th>
-                                            <th style={{ textAlign: 'center' }}>Hành Động</th>
+                                            <th>{t('student_history.table_quiz')}</th>
+                                            <th>{t('student_history.table_time')}</th>
+                                            <th style={{ textAlign: 'center' }}>{t('student_history.table_status')}</th>
+                                            <th style={{ textAlign: 'center' }}>{t('student_history.table_score')}</th>
+                                            <th style={{ textAlign: 'center' }}>{t('student_history.table_action')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -296,7 +325,7 @@ export default function History() {
                                                                 to={`/student/result/${attempt.id}`}
                                                                 className="stu-history-btn-detail"
                                                             >
-                                                                <FiEye /> Xem kết quả
+                                                                <FiEye /> {t('student_history.view_result')}
                                                             </Link>
                                                         ) : (
                                                             <Link
@@ -304,7 +333,7 @@ export default function History() {
                                                                 className="stu-history-btn-detail"
                                                                 style={{ color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.08)' }}
                                                             >
-                                                                <FiClock /> Làm tiếp
+                                                                <FiClock /> {t('student_history.continue')}
                                                             </Link>
                                                         )}
                                                     </td>
@@ -316,7 +345,7 @@ export default function History() {
                             </div>
 
                             {totalCount > 0 && (
-                                <Pagination 
+                                <Pagination
                                     currentPage={currentPage}
                                     totalPages={totalPages}
                                     onPageChange={handlePageChange}
@@ -338,15 +367,15 @@ export default function History() {
                             <div className="stu-nav-icon-wrap">
                                 <FiHome className="stu-nav-icon" />
                             </div>
-                            <h3>Trang chủ</h3>
-                            <p>Quay lại bảng điều khiển</p>
+                            <h3>{t('student_history.nav_home')}</h3>
+                            <p>{t('student_history.nav_home_desc')}</p>
                         </Link>
                         <Link to="/student/quizzes" className="stu-nav-card">
                             <div className="stu-nav-icon-wrap">
                                 <FiBookOpen className="stu-nav-icon" />
                             </div>
-                            <h3>Danh sách Quiz</h3>
-                            <p>Luyện tập làm bài thi mới</p>
+                            <h3>{t('student_history.nav_quizzes')}</h3>
+                            <p>{t('student_history.nav_quizzes_desc')}</p>
                         </Link>
                     </div>
                 </div>

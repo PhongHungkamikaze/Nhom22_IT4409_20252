@@ -10,6 +10,8 @@ import * as questions from './questions'
 import * as users from './users';
 import * as notifications from './notifications';
 import * as subjects from './subjects';
+import * as classGroup from './classGroup';
+import * as fileset from './fileset';
 
 // Keep single default object for compatibility with existing imports
 const apiService = {
@@ -24,9 +26,11 @@ const apiService = {
   ...users,
   ...notifications,
   ...subjects,
+  ...classGroup,
+  ...fileset,
 };
 
 export default apiService;
 
 // Also export modules individually if someone wants to import granularly
-export { auth, quizzes, attempts, answers, profile, stats, questions, users, subjects, notifications };
+export { auth, quizzes, attempts, answers, profile, stats, questions, users, subjects, notifications, classGroup, fileset };

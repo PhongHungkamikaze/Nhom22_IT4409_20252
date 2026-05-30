@@ -11,3 +11,6 @@ export { default as TeacherQuestionDetail } from './TeacherQuestionDetail';
 export { default as TeacherQuizDetail } from './TeacherQuizDetail';
 export { default as TeacherQuizEdit } from './TeacherQuizEdit';
 export { default as TeacherSubjects } from './TeacherSubjects';
+export { default as TeacherClassGroups } from './ClassGroups';
+export { default as TeacherClassGroupDetail } from './ClassGroupDetail';
+export { default as TeacherFiles } from './Files';

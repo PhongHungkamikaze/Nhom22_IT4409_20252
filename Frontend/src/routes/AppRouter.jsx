@@ -19,6 +19,9 @@ import AdminEditUser from '../pages/Admin/EditUser';
 import AdminAttempts from '../pages/Admin/Attempts';
 import AdminQuizDetail from '../pages/Admin/AdminQuizDetail';
 import AdminQuestionDetail from '../pages/Admin/AdminQuestionDetail';
+import AdminClassGroups from '../pages/Admin/ClassGroups';
+import AdminClassGroupDetail from '../pages/Admin/AdminClassGroupDetail';
+import AdminFiles from '../pages/Admin/Files';
 import NotificationManagement from '../pages/common/Notifications/NotificationManagement';
 
 // Teacher
@@ -35,6 +38,9 @@ import TeacherSubjects from '../pages/Teacher/TeacherSubjects';
 import TeacherQuestionDetail from '../pages/Teacher/TeacherQuestionDetail';
 import ImportAIQuestions from '../pages/Teacher/ImportAIQuestions';
 import QuizStats from '../pages/Teacher/QuizStats';
+import TeacherClassGroups from '../pages/Teacher/ClassGroups';
+import TeacherClassGroupDetail from '../pages/Teacher/ClassGroupDetail';
+import TeacherFiles from '../pages/Teacher/Files';
 
 // Student
 import StudentDashboard from '../pages/Student/Dashboard';
@@ -45,6 +51,7 @@ import StudentHistory from '../pages/Student/History';
 import StudentResult from '../pages/Student/Result';
 import StudentPersonalInfo from '../pages/Student/PersonalInfo';
 import StudentSettings from '../pages/Student/Settings';
+import StudentClassGroups from '../pages/Student/ClassGroups';
 
 // Route guards
 import RoleRoute from './RoleRoute';
@@ -61,6 +68,9 @@ const routeConfig = [
     { path: '/admin/subjects', role: 'admin', element: <AdminSubjects /> },
     { path: '/admin/attempts', role: 'admin', element: <AdminAttempts /> },
     { path: '/admin/notifications', role: 'admin', element: <NotificationManagement role="admin" /> },
+    { path: '/admin/class-groups', role: 'admin', element: <AdminClassGroups /> },
+    { path: '/admin/class-groups/:id', role: 'admin', element: <AdminClassGroupDetail /> },
+    { path: '/admin/files', role: 'admin', element: <AdminFiles /> },
     { path: '/teacher', role: 'teacher', element: <TeacherDashboard /> },
     { path: '/teacher/quizzes', role: 'teacher', element: <TeacherMyQuizzes /> },
     { path: '/teacher/questions', role: 'teacher', element: <TeacherQuestionBank /> },
@@ -75,6 +85,9 @@ const routeConfig = [
     { path: '/teacher/subjects', role: 'teacher', element: <TeacherSubjects /> },
     { path: '/teacher/attempts', role: 'teacher', element: <TeacherAttempts /> },
     { path: '/teacher/notifications', role: 'teacher', element: <NotificationManagement role="teacher" /> },
+    { path: '/teacher/class-groups', role: 'teacher', element: <TeacherClassGroups /> },
+    { path: '/teacher/class-groups/:id', role: 'teacher', element: <TeacherClassGroupDetail /> },
+    { path: '/teacher/files', role: 'teacher', element: <TeacherFiles /> },
     { path: '/student', role: 'student', element: <StudentDashboard /> },
     { path: '/student/quizzes', role: 'student', element: <StudentQuizList /> },
     { path: '/student/quizzes/:id', role: 'student', element: <StudentQuizDetail /> },
@@ -85,6 +98,7 @@ const routeConfig = [
     { path: '/student/profile', role: 'student', element: <StudentPersonalInfo /> },
     { path: '/student/settings', role: 'student', element: <StudentSettings /> },
     { path: '/student/notifications', role: 'student', element: <NotificationManagement role="student" /> },
+    { path: '/student/class-groups', role: 'student', element: <StudentClassGroups /> },
 ];
 
 const AppRouter = () => {

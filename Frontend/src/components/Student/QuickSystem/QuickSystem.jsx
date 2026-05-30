@@ -8,6 +8,7 @@ export default function QuickSystem() {
         { to: '/student', icon: '', label: 'Trang chính', exact: true },
         { to: '/student/quizzes', icon: '', label: 'Danh sách Quiz' },
         { to: '/student/history', icon: '', label: 'Lịch sử làm bài' },
+        { to: '/student/class-groups', icon: '', label: 'Lớp học' },
     ];
 
     const isActive = (item) => {

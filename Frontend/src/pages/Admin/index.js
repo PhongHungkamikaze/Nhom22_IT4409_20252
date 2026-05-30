@@ -5,3 +5,5 @@ export { default as Questions } from './Questions';
 export { default as Attempts } from './Attempts';
 export { default as Analytics } from './Analytics';
 export { default as Subjects } from './Subjects';
+export { default as ClassGroups } from './ClassGroups';
+export { default as Files } from './Files';

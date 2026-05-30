@@ -27,6 +27,14 @@ export default function QuickSystem() {
                     <span className="action-icon">📖</span>
                     Danh sách Môn học
                 </Link>
+                <Link to="/teacher/class-groups" className="action-btn" style={{ textDecoration: 'none' }}>
+                    <span className="action-icon">👥</span>
+                    Lớp học
+                </Link>
+                <Link to="/teacher/files" className="action-btn" style={{ textDecoration: 'none' }}>
+                    <span className="action-icon">📄</span>
+                    Tài liệu
+                </Link>
             </div>
         </div>
     );

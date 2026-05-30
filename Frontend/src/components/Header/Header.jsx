@@ -111,6 +111,26 @@ const Header = () => {
                     <FiBookOpen className="nav-icon" /> {t('quizzes')}
                   </Link>
                 </li>
+                {user?.role === 'student' && (
+                  <>
+                    <li>
+                      <Link
+                        to="/student/class-groups"
+                        className={location.pathname.includes('/class-groups') ? 'active' : ''}
+                      >
+                        <FiLayout className="nav-icon" /> Lớp học
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/student/history"
+                        className={location.pathname === '/student/history' ? 'active' : ''}
+                      >
+                        <FiClock className="nav-icon" /> Lịch sử
+                      </Link>
+                    </li>
+                  </>
+                )}
               </>
             )}
           </ul>

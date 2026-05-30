@@ -31,6 +31,14 @@ export default function QuickSystem() {
                     <span className="action-icon">📖</span>
                     Subject Management
                 </Link>
+                <Link to="/admin/class-groups" className="action-btn" style={{ textDecoration: 'none' }}>
+                    <span className="action-icon">👥</span>
+                    Class Groups
+                </Link>
+                <Link to="/admin/files" className="action-btn" style={{ textDecoration: 'none' }}>
+                    <span className="action-icon">📄</span>
+                    File Management
+                </Link>
             </div>
         </div>
     );

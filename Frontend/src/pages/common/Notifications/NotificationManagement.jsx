@@ -4,7 +4,6 @@ import '../../Admin/Admin.css';
 import './NotificationManagement.css';
 import QuickSystem from '../../../components/Admin/QuickSystem/QuickSystem';
 import TeacherQuickSystem from '../../../components/Teacher/QuickSystem/QuickSystem';
-import StudentQuickSystem from '../../../components/Student/QuickSystem/QuickSystem';
 import Pagination from '../../../components/common/Pagination';
 
 const NotificationManagement = ({ role }) => {
@@ -109,7 +108,8 @@ const NotificationManagement = ({ role }) => {
 
     return (
         <div className={`${containerClass} notifications-page`}>
-            {role === 'admin' ? <QuickSystem /> : role === 'teacher' ? <TeacherQuickSystem /> : <StudentQuickSystem />}
+            {role === 'admin' ? <QuickSystem /> : role === 'teacher' ? <TeacherQuickSystem /> : null}
+            {role !== 'student' && (
             <header className="admin-header">
                 <div>
                     <h1 className="admin-title">{titleText}</h1>
@@ -131,6 +131,7 @@ const NotificationManagement = ({ role }) => {
                     </button>
                 </div>
             </header>
+            )}
 
             <div className="admin-card">
                 <div className="table-controls notifications-toolbar">

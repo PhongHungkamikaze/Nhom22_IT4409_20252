@@ -6,3 +6,4 @@ export { default as Result } from './Result';
 export { default as History } from './History';
 export { default as PersonalInfo } from './PersonalInfo';
 export { default as Settings } from './Settings';
+export { default as StudentClassGroups } from './ClassGroups';

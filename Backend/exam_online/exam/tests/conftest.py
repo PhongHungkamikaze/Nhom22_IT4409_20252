@@ -6,7 +6,8 @@ Chạy với: pytest (từ thư mục exam_online/)
 
 import pytest
 from rest_framework.test import APIClient
-from exam.models import User, UserRole, Quiz
+from django.core.files.uploadedfile import SimpleUploadedFile
+from exam.models import User, UserRole, Quiz, FileSet
 
 
 # ---------------------------------------------------------------------------
@@ -88,4 +89,26 @@ def quiz(db, regular_user):
         description="A quiz for testing purposes",
         author=regular_user,
         time_limit=30,
+        is_published=True,
+    )
+
+
+@pytest.fixture
+def sample_file():
+    """Tạo 1 file mẫu để upload."""
+    return SimpleUploadedFile(
+        "test_document.pdf", b"dummy content", content_type="application/pdf"
+    )
+
+
+@pytest.fixture
+def fileset(db, regular_user):
+    """Tạo 1 FileSet mẫu cho user thông thường."""
+    uploaded = SimpleUploadedFile(
+        "existing_doc.pdf", b"existing content", content_type="application/pdf"
+    )
+    return FileSet.objects.create(
+        name="Existing Document",
+        file=uploaded,
+        uploaded_by=regular_user,
     )

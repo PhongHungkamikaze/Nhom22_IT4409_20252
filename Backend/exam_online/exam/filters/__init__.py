@@ -12,6 +12,8 @@ from .answer import AnswerFilter  # noqa: E402
 from .notification import NotificationFilter  # noqa: E402
 from .user import UserFilter  # noqa: E402
 from .subject import SubjectFilter  # noqa: E402
+from .fileset import FileSetFilter  # noqa: E402
+from .class_group import ClassGroupFilter  # noqa: E402
 
 __all__ = [
     "NumberInFilter",
@@ -22,4 +24,6 @@ __all__ = [
     "NotificationFilter",
     "UserFilter",
     "SubjectFilter",
+    "FileSetFilter",
+    "ClassGroupFilter",
 ]

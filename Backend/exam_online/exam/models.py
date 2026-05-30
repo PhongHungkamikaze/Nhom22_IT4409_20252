@@ -180,3 +180,69 @@ class Notification(BaseModel):
 
     def __str__(self):
         return f"{self.recipient.username} - {self.title} ({self.type})"
+
+
+class FileSet(BaseModel):
+    name = models.CharField(max_length=255)
+    file = models.FileField(upload_to="filesets/")
+    subject = models.ForeignKey(
+        Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name="filesets"
+    )
+    uploaded_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="filesets"
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class ClassGroup(BaseModel):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default="")
+    subject = models.ForeignKey(
+        Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name="class_groups"
+    )
+    created_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="created_class_groups"
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.name
+
+
+class ClassGroupMembership(BaseModel):
+    class_group = models.ForeignKey(
+        ClassGroup, on_delete=models.CASCADE, related_name="memberships"
+    )
+    student = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="class_memberships"
+    )
+
+    class Meta:
+        unique_together = ["class_group", "student"]
+
+    def __str__(self):
+        return f"{self.student.username} in {self.class_group.name}"
+
+
+class ClassQuizAssignment(BaseModel):
+    class_group = models.ForeignKey(
+        ClassGroup, on_delete=models.CASCADE, related_name="quiz_assignments"
+    )
+    quiz = models.ForeignKey(
+        Quiz, on_delete=models.CASCADE, related_name="class_assignments"
+    )
+    assigned_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="assigned_quizzes"
+    )
+    due_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ["class_group", "quiz"]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Quiz '{self.quiz.title}' -> {self.class_group.name}"

@@ -23,6 +23,15 @@ from .notification import (
     MarkBulkSerializer,
     NotificationListSerializer,
 )
+from .fileset import FileSetSerializer, FileSetCreateSerializer
+from .class_group import (
+    ClassGroupSerializer,
+    ClassGroupDetailSerializer,
+    ClassGroupMembershipSerializer,
+    AddStudentSerializer,
+    ClassQuizAssignmentSerializer,
+    AssignQuizSerializer,
+)
 
 __all__ = [
     "ChoiceSerializer",
@@ -42,4 +51,12 @@ __all__ = [
     "NotificationListSerializer",
     "BulkImportSerializer",
     "QuestionAISerializer",
+    "FileSetSerializer",
+    "FileSetCreateSerializer",
+    "ClassGroupSerializer",
+    "ClassGroupDetailSerializer",
+    "ClassGroupMembershipSerializer",
+    "AddStudentSerializer",
+    "ClassQuizAssignmentSerializer",
+    "AssignQuizSerializer",
 ]

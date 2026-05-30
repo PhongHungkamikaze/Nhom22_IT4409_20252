@@ -15,6 +15,9 @@ from .views import (
     SubjectViewSet,
     NotificationViewSet,
     StatsView,
+    FileSetViewSet,
+    ClassGroupViewSet,
+    SearchView,
 )
 
 router = DefaultRouter()
@@ -25,6 +28,8 @@ router.register(r"attempts", AttemptViewSet)
 router.register(r"answers", AnswerViewSet)
 router.register(r"subjects", SubjectViewSet)
 router.register(r"notification", NotificationViewSet, basename="notification")
+router.register(r"filesets", FileSetViewSet, basename="fileset")
+router.register(r"class-groups", ClassGroupViewSet, basename="class-group")
 urlpatterns = [
     path("", include(router.urls)),
     path("stats/", StatsView.as_view(), name="stats"),
@@ -38,4 +43,5 @@ urlpatterns = [
         ResetPasswordConfirmView.as_view(),
         name="reset-password",
     ),
+    path("search/", SearchView.as_view(), name="search"),
 ]

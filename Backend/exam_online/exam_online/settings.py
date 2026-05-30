@@ -238,5 +238,14 @@ NOTIFICATION_PURGE_AFTER_DAYS = config(
     "NOTIFICATION_PURGE_AFTER_DAYS", default=30, cast=int
 )
 
+# drf-spectacular settings
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Exam Online API",
+    "DESCRIPTION": "Online exam management system API",
+    "VERSION": "1.0.0",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SCHEMA_PATH_PREFIX": "/api/",
+}
+
 # AI Configuration
 GEMINI_API_KEY = config("GEMINI_API_KEY", default="")

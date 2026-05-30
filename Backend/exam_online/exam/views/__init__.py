@@ -15,6 +15,9 @@ from .user import UserViewSet
 from .subject import SubjectViewSet
 from .notification import NotificationViewSet
 from .stats import StatsView
+from .fileset import FileSetViewSet
+from .class_group import ClassGroupViewSet
+from .search import SearchView
 
 __all__ = [
     "LoginView",
@@ -32,4 +35,7 @@ __all__ = [
     "SubjectViewSet",
     "NotificationViewSet",
     "StatsView",
+    "FileSetViewSet",
+    "ClassGroupViewSet",
+    "SearchView",
 ]

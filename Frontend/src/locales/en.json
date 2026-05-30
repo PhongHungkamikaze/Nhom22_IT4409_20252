@@ -274,7 +274,8 @@
         "back_to_list_btn": "Back to list",
         "error_create_session": "Unable to create exam session. Please check your access rights.",
         "error_start": "Unable to start this quiz.",
-        "error_load": "Unable to load quiz details. The quiz may not be published yet."
+        "error_load": "Unable to load quiz details. The quiz may not be published yet.",
+        "not_assigned": "This quiz has not been assigned to you. Please check your assigned quiz list."
     },
 
     "student_history": {
@@ -370,7 +371,8 @@
         "load_error": "Failed to load the exam.",
         "save_error": "Error saving answer.",
         "tab_switch": "SYSTEM: Tab switch detected! Your exam will be auto-submitted immediately.",
-        "exit_unsaved": "Warning: You have unsaved changes. Still exit?"
+        "exit_unsaved": "Warning: You have unsaved changes. Still exit?",
+        "no_questions": "This quiz has no questions yet."
     },
 
     "student_profile": {

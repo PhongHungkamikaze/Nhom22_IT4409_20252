@@ -24,14 +24,35 @@ export default function QuizDetail() {
     const [starting, setStarting] = useState(false);
     const [error, setError] = useState(null);
 
-    // READ: Fetch quiz details and questions
+    // READ: Fetch quiz details and verify assignment
     useEffect(() => {
         const fetchQuizDetails = async () => {
             try {
                 setLoading(true);
-                console.log('Fetching quiz with id:', id); // DEBUG
                 const quizData = await apiService.getQuiz(id);
-                console.log('Quiz data received:', quizData); // DEBUG
+
+                // Verify this quiz is assigned to the student
+                const groupsData = await apiService.getClassGroups();
+                const groups = groupsData.results || (Array.isArray(groupsData) ? groupsData : []);
+                let isAssigned = false;
+                await Promise.all(
+                    groups.map(async (g) => {
+                        if (isAssigned) return;
+                        try {
+                            const qs = await apiService.getAssignedQuizzes(g.id);
+                            (Array.isArray(qs) ? qs : []).forEach((aq) => {
+                                if (aq.quiz === Number(id)) isAssigned = true;
+                            });
+                        } catch {}
+                    })
+                );
+
+                if (!isAssigned) {
+                    setError(t('student_quiz_detail.not_assigned'));
+                    setQuiz(null);
+                    return;
+                }
+
                 setQuiz(quizData);
                 setError(null);
             } catch (err) {

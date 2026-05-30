@@ -274,7 +274,8 @@
         "back_to_list_btn": "Quay lại danh sách",
         "error_create_session": "Không thể tạo phiên làm bài thi. Vui lòng kiểm tra lại quyền truy cập.",
         "error_start": "Không thể bắt đầu thực hiện bài quiz này.",
-        "error_load": "Không thể tải chi tiết bài quiz. Bài quiz có thể chưa được công bố (published)."
+        "error_load": "Không thể tải chi tiết bài quiz. Bài quiz có thể chưa được công bố (published).",
+        "not_assigned": "Bài quiz này chưa được giao cho bạn. Vui lòng kiểm tra lại danh sách quiz được giao."
     },
 
     "student_history": {
@@ -370,7 +371,8 @@
         "load_error": "Không thể tải bài thi.",
         "save_error": "Lỗi khi lưu câu trả lời.",
         "tab_switch": "HỆ THỐNG: Phát hiện hành vi chuyển TAB! Bài thi sẽ được nộp tự động ngay lập tức.",
-        "exit_unsaved": "Cảnh báo: Bạn có thay đổi chưa lưu. Vẫn thoát?"
+        "exit_unsaved": "Cảnh báo: Bạn có thay đổi chưa lưu. Vẫn thoát?",
+        "no_questions": "Bài quiz này chưa có câu hỏi nào."
     },
 
     "student_profile": {

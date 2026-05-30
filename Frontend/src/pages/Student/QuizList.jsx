@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import apiService from '../../services/api';
-import { FiBookOpen, FiHelpCircle, FiClock, FiInbox, FiSearch, FiAward, FiEdit3 } from 'react-icons/fi';
+import { FiBookOpen, FiHelpCircle, FiClock, FiInbox, FiSearch, FiAward, FiEdit3, FiAlertCircle } from 'react-icons/fi';
 import './Student.css';
 import Pagination from '../../components/common/Pagination';
 
@@ -15,16 +15,49 @@ export default function QuizList() {
     const [ordering, setOrdering] = useState('-created_at');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
+    const [assignedIds, setAssignedIds] = useState(null);
     const pageSize = 9;
+
+    const fetchAssignedQuizzes = async () => {
+        try {
+            const groupsData = await apiService.getClassGroups();
+            const groups = groupsData.results || (Array.isArray(groupsData) ? groupsData : []);
+            const ids = new Set();
+            await Promise.all(
+                groups.map(async (g) => {
+                    try {
+                        const qs = await apiService.getAssignedQuizzes(g.id);
+                        (Array.isArray(qs) ? qs : []).forEach((aq) => ids.add(aq.quiz));
+                    } catch {}
+                })
+            );
+            return ids;
+        } catch {
+            return new Set();
+        }
+    };
 
     const fetchQuizzes = async (page = currentPage) => {
         try {
             setLoading(true);
+            let ids = assignedIds;
+            if (ids === null) {
+                ids = await fetchAssignedQuizzes();
+                setAssignedIds(ids);
+            }
+            if (ids.size === 0) {
+                setQuizzes([]);
+                setTotalCount(0);
+                setError(null);
+                setLoading(false);
+                return;
+            }
             const params = {
                 search: searchTerm,
                 ordering: ordering,
                 page: page,
                 page_size: 9,
+                id__in: Array.from(ids).join(','),
             };
             const data = await apiService.getQuizzes(params);
             const quizList = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
@@ -56,7 +89,6 @@ export default function QuizList() {
 
     return (
         <div className="student-page">
-            {/* Header */}
             <div className="stu-dashboard-header">
                 <div className="stu-container">
                     <div className="stu-welcome-row">
@@ -84,7 +116,6 @@ export default function QuizList() {
                 </div>
             </div>
 
-            {/* Search Bar */}
             <section className="stu-quizzes-section">
                 <div className="stu-container">
                     <div className="stu-search-container-wrap" style={{ marginBottom: '2rem', position: 'relative' }}>
@@ -118,7 +149,6 @@ export default function QuizList() {
                         />
                     </div>
 
-                    {/* Error Message */}
                     {error && (
                         <div style={{
                             padding: '12px 16px',
@@ -132,7 +162,6 @@ export default function QuizList() {
                         </div>
                     )}
 
-                    {/* Loading State */}
                     {loading ? (
                         <div className="stu-loading">
                             <div className="stu-spinner"></div>
@@ -143,7 +172,7 @@ export default function QuizList() {
                             <div className="stu-empty-icon-wrap">
                                 <FiInbox size={40} className="stu-empty-icon" />
                             </div>
-                            <p>{searchTerm ? t('student_quiz_list.no_results') : t('student_quiz_list.no_quizzes')}</p>
+                            <p>{assignedIds?.size === 0 ? 'Bạn chưa được giao bài quiz nào.' : (searchTerm ? t('student_quiz_list.no_results') : t('student_quiz_list.no_quizzes'))}</p>
                         </div>
                     ) : (
                         <>
@@ -184,7 +213,6 @@ export default function QuizList() {
                                 ))}
                             </div>
 
-                            {/* Pagination Controls */}
                             {Math.ceil(totalCount / pageSize) > 1 && (
                                 <Pagination
                                     currentPage={currentPage}

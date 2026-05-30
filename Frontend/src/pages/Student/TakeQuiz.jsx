@@ -204,6 +204,7 @@ export default function TakeQuiz() {
 
     if (loading) return <div className="take-quiz-container"><div className="stu-loading"><div className="stu-spinner"></div><p>{t('student_take_quiz.loading')}</p></div></div>;
     if (error || !attempt) return <div className="student-page"><h2>{error || t('student_take_quiz.error_data')}</h2><button onClick={() => navigate('/student/quizzes')}>{t('student_take_quiz.back')}</button></div>;
+    if (!questions.length) return <div className="student-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '2rem', textAlign: 'center' }}><FiAlertTriangle size={48} style={{ color: '#f59e0b', marginBottom: '1rem' }} /><h2>{t('student_take_quiz.no_questions')}</h2><button className="stu-btn-cancel-premium" onClick={() => navigate('/student/quizzes')} style={{ marginTop: '1rem' }}>{t('student_take_quiz.back')}</button></div>;
 
     const currentQuestion = questions[currentQuestionIndex];
     if (!currentQuestion) return null;

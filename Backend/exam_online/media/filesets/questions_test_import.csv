@@ -1,0 +1,5 @@
+content,type,choice1,is_correct1,choice2,is_correct2,choice3,is_correct3,choice4,is_correct4
+What is the capital of France?,single,Paris,true,London,false,Berlin,false,Madrid,false
+Which language is used with Django?,single,Python,true,Java,false,C++,false,PHP,false
+Select prime numbers,multiple,2,true,3,true,4,false,5,true
+What does HTTP stand for?,single,HyperText Transfer Protocol,true,High Transfer Text Protocol,false,Hyper Transfer Tool Protocol,false,Home Text Transfer Protocol,false

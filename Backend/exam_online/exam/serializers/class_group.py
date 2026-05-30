@@ -62,6 +62,24 @@ class AddStudentSerializer(serializers.Serializer):
         return user
 
 
+class AddStudentsSerializer(serializers.Serializer):
+    student_ids = serializers.ListField(
+        child=serializers.IntegerField(), allow_empty=False
+    )
+
+    def validate_student_ids(self, value):
+        from exam.models import User
+        ids = set(value)
+        users = User.objects.filter(id__in=ids, role="student")
+        found_ids = {u.id for u in users}
+        missing = ids - found_ids
+        if missing:
+            raise serializers.ValidationError(
+                f"Students not found for IDs: {sorted(missing)}"
+            )
+        return list(users)
+
+
 class ClassQuizAssignmentSerializer(serializers.ModelSerializer):
     class_group_name = serializers.CharField(source="class_group.name", read_only=True)
     quiz_title = serializers.CharField(source="quiz.title", read_only=True)

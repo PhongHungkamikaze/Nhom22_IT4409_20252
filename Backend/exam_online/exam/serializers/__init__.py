@@ -29,6 +29,7 @@ from .class_group import (
     ClassGroupDetailSerializer,
     ClassGroupMembershipSerializer,
     AddStudentSerializer,
+    AddStudentsSerializer,
     ClassQuizAssignmentSerializer,
     AssignQuizSerializer,
 )
@@ -57,6 +58,7 @@ __all__ = [
     "ClassGroupDetailSerializer",
     "ClassGroupMembershipSerializer",
     "AddStudentSerializer",
+    "AddStudentsSerializer",
     "ClassQuizAssignmentSerializer",
     "AssignQuizSerializer",
 ]

@@ -23,15 +23,7 @@ class FileSetViewSet(BaseViewSet):
     ordering = ["-created_at"]
     filterset_class = FileSetFilter
 
-    permission_classes_by_action = {
-        "list": [IsTeacherUser | IsAdminUser | IsStudentUser],
-        "retrieve": [IsTeacherUser | IsAdminUser | IsStudentUser],
-        "create": [IsTeacherUser | IsAdminUser | IsStudentUser],
-        "update": [IsTeacherUser | IsAdminUser | IsStudentUser],
-        "partial_update": [IsTeacherUser | IsAdminUser | IsStudentUser],
-        "destroy": [IsTeacherUser | IsAdminUser | IsStudentUser],
-    }
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser | IsTeacherUser]
 
     def create(self, request, *args, **kwargs):
         input_serializer = FileSetCreateSerializer(data=request.data)
@@ -41,7 +33,4 @@ class FileSetViewSet(BaseViewSet):
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
-        user = self.request.user
-        if user.role == UserRole.Admin and self.request.query_params.get("all"):
-            return FileSet.objects.all()
-        return FileSet.objects.filter(uploaded_by=user)
+        return FileSet.objects.all()

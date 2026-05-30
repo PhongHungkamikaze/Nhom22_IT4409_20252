@@ -10,7 +10,7 @@ from ..models import (
 from ..serializers import (
     ClassGroupSerializer,
     ClassGroupDetailSerializer,
-    AddStudentSerializer,
+    AddStudentsSerializer,
     ClassQuizAssignmentSerializer,
     AssignQuizSerializer,
 )
@@ -76,29 +76,41 @@ class ClassGroupViewSet(BaseViewSet):
         return Response(serializer.data)
 
     @extend_schema(
-        description="Add a student to the class group",
-        request=AddStudentSerializer,
+        description="Add students to the class group (bulk)",
+        request=AddStudentsSerializer,
         responses={201: None},
     )
     @action(detail=True, methods=["post"], url_path="add-student")
     def add_student(self, request, pk=None):
         class_group = self.get_object()
-        serializer = AddStudentSerializer(data=request.data)
+        serializer = AddStudentsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        student = serializer.validated_data["student_id"]
+        students = serializer.validated_data["student_ids"]
 
-        _, created = ClassGroupMembership.objects.get_or_create(
-            class_group=class_group, student=student
-        )
-        if created:
-            return Response(
-                {"message": f"Added {student.username} to {class_group.name}"},
-                status=status.HTTP_201_CREATED,
-            )
-        return Response(
-            {"message": f"{student.username} is already in {class_group.name}"},
-            status=status.HTTP_200_OK,
-        )
+        existing = ClassGroupMembership.objects.filter(
+            class_group=class_group, student__in=students
+        ).values_list("student_id", flat=True)
+        existing_set = set(existing)
+
+        new_students = []
+        already_in = []
+        for s in students:
+            if s.id in existing_set:
+                already_in.append(s.username)
+            else:
+                ClassGroupMembership.objects.create(
+                    class_group=class_group, student=s
+                )
+                new_students.append(s.username)
+
+        result = {}
+        if new_students:
+            result["added"] = new_students
+        if already_in:
+            result["already_in"] = already_in
+
+        status_code = status.HTTP_201_CREATED if new_students else status.HTTP_200_OK
+        return Response(result, status=status_code)
 
     @extend_schema(
         description="Remove a student from the class group",

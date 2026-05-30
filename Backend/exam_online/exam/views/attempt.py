@@ -3,15 +3,15 @@ from drf_spectacular.utils import extend_schema
 from ..models import Attempt, Answer, StatusChoices, UserRole
 from ..serializers import AttemptSerializer, AnswerSerializer
 from ..filters import AttemptFilter
-from rest_framework import viewsets, response, filters, status
+from rest_framework import response, status
 from rest_framework.decorators import action
-from django_filters.rest_framework import DjangoFilterBackend
-from exam.permissions import IsAdminUser, IsTeacherUser, IsStudentUser, PermissionMixin
+from ..views.base import BaseViewSet
+from exam.permissions import IsAdminUser, IsTeacherUser, IsStudentUser
 from ..tasks import calculate_score
 
 
 @extend_schema(tags=["Attempt"])
-class AttemptViewSet(PermissionMixin, viewsets.ModelViewSet):
+class AttemptViewSet(BaseViewSet):
     queryset = (
         Attempt.objects.all().select_related("user", "quiz").prefetch_related("answers")
     )
@@ -27,11 +27,6 @@ class AttemptViewSet(PermissionMixin, viewsets.ModelViewSet):
         "submit": [IsStudentUser],
         "current": [IsStudentUser],
     }
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.OrderingFilter,
-        filters.SearchFilter,
-    ]
     search_fields = ["user__username", "quiz__title"]
     ordering_fields = ["id", "started_at", "score"]
     ordering = ["-started_at"]

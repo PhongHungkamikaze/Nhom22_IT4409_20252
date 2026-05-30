@@ -3,28 +3,24 @@ from exam.permissions import (
     IsTeacherUser,
     IsStudentUser,
     IsOwnerTeacher,
-    PermissionMixin,
 )
 from drf_spectacular.utils import extend_schema
 
-from ..models import Quiz
+from ..models import Quiz, StatusChoices, Attempt, Answer
 from ..serializers import QuizSerializer, AttemptSerializer, QuestionSerializer
-from rest_framework import viewsets, status, response
+from ..views.base import BaseViewSet
+from rest_framework import status, response
 from rest_framework.decorators import action
-from ..models import StatusChoices, Attempt, Answer
 from django.db.models import Avg, Max, Min, Count
 from django.http import HttpResponse
 import pandas as pd
 from datetime import datetime
 from ..filters import QuizFilter
-from rest_framework import filters
-from django_filters.rest_framework import DjangoFilterBackend
-from ..tasks.create_notifications import create_notifications
-from ..models import User, UserRole
+from ..services.quiz_service import QuizService
 
 
 @extend_schema(tags=["Quiz"])
-class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
+class QuizViewSet(BaseViewSet):
     queryset = Quiz.objects.all().prefetch_related("questions__choices")
     permission_classes_by_action = {
         "list": [IsTeacherUser | IsAdminUser | IsStudentUser],
@@ -41,11 +37,6 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     }
     permission_classes = [IsAdminUser]
     serializer_class = QuizSerializer
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.OrderingFilter,
-        filters.SearchFilter,
-    ]
     search_fields = ["title", "description", "author__username", "subject__name"]
     ordering_fields = ["id", "created_at", "time_limit", "title"]
     ordering = ["-created_at"]
@@ -58,20 +49,9 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def get_queryset(self):
-        """
-        Filter quizzes based on user role:
-        - Students: only see published quizzes
-        - Teachers: see all quizzes + edit own quizzes
-        - Admins: see all quizzes
-        """
-        queryset = Quiz.objects.all().prefetch_related("questions__choices")
-
-        # Check user role
         if hasattr(self.request, "user") and self.request.user.is_authenticated:
-            if self.request.user.role == "student":
-                # Students only see published quizzes
-                queryset = queryset.filter(is_published=True)
-        return queryset
+            return QuizService.get_visible_quizzes(self.request.user).prefetch_related("questions__choices")
+        return Quiz.objects.none()
 
     @action(detail=True, methods=["get"], url_path="questions")
     def questions(self, request, pk=None):
@@ -87,35 +67,19 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     def start(self, request, pk=None):
         quiz = self.get_object()
 
-        # 1. Check attempt đang làm
         if not quiz.is_published:
             return response.Response(
-                {
-                    "message": "Quiz finish",
-                },
+                {"message": "Quiz finish"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        count_attempt = (
-            Attempt.objects.filter(
-                user=request.user, quiz=quiz, status=StatusChoices.Processing
-            ).count()
-            + Attempt.objects.filter(
-                user=request.user, quiz=quiz, status=StatusChoices.Completed
-            ).count()
-        )
 
-        if count_attempt == quiz.max_attempts:
+        if QuizService.check_max_attempts(request.user, quiz):
             return response.Response(
-                {
-                    "message": "Max attempts",
-                },
+                {"message": "Max attempts"},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        existing_attempt = Attempt.objects.filter(
-            user=request.user, quiz=quiz, status=StatusChoices.Ongoing
-        ).first()
-
+        existing_attempt = QuizService.get_ongoing_attempt(request.user, quiz)
         if existing_attempt:
             serializer = AttemptSerializer(existing_attempt)
             return response.Response(
@@ -126,13 +90,11 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
                 status=status.HTTP_200_OK,
             )
 
-        # 2. Tạo attempt mới
         attempt = Attempt.objects.create(
             user=request.user,
             quiz=quiz,
             status=StatusChoices.Ongoing,
         )
-
         serializer = AttemptSerializer(attempt)
         return response.Response(
             {"message": "Start quiz successfully", "attempt": serializer.data},
@@ -149,7 +111,7 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=["get"], url_path="performance-stats")
     def performance_stats(self, request, pk=None):
         quiz = self.get_object()
-        stats = Attempt.objects.filter(quiz=quiz, status="completed").aggregate(
+        stats = Attempt.objects.filter(quiz=quiz, status=StatusChoices.Completed).aggregate(
             average_score=Avg("score"),
             highest_score=Max("score"),
             lowest_score=Min("score"),
@@ -162,23 +124,31 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=["get"], url_path="question-analysis")
     def question_analysis(self, request, pk=None):
         quiz = self.get_object()
-        completed_attempts = Attempt.objects.filter(quiz=quiz, status="completed")
+        completed_attempts = Attempt.objects.filter(quiz=quiz, status=StatusChoices.Completed)
         total_attempts = completed_attempts.count()
 
         if total_attempts == 0:
             return response.Response(
-                {"message": "Chưa có dữ liệu lượt thi để phân tích."},
+                {"message": "No data available for analysis."},
                 status=status.HTTP_200_OK,
             )
+
+        from collections import defaultdict
+        answers = Answer.objects.filter(
+            attempt__in=completed_attempts,
+            question__in=quiz.questions.all(),
+        ).select_related("question").prefetch_related("selected_choices")
+
+        question_answers = defaultdict(list)
+        for answer in answers:
+            question_answers[answer.question_id].append(answer)
 
         hard_questions = []
         questions = quiz.questions.all().prefetch_related("choices")
 
         for question in questions:
-            answers = Answer.objects.filter(
-                attempt__in=completed_attempts, question=question
-            ).prefetch_related("selected_choices")
-            total_answers = answers.count()
+            question_answers_list = question_answers.get(question.id, [])
+            total_answers = len(question_answers_list)
 
             if total_answers == 0:
                 continue
@@ -186,16 +156,15 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
             correct_choice_ids = set(
                 question.choices.filter(is_correct=True).values_list("id", flat=True)
             )
-            wrong_count = 0
-
-            for answer in answers:
-                selected_ids = set(answer.selected_choices.values_list("id", flat=True))
-                if selected_ids != correct_choice_ids:
-                    wrong_count += 1
+            wrong_count = sum(
+                1 for answer in question_answers_list
+                if set(answer.selected_choices.values_list("id", flat=True)) != correct_choice_ids
+            )
 
             error_rate = (wrong_count / total_answers) * 100
+            HARD_QUESTION_THRESHOLD = 70
 
-            if error_rate > 70:
+            if error_rate > HARD_QUESTION_THRESHOLD:
                 hard_questions.append(
                     {
                         "question_id": question.id,
@@ -203,7 +172,7 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
                         "error_rate": round(error_rate, 2),
                         "total_answers": total_answers,
                         "wrong_count": wrong_count,
-                        "suggestion": "Xem xét viết lại câu hỏi hoặc giảm độ khó của các choices.",
+                        "suggestion": "Review question content or reduce choice difficulty.",
                     }
                 )
 
@@ -218,9 +187,9 @@ class QuizViewSet(PermissionMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=["get"], url_path="export-results")
     def export_results(self, request, pk=None):
         quiz = self.get_object()
-        attempts = Attempt.objects.filter(quiz=quiz, status="completed").select_related(
-            "user"
-        )
+        attempts = Attempt.objects.filter(
+            quiz=quiz, status=StatusChoices.Completed
+        ).select_related("user")
 
         data = []
         for index, attempt in enumerate(attempts, 1):

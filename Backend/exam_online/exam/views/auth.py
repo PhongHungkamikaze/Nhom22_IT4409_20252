@@ -86,9 +86,9 @@ class UserProfileView(views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request):
-        """Cập nhật thông tin cá nhân (PUT)"""
+        """Cập nhật thông tin cá nhân (PUT - full update)"""
         user = request.user
-        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer = UserSerializer(user, data=request.data, partial=False)
         if serializer.is_valid():
             serializer.save()
             return Response(
@@ -98,7 +98,7 @@ class UserProfileView(views.APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request):
-        """Cập nhật thông tin cá nhân (PATCH)"""
+        """Cập nhật thông tin cá nhân (PATCH - partial update)"""
         user = request.user
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
@@ -117,8 +117,14 @@ class ResetPasswordView(views.APIView):
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         if serializer.is_valid():
-            username = serializer.validated_data.get("username")
-            user = User.objects.get(username=username)
+            email = serializer.validated_data.get("email")
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response(
+                    {"email": ["User with this email not found."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             # In a real app, send a link to the frontend. Here we just log/send email.

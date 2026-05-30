@@ -1,25 +1,6 @@
 from ..models import Attempt, StatusChoices
+from ..services.scoring_service import ScoringService
 from celery import shared_task
-
-def calculate_attempt_score(attempt):
-    total_questions = attempt.quiz.questions.count()
-    answers = attempt.answers.all()
-    correct_count = 0
-
-    for answer in answers:
-        correct_choices = {
-            c.id for c in answer.question.choices.all() if c.is_correct
-        }
-        selected_choices = {c.id for c in answer.selected_choices.all()}
-
-        if correct_choices == selected_choices:
-            correct_count += 1
-
-    return (
-        0
-        if total_questions == 0
-        else round((correct_count / total_questions) * 10, 2)
-    )
 
 @shared_task
 def calculate_score(attempt_id):
@@ -32,7 +13,7 @@ def calculate_score(attempt_id):
         .get(id=attempt_id)
     )
 
-    attempt.score = calculate_attempt_score(attempt)
+    attempt.score = ScoringService.calculate_attempt_score(attempt)
     if attempt.status == StatusChoices.Processing:
         attempt.status = StatusChoices.Completed
     attempt.save(update_fields=["score", "status"])

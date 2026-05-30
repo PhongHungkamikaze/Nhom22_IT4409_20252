@@ -6,7 +6,7 @@ Chạy với: pytest (từ thư mục exam_online/)
 
 import pytest
 from rest_framework.test import APIClient
-from exam.models import User, Quiz
+from exam.models import User, UserRole, Quiz
 
 
 # ---------------------------------------------------------------------------
@@ -48,7 +48,7 @@ def regular_user(db):
         username="testuser",
         email="test@example.com",
         password="StrongPass123!",
-        role=User.UserRole.Student,
+        role=UserRole.Student,
     )
 
 
@@ -59,7 +59,7 @@ def other_user(db):
         username="otheruser",
         email="other@example.com",
         password="OtherPass123!",
-        role=User.UserRole.Student,
+        role=UserRole.Student,
     )
 
 
@@ -71,7 +71,7 @@ def admin_user(db):
         email="admin@example.com",
         password="AdminPass123!",
         is_staff=True,
-        role=User.UserRole.Admin,
+        role=UserRole.Admin,
     )
 
 

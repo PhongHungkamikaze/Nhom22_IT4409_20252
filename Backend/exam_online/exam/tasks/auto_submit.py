@@ -1,5 +1,5 @@
 from ..models import Attempt, StatusChoices
-from .calculate_score import calculate_attempt_score
+from ..services.scoring_service import ScoringService
 from celery import shared_task
 
 @shared_task
@@ -16,7 +16,7 @@ def auto_submit_quiz(quiz_id):
         )
     )
     for attempt in attempts:
-        attempt.score = calculate_attempt_score(attempt)
+        attempt.score = ScoringService.calculate_attempt_score(attempt)
         attempt.status = StatusChoices.Completed
 
     Attempt.objects.bulk_update(

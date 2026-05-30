@@ -1,9 +1,9 @@
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import filters, mixins, permissions, response, status, viewsets
+from rest_framework import filters, permissions, response, status
 from rest_framework.decorators import action
-from ..models import UserRole
+from rest_framework import mixins, viewsets
 from ..filters import NotificationFilter
 from ..models import Notification
 from ..serializers import (

@@ -1,10 +1,5 @@
 import django_filters
-from django_filters import BaseInFilter, NumberFilter
 from ..models import Quiz
-
-
-class NumberInFilter(BaseInFilter, NumberFilter):
-    pass
 
 
 class QuizFilter(django_filters.FilterSet):

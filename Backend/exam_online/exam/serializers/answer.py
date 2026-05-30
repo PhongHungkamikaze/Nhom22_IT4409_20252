@@ -20,16 +20,18 @@ class AnswerSerializer(serializers.ModelSerializer):
                 )
         return data
 
+    def _handle_choices(self, instance, choices):
+        if choices is not None:
+            instance.selected_choices.set(choices)
+
     def create(self, validated_data):
         choices = validated_data.pop("selected_choices", None)
         instance = super().create(validated_data)
-        if choices is not None:
-            instance.selected_choices.set(choices)
+        self._handle_choices(instance, choices)
         return instance
 
     def update(self, instance, validated_data):
         choices = validated_data.pop("selected_choices", None)
         instance = super().update(instance, validated_data)
-        if choices is not None:
-            instance.selected_choices.set(choices)
+        self._handle_choices(instance, choices)
         return instance

@@ -4,16 +4,23 @@ from ..serializers import AnswerSerializer
 from ..filters import AnswerFilter
 from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from exam.permissions import IsAdminUser, IsTeacherUser, PermissionMixin
 
 
 @extend_schema(tags=["Answer"])
-class AnswerViewSet(viewsets.ModelViewSet):
+class AnswerViewSet(PermissionMixin, viewsets.ModelViewSet):
     queryset = (
         Answer.objects.all()
         .select_related("attempt", "question")
         .prefetch_related("selected_choices")
     )
     serializer_class = AnswerSerializer
+
+    permission_classes_by_action = {
+        "list": [IsTeacherUser | IsAdminUser],
+        "retrieve": [IsTeacherUser | IsAdminUser],
+    }
+    permission_classes = [IsAdminUser]
 
     filter_backends = [
         DjangoFilterBackend,

@@ -6,7 +6,7 @@ from ..models import Attempt, Quiz, StatusChoices, User
 
 
 class StatsView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         total_quizzes = Quiz.objects.count()

@@ -1,10 +1,11 @@
 from drf_spectacular.utils import extend_schema
 
-from ..models import Attempt, Answer, StatusChoices, UserRole
+from ..models import Attempt, Answer, ClassQuizAssignment, StatusChoices, UserRole
 from ..serializers import AttemptSerializer, AnswerSerializer
 from ..filters import AttemptFilter
 from rest_framework import response, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from ..views.base import BaseViewSet
 from exam.permissions import IsAdminUser, IsTeacherUser, IsStudentUser
 from ..tasks import calculate_score
@@ -37,13 +38,27 @@ class AttemptViewSet(BaseViewSet):
         if user.role == UserRole.Admin:
             return self.queryset
         elif user.role == UserRole.Teacher:
-            # Teachers only see attempts for quizzes they created
             return self.queryset.filter(quiz__author=user)
         elif user.role == UserRole.Student:
-            # Students only see their own attempts
             return self.queryset.filter(user=user)
 
         return self.queryset.none()
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        quiz = serializer.validated_data.get("quiz")
+
+        if user.role == UserRole.Student:
+            assigned = ClassQuizAssignment.objects.filter(
+                quiz=quiz,
+                class_group__memberships__student=user,
+            ).exists()
+            if not assigned:
+                raise PermissionDenied(
+                    "Quiz chưa được giao cho lớp của bạn"
+                )
+
+        serializer.save(user=user)
 
     @extend_schema(
         request=AnswerSerializer,

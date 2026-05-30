@@ -17,9 +17,7 @@ export const decodeToken = (token) => {
                 .join('')
         );
 
-        const payload = JSON.parse(jsonPayload);
-        console.log("JWT Payload:", payload);
-        return payload;
+        return JSON.parse(jsonPayload);
     } catch (error) {
         console.error("Failed to decode JWT token:", error);
         return null;

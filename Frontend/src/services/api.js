@@ -29,4 +29,4 @@ const apiService = {
 export default apiService;
 
 // Also export modules individually if someone wants to import granularly
-export { auth, quizzes, attempts, answers, profile, stats, questions, users };
+export { auth, quizzes, attempts, answers, profile, stats, questions, users, subjects, notifications };

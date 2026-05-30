@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext();
 
@@ -25,8 +25,7 @@ export const AuthProvider = ({ children }) => {
         const userData = JSON.parse(savedUser);
         setUser(userData);
         setIsAuthenticated(true);
-      } catch (error) {
-        // If there's an error parsing user data, clear storage
+      } catch {
         localStorage.removeItem('user');
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
@@ -35,25 +34,26 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = (userData, accessToken, refreshToken) => {
-    console.log('AuthContext - Login called with:', userData, accessToken); // Debug log
-
+  const login = useCallback((userData, accessToken, refreshToken) => {
     setUser(userData);
     setIsAuthenticated(true);
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
+  }, []);
 
-    console.log('AuthContext - User state updated:', userData); // Debug log
-  };
-
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('user');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
-  };
+  }, []);
+
+  const getUserDisplayName = useCallback(() => {
+    if (!user) return '';
+    return user.first_name || user.username || 'User';
+  }, [user]);
 
   const value = {
     user,
@@ -61,11 +61,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     logout,
-    // Helper function to get user display name
-    getUserDisplayName: () => {
-      if (!user) return '';
-      return user.first_name || user.username || 'User';
-    }
+    getUserDisplayName,
   };
 
   return (

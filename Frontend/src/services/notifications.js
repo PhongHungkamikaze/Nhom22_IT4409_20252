@@ -38,18 +38,9 @@ export const markNotificationsDeleted = async (ids) => {
   return response;
 };
 
-/**
- * [NEW] send_notification function for frontend
- */
-export const sendNotification = async (type, title, content, data = {}) => {
-  console.log(`Triggering notification: ${title} (${type})`);
-  // If there's an endpoint for creating notifications, call it.
-};
-
 export default {
     getNotifications,
     getUnreadCount,
     markNotificationsRead,
     markNotificationsDeleted,
-    sendNotification,
 };

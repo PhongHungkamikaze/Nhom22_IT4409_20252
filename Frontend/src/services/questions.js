@@ -42,23 +42,22 @@ export async function bulkImportQuestions(file, subjectId) {
     return apiClient.request('/questions/bulk-import/', {
         method: 'POST',
         body: formData,
-        isFormData: true,
     });
 }
 
 /**
  * Generate questions using AI
- * @param {string} prompt - Description of questions to generate
+ * @param {string} content - Description of questions to generate
  * @param {number} count - Number of questions to generate
  * @param {number} subjectId - Subject ID for the questions
  * @param {string} type - Question type ('single' or 'multiple')
  * @returns {Promise<Object>} - Array of generated questions
  */
-export async function generateAIQuestions(prompt, count, subjectId, type = 'single') {
+export async function generateAIQuestions(content, count, subjectId, type = 'single') {
     return apiClient.request('/questions/generate-ai/', {
         method: 'POST',
         body: JSON.stringify({
-            content: prompt,  // ← Backend expects "content", not "prompt"
+            content,
             count: parseInt(count),
             subject_id: subjectId,
             type: type,

@@ -47,10 +47,45 @@ import StudentPersonalInfo from '../pages/Student/PersonalInfo';
 import StudentSettings from '../pages/Student/Settings';
 
 // Route guards
-import ProtectedRoute from './ProtectedRoute';
-import AdminRoute from './AdminRoute';
-import TeacherRoute from './TeacherRoute';
-import StudentRoute from './StudentRoute';
+import RoleRoute from './RoleRoute';
+
+const routeConfig = [
+    { path: '/admin', role: 'admin', element: <AdminDashboard /> },
+    { path: '/admin/users', role: 'admin', element: <AdminUsers /> },
+    { path: '/admin/users/add', role: 'admin', element: <AdminAddUser /> },
+    { path: '/admin/users/edit/:id', role: 'admin', element: <AdminEditUser /> },
+    { path: '/admin/quizzes', role: 'admin', element: <AdminQuizzes /> },
+    { path: '/admin/quizzes/:id', role: 'admin', element: <AdminQuizDetail /> },
+    { path: '/admin/questions', role: 'admin', element: <AdminQuestions /> },
+    { path: '/admin/questions/:id', role: 'admin', element: <AdminQuestionDetail /> },
+    { path: '/admin/subjects', role: 'admin', element: <AdminSubjects /> },
+    { path: '/admin/attempts', role: 'admin', element: <AdminAttempts /> },
+    { path: '/admin/notifications', role: 'admin', element: <NotificationManagement role="admin" /> },
+    { path: '/teacher', role: 'teacher', element: <TeacherDashboard /> },
+    { path: '/teacher/quizzes', role: 'teacher', element: <TeacherMyQuizzes /> },
+    { path: '/teacher/questions', role: 'teacher', element: <TeacherQuestionBank /> },
+    { path: '/teacher/questions/add', role: 'teacher', element: <TeacherAddQuestion /> },
+    { path: '/teacher/questions/import', role: 'teacher', element: <ImportAIQuestions /> },
+    { path: '/teacher/questions/edit/:id', role: 'teacher', element: <TeacherEditQuestion /> },
+    { path: '/teacher/questions/:id', role: 'teacher', element: <TeacherQuestionDetail /> },
+    { path: '/teacher/quizzes/create', role: 'teacher', element: <TeacherQuestionCreate /> },
+    { path: '/teacher/quizzes/:id', role: 'teacher', element: <TeacherQuizDetail /> },
+    { path: '/teacher/quizzes/:id/stats', role: 'teacher', element: <QuizStats /> },
+    { path: '/teacher/quizzes/edit/:id', role: 'teacher', element: <TeacherQuizEdit /> },
+    { path: '/teacher/subjects', role: 'teacher', element: <TeacherSubjects /> },
+    { path: '/teacher/attempts', role: 'teacher', element: <TeacherAttempts /> },
+    { path: '/teacher/notifications', role: 'teacher', element: <NotificationManagement role="teacher" /> },
+    { path: '/student', role: 'student', element: <StudentDashboard /> },
+    { path: '/student/quizzes', role: 'student', element: <StudentQuizList /> },
+    { path: '/student/quizzes/:id', role: 'student', element: <StudentQuizDetail /> },
+    { path: '/student/quizzes/:id/take', role: 'student', element: <StudentTakeQuiz /> },
+    { path: '/student/take-quiz/:attemptId', role: 'student', element: <StudentTakeQuiz /> },
+    { path: '/student/history', role: 'student', element: <StudentHistory /> },
+    { path: '/student/result/:attemptId', role: 'student', element: <StudentResult /> },
+    { path: '/student/profile', role: 'student', element: <StudentPersonalInfo /> },
+    { path: '/student/settings', role: 'student', element: <StudentSettings /> },
+    { path: '/student/notifications', role: 'student', element: <NotificationManagement role="student" /> },
+];
 
 const AppRouter = () => {
     return (
@@ -58,53 +93,13 @@ const AppRouter = () => {
             <Route path="/" element={<Homepage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-
-            {/* Admin routes (require admin role) */}
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-            <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
-            <Route path="/admin/users/add" element={<AdminRoute><AdminAddUser /></AdminRoute>} />
-            <Route path="/admin/users/edit/:id" element={<AdminRoute><AdminEditUser /></AdminRoute>} />
-            <Route path="/admin/quizzes" element={<AdminRoute><AdminQuizzes /></AdminRoute>} />
-            <Route path="/admin/quizzes/:id" element={<AdminRoute><AdminQuizDetail /></AdminRoute>} />
-            <Route path="/admin/questions" element={<AdminRoute><AdminQuestions /></AdminRoute>} />
-            <Route path="/admin/questions/:id" element={<AdminRoute><AdminQuestionDetail /></AdminRoute>} />
-            <Route path="/admin/subjects" element={<AdminRoute><AdminSubjects /></AdminRoute>} />
-            <Route path="/admin/attempts" element={<AdminRoute><AdminAttempts /></AdminRoute>} />
-            <Route path="/admin/notifications" element={<AdminRoute><NotificationManagement role="admin" /></AdminRoute>} />
-
-            {/* Teacher routes */}
-            <Route path="/teacher" element={<TeacherRoute><TeacherDashboard /></TeacherRoute>} />
-            <Route path="/teacher/quizzes" element={<TeacherRoute><TeacherMyQuizzes /></TeacherRoute>} />
-            <Route path="/teacher/questions" element={<TeacherRoute><TeacherQuestionBank /></TeacherRoute>} />
-            <Route path="/teacher/questions/add" element={<TeacherRoute><TeacherAddQuestion /></TeacherRoute>} />
-            <Route path="/teacher/questions/import" element={<TeacherRoute><ImportAIQuestions /></TeacherRoute>} />
-            <Route path="/teacher/questions/edit/:id" element={<TeacherRoute><TeacherEditQuestion /></TeacherRoute>} />
-            <Route path="/teacher/questions/:id" element={<TeacherRoute><TeacherQuestionDetail /></TeacherRoute>} />
-            <Route path="/teacher/quizzes/create" element={<TeacherRoute><TeacherQuestionCreate /></TeacherRoute>} />
-            <Route path="/teacher/quizzes/:id" element={<TeacherRoute><TeacherQuizDetail /></TeacherRoute>} />
-            <Route path="/teacher/quizzes/:id/stats" element={<TeacherRoute><QuizStats /></TeacherRoute>} />
-            <Route path="/teacher/quizzes/edit/:id" element={<TeacherRoute><TeacherQuizEdit /></TeacherRoute>} />
-            <Route path="/teacher/subjects" element={<TeacherRoute><TeacherSubjects /></TeacherRoute>} />
-            <Route path="/teacher/attempts" element={<TeacherRoute><TeacherAttempts /></TeacherRoute>} />
-            <Route path="/teacher/notifications" element={<TeacherRoute><NotificationManagement role="teacher" /></TeacherRoute>} />
-            
-
-            {/* Student routes */}
-            <Route path="/student" element={<StudentRoute><StudentDashboard /></StudentRoute>} />
-            <Route path="/student/quizzes" element={<StudentRoute><StudentQuizList /></StudentRoute>} />
-            <Route path="/student/quizzes/:id" element={<StudentRoute><StudentQuizDetail /></StudentRoute>} />
-            <Route path="/student/quizzes/:id/take" element={<StudentRoute><StudentTakeQuiz /></StudentRoute>} />
-            <Route path="/student/take-quiz/:attemptId" element={<StudentRoute><StudentTakeQuiz /></StudentRoute>} />
-            <Route path="/student/history" element={<StudentRoute><StudentHistory /></StudentRoute>} />
-            <Route path="/student/result/:attemptId" element={<StudentRoute><StudentResult /></StudentRoute>} />
-            <Route path="/student/profile" element={<StudentRoute><StudentPersonalInfo /></StudentRoute>} />
-            <Route path="/student/settings" element={<StudentRoute><StudentSettings /></StudentRoute>} />
-            <Route path="/student/notifications" element={<StudentRoute><NotificationManagement role="student" /></StudentRoute>} />
-
-            {/* Example of protecting any route with generic auth check */}
-            <Route path="/protected-example" element={<ProtectedRoute><div>Protected content</div></ProtectedRoute>} />
-
-            {/* 404 Not Found - must be last */}
+            {routeConfig.map(({ path, role, element }) => (
+                <Route
+                    key={path}
+                    path={path}
+                    element={<RoleRoute allowedRole={role}>{element}</RoleRoute>}
+                />
+            ))}
             <Route path="*" element={<NotFound />} />
         </Routes>
     );

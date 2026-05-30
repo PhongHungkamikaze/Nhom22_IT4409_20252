@@ -17,13 +17,12 @@ export const NotificationProvider = ({ children }) => {
     if (!isAuthenticated) return;
     try {
       setLoading(true);
-      console.log('--- API CALL: FETCHING NOTIFICATIONS ---');
       const data = await apiService.getNotifications({ limit: 10 });
       setNotifications(data.results || []);
       const countData = await apiService.getUnreadCount();
       setUnreadCount(countData.count || 0);
-    } catch (err) {
-      console.error('--- API ERROR:', err);
+    } catch {
+      // silently fail
     } finally {
       setLoading(false);
     }
@@ -38,59 +37,40 @@ export const NotificationProvider = ({ children }) => {
 
   // Firestore Real-time Listener
   useEffect(() => {
-    if (!isAuthenticated || !user?.id) {
-      console.log('--- NOTIFICATION LISTENER: Skipping (not auth or no user id)', { isAuthenticated, userId: user?.id });
-      return;
-    }
+    if (!isAuthenticated || !user?.id) return;
 
     let isMounted = true;
-    console.log(`--- LISTENING FOR NOTIFICATIONS AT: notifications/${user.id}/items`);
 
     try {
       const colRef = collection(db, "notifications", user.id.toString(), "items");
-      // Lắng nghe items mới nhất
       const q = query(colRef, orderBy("created_at", "desc"), limit(1));
 
       const unsubscribe = onSnapshot(q, (snapshot) => {
-        if (!isMounted) return;
-
-        if (snapshot.empty) {
-          console.log('--- FIREBASE SIGNAL: Snapshot empty (no notifications yet)');
-          return;
-        }
+        if (!isMounted || snapshot.empty) return;
 
         snapshot.docChanges().forEach((change) => {
-          // Chỉ xử lý khi có item THÊM MỚI
           if (change.type === "added") {
-            const newNotif = change.doc.data();
-            console.log('--- FIREBASE SIGNAL: NEW NOTIFICATION ADDED ---', newNotif);
-
-            // Kiểm tra xem đây có phải là bản ghi mới thực sự (không phải snapshot đầu tiên của thông báo cũ)
-            // Hoặc đơn giản là cứ refresh cho chắc cũng được
             fetchNotifications();
 
-            // Hiển thị thông báo trình duyệt
             if (Notification.permission === 'granted') {
-              new Notification(newNotif.title || "Thông báo mới", {
-                body: newNotif.content || "Bạn có một thông báo mới trong hệ thống",
+              const newNotif = change.doc.data();
+              new Notification(newNotif.title || "New notification", {
+                body: newNotif.content || "You have a new notification",
                 icon: '/favicon.ico'
               });
             }
           }
         });
-      }, (error) => {
-        console.error('--- FIRESTORE LISTENER ERROR:', error);
-      });
+      }, () => {});
 
-      // Load initial data from API
       fetchNotifications();
 
       return () => {
         isMounted = false;
         unsubscribe();
       };
-    } catch (err) {
-      console.error('--- FIRESTORE SETUP ERROR:', err);
+    } catch {
+      // silently fail
     }
   }, [isAuthenticated, user?.id, fetchNotifications]);
 
@@ -102,8 +82,7 @@ export const NotificationProvider = ({ children }) => {
       if (unreadIds.length > 0) {
         await apiService.markNotificationsRead(unreadIds);
       }
-    } catch (err) {
-      console.error('Failed to mark all as read:', err);
+    } catch {
       fetchNotifications();
     }
   };
@@ -113,8 +92,7 @@ export const NotificationProvider = ({ children }) => {
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
       await apiService.markNotificationsRead([id]);
-    } catch (err) {
-      console.error('Failed to mark as read:', err);
+    } catch {
       fetchNotifications();
     }
   };

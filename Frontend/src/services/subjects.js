@@ -27,3 +27,6 @@ export async function updateSubject(id, data) {
         body: JSON.stringify(data)
     });
 }
+
+const subjects = { getSubjects, createSubject, deleteSubject, updateSubject };
+export default subjects;

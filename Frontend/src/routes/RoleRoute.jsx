@@ -1,8 +1,7 @@
-import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const StudentRoute = ({ children, redirectTo = '/login' }) => {
+const RoleRoute = ({ children, allowedRole, redirectTo = '/login' }) => {
     const { isAuthenticated, loading, user } = useAuth();
 
     if (loading) return null;
@@ -10,9 +9,9 @@ const StudentRoute = ({ children, redirectTo = '/login' }) => {
     if (!isAuthenticated) return <Navigate to={redirectTo} replace />;
 
     const role = user && user.role ? String(user.role).toLowerCase() : '';
-    if (role !== 'student') return <Navigate to="/" replace />;
+    if (role !== allowedRole) return <Navigate to="/" replace />;
 
     return children;
 };
 
-export default StudentRoute;
+export default RoleRoute;

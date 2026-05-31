@@ -17,8 +17,6 @@ from .notification import NotificationViewSet
 from .stats import StatsView
 from .fileset import FileSetViewSet
 from .class_group import ClassGroupViewSet
-from .search import SearchView
-
 __all__ = [
     "LoginView",
     "LogoutView",
@@ -37,5 +35,4 @@ __all__ = [
     "StatsView",
     "FileSetViewSet",
     "ClassGroupViewSet",
-    "SearchView",
 ]

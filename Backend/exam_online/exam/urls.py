@@ -17,7 +17,6 @@ from .views import (
     StatsView,
     FileSetViewSet,
     ClassGroupViewSet,
-    SearchView,
 )
 
 router = DefaultRouter()
@@ -43,5 +42,4 @@ urlpatterns = [
         ResetPasswordConfirmView.as_view(),
         name="reset-password",
     ),
-    path("search/", SearchView.as_view(), name="search"),
 ]

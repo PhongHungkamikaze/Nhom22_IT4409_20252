@@ -9,5 +9,3 @@ django-filter
 celery
 python-decouple
 redis
-channels
-daphne

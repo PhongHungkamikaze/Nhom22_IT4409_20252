@@ -1,7 +1,11 @@
+import logging
+
 from ..models import User, UserRole, Attempt, Question, Quiz, Subject
 from ..tasks import create_notifications
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+logger = logging.getLogger(__name__)
 
 NOTIFICATION_MODELS = {
     Attempt,
@@ -13,18 +17,23 @@ NOTIFICATION_MODELS = {
 
 
 def handle_notifications(sender, instance, **kwargs):
-    admin_ids = list(
-        User.objects.filter(role=UserRole.Admin).values_list("id", flat=True)
-    )
-    create_notifications.delay(
-        recipient_ids=admin_ids,
-        title=f"{sender.__name__}",
-        content=f"{instance}",
-        data={
-            "model": sender.__name__,
-            "object_id": instance.id,
-        },
-    )
+    try:
+        admin_ids = list(
+            User.objects.filter(role=UserRole.Admin).values_list("id", flat=True)
+        )
+        logger.info("handle_notifications: model=%s, admin_ids=%s", sender.__name__, admin_ids)
+        create_notifications.delay(
+            recipient_ids=admin_ids,
+            title=f"{sender.__name__}",
+            content=f"{instance}",
+            data={
+                "model": sender.__name__,
+                "object_id": instance.id,
+            },
+        )
+        logger.info("✅ create_notifications.delay() called successfully for %s", sender.__name__)
+    except Exception as e:
+        logger.error("❌ handle_notifications error: %s", e, exc_info=True)
 
 
 for model in NOTIFICATION_MODELS:

@@ -29,6 +29,5 @@ celery -A exam_online.celery_tasks worker -l info
 
 ## Các tính năng chính
 - Quản lý bộ đề và câu hỏi.
-- Theo dõi vi phạm phòng thi qua WebSocket.
 - Hệ thống thông báo tự động cho giáo viên qua Celery.
 - Chấm điểm tự động.

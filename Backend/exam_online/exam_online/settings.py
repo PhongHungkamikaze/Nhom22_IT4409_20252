@@ -64,19 +64,8 @@ INSTALLED_APPS = [
     "django_filters",
     "corsheaders",
     "celery",
-    "channels",
     "exam",
 ]
-ASGI_APPLICATION = "exam_online.asgi.application"
-
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [REDIS_URL],
-        },
-    },
-}
 WSGI_APPLICATION = "exam_online.wsgi.application"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -120,8 +109,6 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = "exam_online.wsgi.application"
 
 
 # Database
@@ -249,3 +236,17 @@ SPECTACULAR_SETTINGS = {
 
 # AI Configuration
 GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+}

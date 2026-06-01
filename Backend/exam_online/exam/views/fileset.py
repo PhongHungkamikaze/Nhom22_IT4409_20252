@@ -2,14 +2,13 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
-from ..models import FileSet, UserRole
+from ..models import FileSet
 from ..serializers import FileSetSerializer, FileSetCreateSerializer
 from ..filters import FileSetFilter
 from ..views.base import BaseViewSet
 from exam.permissions import (
     IsAdminUser,
     IsTeacherUser,
-    IsStudentUser,
 )
 
 

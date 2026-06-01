@@ -1,4 +1,8 @@
+import logging
+
 from django.apps import AppConfig
+
+logger = logging.getLogger(__name__)
 
 
 class ExamConfig(AppConfig):
@@ -6,4 +10,8 @@ class ExamConfig(AppConfig):
     name = "exam"
 
     def ready(self):
-        import exam.signals  # noqa: F401
+        try:
+            import exam.signals  # noqa: F401
+            logger.info("✅ exam.signals loaded successfully")
+        except Exception as e:
+            logger.error("❌ Failed to load exam.signals: %s", e)

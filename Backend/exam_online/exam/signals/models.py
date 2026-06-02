@@ -36,12 +36,14 @@ def handle_notifications(sender, instance, **kwargs):
         logger.error("❌ handle_notifications error: %s", e, exc_info=True)
 
 
+_receivers = []
 for model in NOTIFICATION_MODELS:
 
     @receiver(
         post_save,
         sender=model,
         dispatch_uid=f"{model.__name__}_notification_signal",
+        weak=False,
     )
     def receiver_models(sender, instance, **kwargs):
         handle_notifications(
@@ -49,3 +51,4 @@ for model in NOTIFICATION_MODELS:
             instance=instance,
             **kwargs,
         )
+    _receivers.append(receiver_models)

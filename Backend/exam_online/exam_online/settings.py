@@ -35,7 +35,7 @@ SECRET_KEY = config(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1', '.onrender.com']
+ALLOWED_HOSTS = ["0.0.0.0", "localhost", "127.0.0.1", ".onrender.com"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://nhom22-it4409-20252.onrender.com",
@@ -214,6 +214,19 @@ SESSION_COOKIE_SAMESITE = "None"
 
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    "purge-deleted-notifications-": {
+        "task": "exam.tasks.purge_deleted_notifications.purge_deleted_notifications",
+        "schedule": crontab(day_of_month=1, hour=0, minute=0),
+    },
+    "auto-submit-expired-quizzes-every-day": {
+        "task": "exam.tasks.auto_submit_all_expired.auto_submit_all_expired_quizzes",
+        "schedule": crontab(hour=24, minute=0),
+    },
+}
 
 SIMPLE_JWT = {
     # Kéo dài thời gian sống của Access Token (Ví dụ: 60 phút)

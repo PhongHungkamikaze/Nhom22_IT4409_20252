@@ -224,7 +224,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "auto-submit-expired-quizzes-every-day": {
         "task": "exam.tasks.auto_submit_all_expired.auto_submit_all_expired_quizzes",
-        "schedule": crontab(hour=24, minute=0),
+        "schedule": crontab(hour=0, minute=0),
     },
 }
 

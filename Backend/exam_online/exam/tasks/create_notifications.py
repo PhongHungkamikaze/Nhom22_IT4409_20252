@@ -2,8 +2,6 @@ import logging
 
 from celery import shared_task
 
-from ..services.create_notification import create_notification
-
 logger = logging.getLogger(__name__)
 
 
@@ -17,18 +15,29 @@ def create_notifications(
     actor_id: int | None = None,
     data: dict | None = None,
 ) -> int:
-    count = 0
-    for rid in recipient_ids:
-        try:
-            create_notification(
-                recipient=rid,
-                title=title,
-                type=type,
-                content=content,
-                actor=actor_id,
-                data=data,
-            )
-            count += 1
-        except Exception:
-            logger.exception("Failed creating notification for user %s", rid)
-    return count
+    if not recipient_ids:
+        return 0
+
+    from ..models import Notification
+
+    notifications = [
+        Notification(
+            recipient_id=rid,
+            actor_id=actor_id,
+            title=title,
+            type=type,
+            content=content,
+            data=data or {},
+        )
+        for rid in recipient_ids
+    ]
+
+    created = Notification.objects.bulk_create(notifications)
+
+    from ..tasks import send_notification
+
+    for n in created:
+        send_notification.delay(n.id)
+
+    logger.info("Created %s notifications of type %s", len(created), type)
+    return len(created)

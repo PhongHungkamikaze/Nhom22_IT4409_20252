@@ -15,16 +15,21 @@ def send_notification(self, notification_id: int):
     except Notification.DoesNotExist:
         logger.warning("Notification %s not found", notification_id)
         return
+
+    if n.sent_at is not None:
+        logger.info("Notification %s already sent at %s", notification_id, n.sent_at)
+        return
+
     logger.info(
         "Sending notification id=%s recipient=%s type=%s",
         n.id,
         n.recipient_id,
         n.type,
     )
+
     n.sent_at = timezone.now()
     n.save(update_fields=["sent_at"])
-    
-    # Sync to Firebase Firestore
+
     try:
         from exam_online.firebase import sync_notification_to_firestore
         sync_notification_to_firestore(n)

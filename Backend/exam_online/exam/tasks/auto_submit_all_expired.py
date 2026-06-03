@@ -1,32 +1,31 @@
-from datetime import timedelta
+import logging
 
 from celery import shared_task
 from django.utils import timezone
 
-from ..models import Attempt, Quiz, StatusChoices
-from ..services.scoring_service import ScoringService
+from ..models import Quiz
+
+logger = logging.getLogger(__name__)
 
 
-@shared_task
-def auto_submit_all_expired_quizzes():
+@shared_task(bind=True, max_retries=2)
+def auto_submit_all_expired_quizzes(self):
     now = timezone.now()
     expired_quizzes = Quiz.objects.filter(
         end_time__isnull=False,
         end_time__lte=now,
         is_published=True,
     )
-    total_auto_submitted = 0
+
+    from .auto_submit import auto_submit_quiz
+
+    total_queued = 0
     for quiz in expired_quizzes:
-        attempts = Attempt.objects.filter(
-            quiz=quiz,
-            status=StatusChoices.Ongoing,
-        )
-        for attempt in attempts:
-            attempt.score = ScoringService.calculate_attempt_score(attempt)
-            attempt.status = StatusChoices.Completed
-        Attempt.objects.bulk_update(
-            attempts,
-            ["score", "status"],
-        )
-        total_auto_submitted += attempts.count()
-    return total_auto_submitted
+        try:
+            count = auto_submit_quiz(quiz.id)
+            total_queued += count
+        except Exception:
+            logger.exception("Failed to auto-submit quiz %s", quiz.id)
+
+    logger.info("Auto-submit check complete: queued %s attempts", total_queued)
+    return total_queued

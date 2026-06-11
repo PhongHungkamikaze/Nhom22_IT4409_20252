@@ -58,6 +58,10 @@ export default function TeacherQuizDetail() {
                                 <strong>Author</strong>
                                 <div className="meta-value">{quiz.author_name}</div>
                             </div>
+                            <div className="meta-card">
+                                <strong>Max attempts</strong>
+                                <div className="meta-value">{quiz.max_attempts ?? '—'}</div>
+                            </div>
                         </div>
                         {/* Questions list (if available) */}
                         {Array.isArray(quiz.questions) && quiz.questions.length > 0 && (

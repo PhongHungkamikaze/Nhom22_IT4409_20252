@@ -33,6 +33,7 @@ export default function TeacherQuizEdit() {
     const [description, setDescription] = useState('');
     const [timeLimit, setTimeLimit] = useState('');
     const [isPublished, setIsPublished] = useState(false);
+    const [maxAttempts, setMaxAttempts] = useState(1);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
@@ -136,6 +137,7 @@ export default function TeacherQuizEdit() {
                 setDescription(data.description || '');
                 setTimeLimit(data.time_limit ? String(data.time_limit) : (data.duration ? String(data.duration) : ''));
                 setIsPublished(Boolean(data.is_published));
+                setMaxAttempts(data.max_attempts ?? 1);
 
                 await loadAvailable(initialQuestions);
             } catch (err) {
@@ -227,6 +229,7 @@ export default function TeacherQuizEdit() {
                 description: description.trim(),
                 time_limit: Number(timeLimit) || 0,
                 is_published: Boolean(isPublished),
+                max_attempts: Number(maxAttempts) || 1,
                 question_ids: questionIds,
             });
             navigate(`/teacher/quizzes/${id}`);
@@ -273,6 +276,10 @@ export default function TeacherQuizEdit() {
                             <tr>
                                 <td style={{ fontWeight: 600 }}>Time limit (minutes)</td>
                                 <td><input type="number" min={0} value={timeLimit} onChange={e => setTimeLimit(e.target.value)} /></td>
+                            </tr>
+                            <tr>
+                                <td style={{ fontWeight: 600 }}>Max attempts</td>
+                                <td><input type="number" min={1} value={maxAttempts} onChange={e => setMaxAttempts(e.target.value)} /></td>
                             </tr>
                             <tr>
                                 <td style={{ fontWeight: 600 }}>Published</td>

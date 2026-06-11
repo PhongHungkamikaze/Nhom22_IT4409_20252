@@ -9,6 +9,7 @@ export default function CreateQuiz() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [timeLimit, setTimeLimit] = useState('0');
+    const [maxAttempts, setMaxAttempts] = useState('1');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
 
@@ -25,6 +26,7 @@ export default function CreateQuiz() {
                 title: title.trim(),
                 description: description.trim(),
                 time_limit: Number(timeLimit) || 0,
+                max_attempts: Number(maxAttempts) || 1,
             };
             await apiService.createQuiz(payload);
             toast.success('Tạo bài thi thành công!');
@@ -73,6 +75,16 @@ export default function CreateQuiz() {
                             min={0}
                             value={timeLimit}
                             onChange={(e) => setTimeLimit(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Max attempts</label>
+                        <input
+                            type="number"
+                            min={1}
+                            value={maxAttempts}
+                            onChange={(e) => setMaxAttempts(e.target.value)}
                         />
                     </div>
 

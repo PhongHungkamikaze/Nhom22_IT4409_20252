@@ -18,12 +18,17 @@ class QuizService:
 
     @staticmethod
     def check_max_attempts(user, quiz):
-        count = Attempt.objects.filter(
-            user=user, quiz=quiz
-        ).aggregate(
-            total=Count("id", filter=Q(
-                status__in=[StatusChoices.Processing, StatusChoices.Completed]
-            ))
+        count = Attempt.objects.filter(user=user, quiz=quiz).aggregate(
+            total=Count(
+                "id",
+                filter=Q(
+                    status__in=[
+                        StatusChoices.Processing,
+                        StatusChoices.Completed,
+                        StatusChoices.Error,
+                    ]
+                ),
+            )
         )["total"]
         return count >= quiz.max_attempts
 

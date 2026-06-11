@@ -4,7 +4,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from ..models import (
-    ClassGroup, ClassGroupMembership, ClassQuizAssignment,
+    ClassGroup,
+    ClassGroupMembership,
+    ClassQuizAssignment,
     UserRole,
 )
 from ..serializers import (
@@ -98,9 +100,7 @@ class ClassGroupViewSet(BaseViewSet):
             if s.id in existing_set:
                 already_in.append(s.username)
             else:
-                ClassGroupMembership.objects.create(
-                    class_group=class_group, student=s
-                )
+                ClassGroupMembership.objects.create(class_group=class_group, student=s)
                 new_students.append(s.username)
 
         result = {}
@@ -114,7 +114,11 @@ class ClassGroupViewSet(BaseViewSet):
 
     @extend_schema(
         description="Remove a student from the class group",
-        request={"application/json": {"schema": {"properties": {"student_id": {"type": "integer"}}}}},
+        request={
+            "application/json": {
+                "schema": {"properties": {"student_id": {"type": "integer"}}}
+            }
+        },
     )
     @action(detail=True, methods=["post"], url_path="remove-student")
     def remove_student(self, request, pk=None):
@@ -180,7 +184,8 @@ class ClassGroupViewSet(BaseViewSet):
     def assigned_quizzes(self, request, pk=None):
         class_group = self.get_object()
         assignments = ClassQuizAssignment.objects.filter(
-            class_group=class_group
+            class_group=class_group,
+            quiz__is_published=True,
         ).select_related("quiz", "assigned_by")
         serializer = ClassQuizAssignmentSerializer(assignments, many=True)
         return Response(serializer.data)

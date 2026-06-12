@@ -112,8 +112,18 @@ export default function EditQuestion() {
             toast.success('Cập nhật câu hỏi thành công!');
             navigate('/teacher/questions');
         } catch (err) {
-            const errorData = err.response?.data;
-            const msg = errorData ? (Object.values(errorData)[0][0] || 'Lỗi khi cập nhật câu hỏi') : (err.message || 'Lỗi khi cập nhật câu hỏi');
+            const errorData = err.response?.data || err.data;
+            let msg = 'Lỗi khi cập nhật câu hỏi';
+            if (errorData) {
+                if (typeof errorData === 'string') {
+                    msg = errorData;
+                } else {
+                    const firstVal = Object.values(errorData)[0];
+                    msg = Array.isArray(firstVal) ? firstVal[0] : (firstVal || msg);
+                }
+            } else if (err.message) {
+                msg = err.message;
+            }
             setError(msg);
             toast.error(msg);
             setLoading(false);

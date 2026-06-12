@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import apiService from '../../services/api';
+import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 import './Teacher.css';
 
 const EditQuiz = () => {
@@ -71,7 +72,14 @@ const EditQuiz = () => {
       toast.success('Cập nhật bài thi thành công!');
       navigate('/teacher/quizzes');
     } catch (err) {
-      const msg = err.message || 'Lỗi khi cập nhật bài thi';
+      const errorData = err.response?.data || err.data;
+      let msg = 'Lỗi khi cập nhật bài thi';
+      if (errorData) {
+        if (typeof errorData === 'string') msg = errorData;
+        else msg = errorData.detail || Object.values(errorData).flat()[0] || msg;
+      } else if (err.message) {
+        msg = err.message;
+      }
       setError(msg);
       toast.error(msg);
     } finally {
@@ -79,10 +87,12 @@ const EditQuiz = () => {
     }
   };
 
-  if (!quiz && loading) return <div className="teacher-container"><p>Đang tải...</p></div>;
+  if (!quiz && loading) return <div className="admin-container"><QuickSystem /><p style={{padding:'20px'}}>Đang tải...</p></div>;
 
   return (
-    <div className="quiz-edit-container" style={{ padding: '20px' }}>
+    <div className="admin-container">
+      <QuickSystem />
+      <div className="admin-card" style={{ padding: '20px' }}>
       <h1>Chỉnh sửa bài quiz</h1>
       {error && <div className="error-message">{error}</div>}
       
@@ -162,6 +172,7 @@ const EditQuiz = () => {
           Hủy
         </button>
       </form>
+      </div>
     </div>
   );
 };

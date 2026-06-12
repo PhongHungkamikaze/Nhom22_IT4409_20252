@@ -49,7 +49,21 @@ export default function EditUser() {
             navigate('/admin/users');
         } catch (err) {
             console.error('Update failed', err);
-            const msg = err.response?.data?.non_field_errors?.[0] || err.response?.data?.role?.[0] || 'Cập nhật thất bại.';
+            const errorData = err.response?.data || err.data;
+            let msg = 'Cập nhật thất bại.';
+            if (errorData) {
+                if (typeof errorData === 'string') {
+                    msg = errorData;
+                } else {
+                    msg = errorData.non_field_errors?.[0]
+                        || errorData.role?.[0]
+                        || errorData.detail
+                        || Object.values(errorData).flat()[0]
+                        || msg;
+                }
+            } else if (err.message) {
+                msg = err.message;
+            }
             setError(msg);
             toast.error(msg);
         } finally {

@@ -250,6 +250,12 @@ SPECTACULAR_SETTINGS = {
 # AI Configuration
 GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
 
+# Firebase
+FIREBASE_SERVICE_ACCOUNT_PATH = config(
+    "FIREBASE_SERVICE_ACCOUNT_PATH",
+    default=str(BASE_DIR / "it4409-6fb08-firebase-adminsdk-fbsvc-b48631d6c7.json"),
+)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

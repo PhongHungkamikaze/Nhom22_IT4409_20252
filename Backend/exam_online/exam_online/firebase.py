@@ -14,12 +14,8 @@ def initialize_firebase():
         return _firestore_client
 
     if not firebase_admin._apps:
-        # Đường dẫn file JSON của bạn
-        cred_path = os.path.join(
-            settings.BASE_DIR, "it4409-6fb08-firebase-adminsdk-fbsvc-233f601136.json"
-        )
+        cred_path = settings.FIREBASE_SERVICE_ACCOUNT_PATH
 
-        # Kiểm tra file thực tế có tồn tại không
         if not os.path.exists(cred_path):
             raise FileNotFoundError(
                 f"Firebase Service Account file NOT FOUND at: {cred_path}"

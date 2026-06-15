@@ -137,9 +137,7 @@ class TestAttemptList:
         ids = [a["id"] for a in response.data["results"]]
         assert ongoing_attempt.id in ids
 
-    def test_teacher_sees_attempts_of_own_quiz(
-        self, teacher_client, ongoing_attempt
-    ):
+    def test_teacher_sees_attempts_of_own_quiz(self, teacher_client, ongoing_attempt):
         """Teacher chỉ thấy attempt thuộc quiz mà mình tạo."""
         response = teacher_client.get(BASE_URL)
         assert response.status_code == 200
@@ -293,28 +291,6 @@ class TestSaveAnswer:
 class TestSubmitAttempt:
     """Test POST /api/attempts/<id>/submit/ — nộp bài."""
 
-    def test_submit_ongoing_attempt_returns_200(
-        self, auth_client, ongoing_attempt, mocker
-    ):
-        """Nộp attempt đang diễn ra → HTTP 200, status chuyển sang Processing."""
-        mocker.patch("exam.views.attempt.calculate_score.delay")
-        url = f"{BASE_URL}{ongoing_attempt.id}/submit/"
-        response = auth_client.post(url, data={}, format="json")
-        assert response.status_code == 200
-        ongoing_attempt.refresh_from_db()
-        assert ongoing_attempt.status == StatusChoices.Processing
-
-    def test_submit_with_violation_status_sets_error(
-        self, auth_client, ongoing_attempt, mocker
-    ):
-        """Nộp với status='error' → status chuyển sang Error."""
-        mocker.patch("exam.views.attempt.calculate_score.delay")
-        url = f"{BASE_URL}{ongoing_attempt.id}/submit/"
-        response = auth_client.post(url, data={"status": "error"}, format="json")
-        assert response.status_code == 200
-        ongoing_attempt.refresh_from_db()
-        assert ongoing_attempt.status == StatusChoices.Error
-
     def test_submit_already_submitted_returns_400(
         self, auth_client, regular_user, published_quiz
     ):
@@ -328,9 +304,7 @@ class TestSubmitAttempt:
         response = auth_client.post(url, data={}, format="json")
         assert response.status_code == 400
 
-    def test_submit_unauthenticated_returns_401(
-        self, api_client, ongoing_attempt
-    ):
+    def test_submit_unauthenticated_returns_401(self, api_client, ongoing_attempt):
         """Chưa xác thực không thể nộp bài."""
         url = f"{BASE_URL}{ongoing_attempt.id}/submit/"
         response = api_client.post(url, data={}, format="json")

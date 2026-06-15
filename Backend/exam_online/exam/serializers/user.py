@@ -26,11 +26,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)
+    password2 = serializers.CharField(write_only=True)
     role = serializers.ChoiceField(choices=UserRole.choices, default=UserRole.Student)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "role"]
+        fields = ["username", "email", "password", "password2", "role"]
+
+    def validate(self, attrs):
+        if attrs["password"] != attrs["password2"]:
+            raise serializers.ValidationError(
+                {"password2": "Passwords do not match."}
+            )
+        return attrs
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
@@ -38,6 +46,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        validated_data.pop("password2")
         return User.objects.create_user(**validated_data)
 
 

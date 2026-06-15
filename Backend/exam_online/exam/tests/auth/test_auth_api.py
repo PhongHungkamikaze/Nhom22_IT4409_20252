@@ -123,6 +123,7 @@ class TestChangePassword:
         payload = {
             "old_password": "StrongPass123!",
             "new_password": "NewSecurePass456!",
+            "confirm_password": "NewSecurePass456!",
         }
         response = auth_client.post(CHANGE_PASSWORD_URL, data=payload, format="json")
         assert response.status_code == 200
@@ -133,6 +134,7 @@ class TestChangePassword:
         payload = {
             "old_password": "WrongOldPass!",
             "new_password": "NewSecurePass456!",
+            "confirm_password": "NewSecurePass456!",
         }
         response = auth_client.post(CHANGE_PASSWORD_URL, data=payload, format="json")
         assert response.status_code == 400
@@ -142,6 +144,7 @@ class TestChangePassword:
         payload = {
             "old_password": "StrongPass123!",
             "new_password": "NewSecurePass456!",
+            "confirm_password": "NewSecurePass456!",
         }
         response = api_client.post(CHANGE_PASSWORD_URL, data=payload, format="json")
         assert response.status_code == 401
@@ -156,20 +159,20 @@ class TestChangePassword:
 class TestForgotPassword:
     """Test POST /api/auth/forgot-password/"""
 
-    def test_forgot_password_valid_username_returns_200(self, api_client, regular_user):
-        """Username tồn tại trả về HTTP 200 (email được gửi đi)."""
-        payload = {"username": "testuser"}
+    def test_forgot_password_valid_email_returns_200(self, api_client, regular_user):
+        """Email tồn tại trả về HTTP 200 (email được gửi đi)."""
+        payload = {"email": "test@example.com"}
         response = api_client.post(FORGOT_PASSWORD_URL, data=payload, format="json")
         assert response.status_code == 200
         assert "detail" in response.data
 
-    def test_forgot_password_nonexistent_username_returns_400(self, api_client):
-        """Username không tồn tại trả về HTTP 400."""
-        payload = {"username": "ghost_not_exist"}
+    def test_forgot_password_nonexistent_email_returns_400(self, api_client):
+        """Email không tồn tại trả về HTTP 400."""
+        payload = {"email": "ghost@notexist.com"}
         response = api_client.post(FORGOT_PASSWORD_URL, data=payload, format="json")
         assert response.status_code in (400, 404)
 
-    def test_forgot_password_missing_username_returns_400(self, api_client):
-        """Thiếu trường username trả về HTTP 400."""
+    def test_forgot_password_missing_email_returns_400(self, api_client):
+        """Thiếu trường email trả về HTTP 400."""
         response = api_client.post(FORGOT_PASSWORD_URL, data={}, format="json")
         assert response.status_code == 400

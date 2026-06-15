@@ -305,7 +305,7 @@ class TestClassGroupMembers:
         """Danh sách thành viên chứa student đã được thêm."""
         response = teacher_client.get(f"{BASE_URL}{class_group.id}/members/")
         assert response.status_code == 200
-        member_ids = [m["id"] for m in response.data.get("memberships", [])]
+        member_ids = [m["id"] for m in response.data.get("members", [])]
         assert student_user.id in member_ids
 
 

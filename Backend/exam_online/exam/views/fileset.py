@@ -6,9 +6,11 @@ from ..models import FileSet
 from ..serializers import FileSetSerializer, FileSetCreateSerializer
 from ..filters import FileSetFilter
 from ..views.base import BaseViewSet
+from exam.models import UserRole
 from exam.permissions import (
     IsAdminUser,
     IsTeacherUser,
+    IsStudentUser,
 )
 
 
@@ -22,7 +24,7 @@ class FileSetViewSet(BaseViewSet):
     ordering = ["-created_at"]
     filterset_class = FileSetFilter
 
-    permission_classes = [IsAdminUser | IsTeacherUser]
+    permission_classes = [IsAdminUser | IsTeacherUser | IsStudentUser]
 
     def create(self, request, *args, **kwargs):
         input_serializer = FileSetCreateSerializer(data=request.data)
@@ -32,4 +34,8 @@ class FileSetViewSet(BaseViewSet):
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
-        return FileSet.objects.all()
+        user = self.request.user
+        all_param = self.request.query_params.get("all")
+        if all_param and user.role in [UserRole.Admin, UserRole.Teacher]:
+            return FileSet.objects.all()
+        return FileSet.objects.filter(uploaded_by=user)

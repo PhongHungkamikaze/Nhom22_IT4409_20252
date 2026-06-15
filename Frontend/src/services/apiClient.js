@@ -106,6 +106,8 @@ class ApiClient {
                 const error = new Error(`HTTP error! status: ${response.status}`);
                 error.status = response.status;
                 error.data = errorData;
+                // Cung cấp error.response để tương thích với các trang dùng err.response?.data
+                error.response = { status: response.status, data: errorData };
                 throw error;
             }
 

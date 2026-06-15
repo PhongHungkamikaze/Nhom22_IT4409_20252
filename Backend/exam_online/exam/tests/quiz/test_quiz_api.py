@@ -15,9 +15,45 @@ Chạy: pytest exam/tests/quiz/ -v
 """
 
 import pytest
+from exam.models import User, UserRole, Quiz
 
 
 BASE_URL = "/api/quizzes/"
+
+
+# ===========================================================================
+# Local fixtures
+# ===========================================================================
+
+
+@pytest.fixture
+def teacher_user(db):
+    return User.objects.create_user(
+        username="teacher_q",
+        email="teacher_q@example.com",
+        password="TeachPass123!",
+        role=UserRole.Teacher,
+    )
+
+
+@pytest.fixture
+def teacher_client(teacher_user):
+    from rest_framework.test import APIClient
+
+    client = APIClient()
+    client.force_authenticate(user=teacher_user)
+    return client
+
+
+@pytest.fixture
+def teacher_quiz(db, teacher_user):
+    return Quiz.objects.create(
+        title="Teacher Quiz",
+        description="A quiz by teacher",
+        author=teacher_user,
+        time_limit=30,
+        is_published=True,
+    )
 
 
 # ===========================================================================
@@ -65,33 +101,30 @@ class TestQuizList:
 class TestQuizCreate:
     """Test POST /api/quizzes/ — tạo quiz mới."""
 
-    def test_create_quiz_returns_201(self, auth_client, regular_user):
+    def test_create_quiz_returns_201(self, teacher_client, teacher_user):
         """Tạo quiz hợp lệ trả về HTTP 201."""
         payload = {
             "title": "New Quiz",
             "description": "A brand new quiz",
-            "author": regular_user.id,
             "time_limit": 60,
         }
-        response = auth_client.post(BASE_URL, data=payload, format="json")
+        response = teacher_client.post(BASE_URL, data=payload, format="json")
         assert response.status_code == 201
         assert response.data["title"] == "New Quiz"
 
-    def test_create_quiz_missing_title_returns_400(self, auth_client, regular_user):
+    def test_create_quiz_missing_title_returns_400(self, teacher_client):
         """Thiếu trường title trả về HTTP 400."""
         payload = {
             "description": "No title",
-            "author": regular_user.id,
         }
-        response = auth_client.post(BASE_URL, data=payload, format="json")
+        response = teacher_client.post(BASE_URL, data=payload, format="json")
         assert response.status_code == 400
         assert "title" in response.data
 
-    def test_create_quiz_unauthenticated_returns_401(self, api_client, regular_user):
+    def test_create_quiz_unauthenticated_returns_401(self, api_client):
         """User chưa đăng nhập không thể tạo quiz."""
         payload = {
             "title": "Unauthorized Quiz",
-            "author": regular_user.id,
         }
         response = api_client.post(BASE_URL, data=payload, format="json")
         assert response.status_code == 401
@@ -128,20 +161,20 @@ class TestQuizRetrieve:
 class TestQuizUpdate:
     """Test PATCH /api/quizzes/<id>/ — cập nhật thông tin quiz."""
 
-    def test_patch_title_returns_200(self, auth_client, quiz):
+    def test_patch_title_returns_200(self, teacher_client, teacher_quiz):
         """Đổi title quiz thành công."""
-        response = auth_client.patch(
-            f"{BASE_URL}{quiz.id}/",
+        response = teacher_client.patch(
+            f"{BASE_URL}{teacher_quiz.id}/",
             data={"title": "Updated Title"},
             format="json",
         )
         assert response.status_code == 200
         assert response.data["title"] == "Updated Title"
 
-    def test_patch_time_limit_returns_200(self, auth_client, quiz):
+    def test_patch_time_limit_returns_200(self, teacher_client, teacher_quiz):
         """Đổi time_limit thành công."""
-        response = auth_client.patch(
-            f"{BASE_URL}{quiz.id}/",
+        response = teacher_client.patch(
+            f"{BASE_URL}{teacher_quiz.id}/",
             data={"time_limit": 90},
             format="json",
         )
@@ -167,15 +200,15 @@ class TestQuizUpdate:
 class TestQuizDelete:
     """Test DELETE /api/quizzes/<id>/ — xóa quiz."""
 
-    def test_delete_quiz_returns_204(self, auth_client, quiz):
+    def test_delete_quiz_returns_204(self, teacher_client, teacher_quiz):
         """Xóa quiz thành công trả về HTTP 204."""
-        response = auth_client.delete(f"{BASE_URL}{quiz.id}/")
+        response = teacher_client.delete(f"{BASE_URL}{teacher_quiz.id}/")
         assert response.status_code == 204
 
-    def test_quiz_no_longer_exists_after_delete(self, auth_client, quiz):
+    def test_quiz_no_longer_exists_after_delete(self, teacher_client, teacher_quiz):
         """Sau khi xóa, quiz không còn tồn tại trong DB."""
-        auth_client.delete(f"{BASE_URL}{quiz.id}/")
-        response = auth_client.get(f"{BASE_URL}{quiz.id}/")
+        teacher_client.delete(f"{BASE_URL}{teacher_quiz.id}/")
+        response = teacher_client.get(f"{BASE_URL}{teacher_quiz.id}/")
         assert response.status_code == 404
 
     def test_delete_unauthenticated_returns_401(self, api_client, quiz):

@@ -5,6 +5,7 @@ import './Teacher.css';
 import '../Admin/Admin.css';
 import { useAuth } from '../../context/AuthContext';
 import Pagination from '../../components/common/Pagination';
+import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 
 // Fetch ALL pages từ một paginated API
 async function fetchAllPages(fetchFn, params = {}) {
@@ -171,6 +172,15 @@ export default function TeacherQuizEdit() {
         setAvailableQuestions(prev => prev.map(q => ({ ...q, is_ready: false })));
     };
 
+    const extractErrMsg = (err, fallback = 'Có lỗi xảy ra.') => {
+        const errorData = err.response?.data || err.data;
+        if (errorData) {
+            if (typeof errorData === 'string') return errorData;
+            return errorData.detail || Object.values(errorData).flat()[0] || fallback;
+        }
+        return err.message || fallback;
+    };
+
     const handleAddSelected = async () => {
         const selected = availableQuestions.filter(q => q.is_ready);
         if (selected.length === 0) return alert('Vui lòng chọn ít nhất một câu hỏi để thêm.');
@@ -184,7 +194,7 @@ export default function TeacherQuizEdit() {
             setAvailableQuestions(prev => prev.filter(q => !q.is_ready));
         } catch (err) {
             console.error('Failed to add selected questions', err);
-            alert('Không thể thêm câu hỏi. Xem console để biết chi tiết.');
+            alert(extractErrMsg(err, 'Không thể thêm câu hỏi.'));
         } finally {
             setAddingExisting(false);
         }
@@ -198,7 +208,7 @@ export default function TeacherQuizEdit() {
             setQuestions(prev => [...prev, q]);
             setAvailableQuestions(prev => prev.filter(x => String(x.id || x.pk || x.question_id) !== String(qId)));
         } catch (err) {
-            alert('Không thể thêm câu hỏi. Xem console để biết chi tiết.');
+            alert(extractErrMsg(err, 'Không thể thêm câu hỏi.'));
         }
     };
 
@@ -238,9 +248,9 @@ export default function TeacherQuizEdit() {
         } finally { setSaving(false); }
     };
 
-    if (loading) return <div className="admin-container"><div className="admin-card">Loading...</div></div>;
-    if (error && !quiz) return <div className="admin-container"><div className="admin-card">Error: {error}</div></div>;
-    if (!quiz) return <div className="admin-container"><div className="admin-card">Quiz not found</div></div>;
+    if (loading) return <div className="admin-container"><QuickSystem /><div className="admin-card">Loading...</div></div>;
+    if (error && !quiz) return <div className="admin-container"><QuickSystem /><div className="admin-card">Error: {error}</div></div>;
+    if (!quiz) return <div className="admin-container"><QuickSystem /><div className="admin-card">Quiz not found</div></div>;
 
     const uid = user && (user.id || user.user_id || user.pk);
     const isAuthor = uid && (
@@ -249,7 +259,7 @@ export default function TeacherQuizEdit() {
         (quiz.author_username && user.username && quiz.author_username === user.username)
     );
     if (!isAuthor) return (
-        <div className="admin-container"><div className="admin-card">
+        <div className="admin-container"><QuickSystem /><div className="admin-card">
             <h2>Not allowed</h2><p>You are not the author of this quiz.</p>
         </div></div>
     );
@@ -258,6 +268,7 @@ export default function TeacherQuizEdit() {
 
     return (
         <div className="admin-container">
+            <QuickSystem />
             <div className="admin-card teacher-quiz-edit">
                 <h2 style={{ marginBottom: 20 }}>Edit Quiz</h2>
 
@@ -349,9 +360,7 @@ export default function TeacherQuizEdit() {
                                         </tr>
                                     );
                                 })}
-                                {questions.length === 0 && (
-                                    <tr><td colSpan="3">No questions yet.</td></tr>
-                                )}
+    
                             </tbody>
                         </table>
                     </div>

@@ -77,7 +77,15 @@ export default function Subjects() {
             fetchSubjects(currentPage);
         } catch (err) {
             console.error('Save failed', err);
-            toast.error('Thao tác thất bại.');
+            const errorData = err.response?.data || err.data;
+            let msg = 'Thao tác thất bại.';
+            if (errorData) {
+                if (typeof errorData === 'string') msg = errorData;
+                else msg = errorData.detail || Object.values(errorData).flat()[0] || msg;
+            } else if (err.message) {
+                msg = err.message;
+            }
+            toast.error(msg);
         }
     };
 

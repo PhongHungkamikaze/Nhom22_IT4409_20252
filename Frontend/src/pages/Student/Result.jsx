@@ -3,16 +3,16 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import apiService from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { 
-    FiAward, 
-    FiSmile, 
-    FiMeh, 
-    FiAlertCircle, 
-    FiFileText, 
-    FiClock, 
-    FiCheckCircle, 
-    FiPieChart, 
-    FiBookOpen, 
+import {
+    FiAward,
+    FiSmile,
+    FiMeh,
+    FiAlertCircle,
+    FiFileText,
+    FiClock,
+    FiCheckCircle,
+    FiPieChart,
+    FiBookOpen,
     FiHome,
     FiUser
 } from 'react-icons/fi';
@@ -51,7 +51,17 @@ export default function Result() {
     const scorePercentage = attempt ? (attempt.score / 10) * 100 : 0;
 
     // Determine result status
-    const getResultStatus = (score) => {
+    const getResultStatus = (status, score) => {
+        if (status !== 'completed') {
+            return { 
+                label: t('student_result.submitted'), 
+                color: '#6366f1', 
+                icon: <FiCheckCircle className="stu-result-badge-icon" style={{ color: '#6366f1' }} />,
+                bgFill: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                message: t('student_result.subtitle')
+            };
+        }
+
         if (score >= 8) {
             return { 
                 label: t('student_result.excellent'), 
@@ -155,7 +165,7 @@ export default function Result() {
         );
     }
 
-    const resultStatus = getResultStatus(attempt.score);
+    const resultStatus = getResultStatus(attempt.status, attempt.score);
 
     return (
         <div className="student-page">
@@ -178,32 +188,36 @@ export default function Result() {
             <div className="stu-result-container">
                 {/* RESULT PANEL */}
                 <div className="stu-result-panel" style={{ borderLeft: `6px solid ${resultStatus.color}` }}>
-                    
+
                     {/* Status Icon */}
                     {resultStatus.icon}
 
                     {/* Result Label */}
                     <h2 className="stu-result-title">{resultStatus.label}</h2>
-                    
-                    {/* Score display */}
-                    <div className="stu-result-subtitle">
-                        {t('student_result.score_text')} <span className="stu-result-score-highlight" style={{ color: resultStatus.color }}>
-                            {(attempt.score || 0).toFixed(1)}
-                        </span> {t('student_result.score_unit')}
-                    </div>
 
-                    {/* Progress track */}
-                    <div className="stu-result-progress-track">
-                        <div 
-                            className="stu-result-progress-fill" 
-                            style={{ 
-                                width: `${scorePercentage}%`,
-                                background: resultStatus.bgFill 
-                            }}
-                        >
-                            {scorePercentage >= 15 && `${scorePercentage.toFixed(0)}%`}
-                        </div>
-                    </div>
+                    {/* Score display */}
+                    {attempt.status === 'completed' && (
+                        <>
+                            <div className="stu-result-subtitle">
+                                {t('student_result.score_text')} <span className="stu-result-score-highlight" style={{ color: resultStatus.color }}>
+                                    {(attempt.score || 0).toFixed(1)}
+                                </span> {t('student_result.score_unit')}
+                            </div>
+
+                            {/* Progress track */}
+                            <div className="stu-result-progress-track">
+                                <div
+                                    className="stu-result-progress-fill"
+                                    style={{
+                                        width: `${scorePercentage}%`,
+                                        background: resultStatus.bgFill
+                                    }}
+                                >
+                                    {scorePercentage >= 15 && `${scorePercentage.toFixed(0)}%`}
+                                </div>
+                            </div>
+                        </>
+                    )}
 
                     {/* Encouraging message */}
                     <p className="stu-result-status-message" style={{ color: resultStatus.color }}>
@@ -217,7 +231,7 @@ export default function Result() {
                         <FiFileText style={{ color: '#4f46e5' }} /> {t('student_result.details_title')}
                     </h3>
                     <div className="stu-result-details-grid">
-                        
+
                         {/* Quiz Title */}
                         <div className="stu-result-detail-box">
                             <div className="stu-result-detail-label">{t('student_result.quiz_name')}</div>
@@ -239,7 +253,7 @@ export default function Result() {
                         <div className="stu-result-detail-box">
                             <div className="stu-result-detail-label">{t('student_result.status')}</div>
                             <div className="stu-result-detail-value" style={{ color: '#10b981' }}>
-                                <FiCheckCircle /> 
+                                <FiCheckCircle />
                                 {attempt.status === 'completed' ? t('student_result.submitted') : attempt.status}
                             </div>
                         </div>
@@ -259,22 +273,22 @@ export default function Result() {
                 {/* ACTION BUTTONS */}
                 <div className="stu-result-actions-container">
                     <div className="stu-result-actions-row">
-                        <Link 
-                            to="/student/history" 
+                        <Link
+                            to="/student/history"
                             className="stu-btn-action-result stu-btn-action-result-secondary"
                         >
                             <FiPieChart /> {t('student_result.view_history')}
                         </Link>
-                        
-                        <Link 
-                            to="/student/quizzes" 
+
+                        <Link
+                            to="/student/quizzes"
                             className="stu-btn-action-result stu-btn-action-result-primary"
                         >
                             <FiBookOpen /> {t('student_result.try_another')}
                         </Link>
 
-                        <Link 
-                            to="/student" 
+                        <Link
+                            to="/student"
                             className="stu-btn-action-result stu-btn-action-result-success"
                         >
                             <FiHome /> {t('student_result.go_home')}

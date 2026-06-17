@@ -35,6 +35,7 @@ export default function TeacherQuizEdit() {
     const [timeLimit, setTimeLimit] = useState('');
     const [isPublished, setIsPublished] = useState(false);
     const [maxAttempts, setMaxAttempts] = useState(1);
+    const [subjectId, setSubjectId] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
@@ -139,6 +140,7 @@ export default function TeacherQuizEdit() {
                 setTimeLimit(data.time_limit ? String(data.time_limit) : (data.duration ? String(data.duration) : ''));
                 setIsPublished(Boolean(data.is_published));
                 setMaxAttempts(data.max_attempts ?? 1);
+                setSubjectId(data.subject ?? '');
 
                 await loadAvailable(initialQuestions);
             } catch (err) {
@@ -240,6 +242,7 @@ export default function TeacherQuizEdit() {
                 time_limit: Number(timeLimit) || 0,
                 is_published: Boolean(isPublished),
                 max_attempts: Number(maxAttempts) || 1,
+                subject: subjectId || null,
                 question_ids: questionIds,
             });
             navigate(`/teacher/quizzes/${id}`);
@@ -291,6 +294,17 @@ export default function TeacherQuizEdit() {
                             <tr>
                                 <td style={{ fontWeight: 600 }}>Max attempts</td>
                                 <td><input type="number" min={1} value={maxAttempts} onChange={e => setMaxAttempts(e.target.value)} /></td>
+                            </tr>
+                            <tr>
+                                <td style={{ fontWeight: 600 }}>Subject</td>
+                                <td>
+                                    <select value={subjectId} onChange={e => setSubjectId(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
+                                        <option value="">Select a subject</option>
+                                        {subjects.map(s => (
+                                            <option key={s.id} value={s.id}>{s.name}</option>
+                                        ))}
+                                    </select>
+                                </td>
                             </tr>
                             <tr>
                                 <td style={{ fontWeight: 600 }}>Published</td>

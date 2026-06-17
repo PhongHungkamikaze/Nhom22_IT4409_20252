@@ -131,6 +131,7 @@ export default function Users() {
                         <table className="table">
                             <thead>
                                 <tr>
+                                    <th>ID</th>
                                     <th>Họ và tên</th>
                                     <th>Email</th>
                                     <th>Vai trò</th>
@@ -140,6 +141,7 @@ export default function Users() {
                             <tbody>
                                 {users.map(user => (
                                     <tr key={user.id}>
+                                        <td>{user.id}</td>
                                         <td>
                                             <div className="user-name-cell">
                                                 <div className="avatar">{(user.username || '?').charAt(0)}</div>

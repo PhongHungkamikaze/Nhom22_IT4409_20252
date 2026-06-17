@@ -9,11 +9,17 @@ import './Admin.css';
 export default function ClassGroups() {
     const navigate = useNavigate();
     const [classGroups, setClassGroups] = useState([]);
+    const [allGroups, setAllGroups] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentGroup, setCurrentGroup] = useState({ name: '', description: '', subject: '' });
     const [isEdit, setIsEdit] = useState(false);
+
+    // Filter states
+    const [searchName, setSearchName] = useState('');
+    const [filterCreator, setFilterCreator] = useState('');
+    const [sortBy, setSortBy] = useState('id');
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -25,11 +31,14 @@ export default function ClassGroups() {
             const params = { page, page_size: pageSize };
             const data = await apiService.getClassGroups(params);
             if (data.results) {
+                setAllGroups(data.results);
                 setClassGroups(data.results);
                 setTotalCount(data.count);
             } else {
-                setClassGroups(Array.isArray(data) ? data : []);
-                setTotalCount(Array.isArray(data) ? data.length : 0);
+                const list = Array.isArray(data) ? data : [];
+                setAllGroups(list);
+                setClassGroups(list);
+                setTotalCount(list.length);
             }
             setError(null);
         } catch (err) {
@@ -40,6 +49,30 @@ export default function ClassGroups() {
         }
     };
 
+    // Apply filters whenever filter states or allGroups change
+    useEffect(() => {
+        let filtered = [...allGroups];
+        if (searchName.trim()) {
+            filtered = filtered.filter(g =>
+                g.name.toLowerCase().includes(searchName.trim().toLowerCase())
+            );
+        }
+        if (filterCreator.trim()) {
+            filtered = filtered.filter(g =>
+                String(g.created_by || '').toLowerCase().includes(filterCreator.trim().toLowerCase())
+            );
+        }
+        if (sortBy === 'name') {
+            filtered.sort((a, b) => a.name.localeCompare(b.name));
+        } else if (sortBy === 'member_count_desc') {
+            filtered.sort((a, b) => (b.member_count || 0) - (a.member_count || 0));
+        } else if (sortBy === 'member_count_asc') {
+            filtered.sort((a, b) => (a.member_count || 0) - (b.member_count || 0));
+        }
+        setClassGroups(filtered);
+        setTotalCount(filtered.length);
+    }, [searchName, filterCreator, sortBy, allGroups]);
+
     useEffect(() => {
         fetchClassGroups(1);
     }, []);
@@ -47,6 +80,12 @@ export default function ClassGroups() {
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
         fetchClassGroups(newPage);
+    };
+
+    const handleResetFilters = () => {
+        setSearchName('');
+        setFilterCreator('');
+        setSortBy('id');
     };
 
     const handleDelete = async (id) => {
@@ -116,6 +155,57 @@ export default function ClassGroups() {
                     <span className="btn-icon">+</span> Thêm lớp học
                 </button>
             </header>
+
+            {/* Filter Bar */}
+            <div className="admin-card" style={{ marginBottom: '20px', padding: '20px' }}>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                    <div className="search-bar" style={{ flex: '1', minWidth: '200px' }}>
+                        <span className="search-icon">🔍</span>
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm theo tên lớp..."
+                            value={searchName}
+                            onChange={e => setSearchName(e.target.value)}
+                        />
+                    </div>
+                    <div style={{ minWidth: '180px' }}>
+                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--gray-500)', marginBottom: '4px', fontWeight: 600 }}>Người tạo</label>
+                        <input
+                            type="text"
+                            className="filter-select"
+                            placeholder="Lọc theo người tạo..."
+                            value={filterCreator}
+                            onChange={e => setFilterCreator(e.target.value)}
+                            style={{ width: '100%' }}
+                        />
+                    </div>
+                    <div style={{ minWidth: '180px' }}>
+                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--gray-500)', marginBottom: '4px', fontWeight: 600 }}>Sắp xếp theo</label>
+                        <select
+                            className="filter-select"
+                            value={sortBy}
+                            onChange={e => setSortBy(e.target.value)}
+                        >
+                            <option value="id">ID (mặc định)</option>
+                            <option value="name">Tên A→Z</option>
+                            <option value="member_count_desc">Sĩ số giảm dần</option>
+                            <option value="member_count_asc">Sĩ số tăng dần</option>
+                        </select>
+                    </div>
+                    <button
+                        className="secondary-btn"
+                        onClick={handleResetFilters}
+                        style={{ height: '46px', whiteSpace: 'nowrap' }}
+                    >
+                        ↺ Đặt lại
+                    </button>
+                </div>
+                {(searchName || filterCreator || sortBy !== 'id') && (
+                    <div style={{ marginTop: '10px', fontSize: '0.875rem', color: 'var(--gray-500)' }}>
+                        Tìm thấy <strong style={{ color: 'var(--primary-color)' }}>{classGroups.length}</strong> kết quả
+                    </div>
+                )}
+            </div>
 
             <div className="admin-card">
                 {loading && <p style={{ padding: '20px' }}>Đang tải...</p>}

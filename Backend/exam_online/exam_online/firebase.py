@@ -1,4 +1,5 @@
 import os
+import json
 import firebase_admin
 from firebase_admin import credentials, firestore
 from django.conf import settings
@@ -14,14 +15,25 @@ def initialize_firebase():
         return _firestore_client
 
     if not firebase_admin._apps:
-        cred_path = settings.FIREBASE_SERVICE_ACCOUNT_PATH
+        cred_path_or_json = settings.FIREBASE_SERVICE_ACCOUNT_PATH
 
-        if not os.path.exists(cred_path):
-            raise FileNotFoundError(
-                f"Firebase Service Account file NOT FOUND at: {cred_path}"
-            )
+        if not cred_path_or_json:
+            raise ValueError("FIREBASE_SERVICE_ACCOUNT_PATH is not set in settings.")
 
-        cred = credentials.Certificate(cred_path)
+        # Check if it's a JSON string
+        if cred_path_or_json.strip().startswith('{'):
+            try:
+                cred_dict = json.loads(cred_path_or_json)
+                cred = credentials.Certificate(cred_dict)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid JSON in FIREBASE_SERVICE_ACCOUNT_PATH: {e}")
+        else:
+            if not os.path.exists(cred_path_or_json):
+                raise FileNotFoundError(
+                    f"Firebase Service Account file NOT FOUND at: {cred_path_or_json}"
+                )
+            cred = credentials.Certificate(cred_path_or_json)
+
         firebase_admin.initialize_app(cred)
 
     _firestore_client = firestore.client()

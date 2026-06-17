@@ -44,7 +44,7 @@ class ClassGroupViewSet(BaseViewSet):
         "members": [IsTeacherUser | IsAdminUser],
         "add_student": [IsTeacherUser | IsAdminUser],
         "remove_student": [IsTeacherUser | IsAdminUser],
-        "assign_quiz": [IsTeacherUser | IsAdminUser],
+        "assign_quiz": [IsTeacherUser],
         "assigned_quizzes": [IsTeacherUser | IsAdminUser | IsStudentUser],
     }
     permission_classes = [IsAdminUser]
@@ -151,13 +151,6 @@ class ClassGroupViewSet(BaseViewSet):
         serializer = AssignQuizSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         quiz = serializer.validated_data["quiz_id"]
-
-        if quiz.author != request.user and request.user.role != UserRole.Admin:
-            return Response(
-                {"error": "You can only assign your own quizzes"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
         _, created = ClassQuizAssignment.objects.get_or_create(
             class_group=class_group,
             quiz=quiz,

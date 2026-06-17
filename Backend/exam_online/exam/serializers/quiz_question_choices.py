@@ -137,7 +137,6 @@ class QuizSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "author": {"read_only": True},
             "created_at": {"read_only": True},
-            "subject": {"read_only": True},
         }
 
     def get_question_count(self, obj):

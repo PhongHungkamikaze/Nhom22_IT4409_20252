@@ -95,63 +95,6 @@ export default function Dashboard() {
                 </div>
             </section>
 
-            {/* ===== Available Quizzes ===== */}
-            <section className="stu-quizzes-section">
-                <div className="stu-container">
-                    <div className="stu-section-header">
-                        <h2 className="stu-section-title">{t('student_dashboard.quizzes_for_you')}</h2>
-                        <Link to="/student/quizzes" className="stu-view-all">{t('student_dashboard.view_all')}</Link>
-                    </div>
-
-                    {loading ? (
-                        <div className="stu-loading">
-                            <div className="stu-spinner"></div>
-                            <p>{t('student_dashboard.loading_quizzes')}</p>
-                        </div>
-                    ) : quizzes.length === 0 ? (
-                        <div className="stu-empty">
-                            <div className="stu-empty-icon-wrap">
-                                <FiBookOpen size={40} className="stu-empty-icon" />
-                            </div>
-                            <p>{t('student_dashboard.no_quizzes')}</p>
-                        </div>
-                    ) : (
-                        <div className="stu-quizzes-grid">
-                            {quizzes.slice(0, 6).map(quiz => (
-                                <div key={quiz.id} className="stu-quiz-card">
-                                    <div className="stu-quiz-header">
-                                        <h3>{quiz.title}</h3>
-                                        {quiz.difficulty && (
-                                            <span className={`stu-difficulty stu-diff-${(quiz.difficulty || '').toLowerCase()}`}>
-                                                {quiz.difficulty}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="stu-quiz-desc">
-                                        {quiz.description || t('student_dashboard.default_desc')}
-                                    </p>
-                                    <div className="stu-quiz-info">
-                                        <span>
-                                            <FiHelpCircle className="stu-quiz-info-icon" /> {quiz.questions_count || quiz.question_count || '?'} {t('student_dashboard.questions_count')}
-                                        </span>
-                                        <span>
-                                            <FiClock className="stu-quiz-info-icon" /> {quiz.time_limit || quiz.duration || '30'} {t('student_dashboard.minutes')}
-                                        </span>
-                                    </div>
-                                    <div className="stu-quiz-footer">
-                                        <span className="stu-quiz-author">
-                                            {t('student_dashboard.by_author', { name: quiz.author || quiz.teacher_name || quiz.created_by || t('student_dashboard.default_author') })}
-                                        </span>
-                                        <Link to={`/student/quizzes/${quiz.id}`} className="stu-quiz-start-btn">
-                                            {t('student_dashboard.start')}
-                                        </Link>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </section>
         </div>
     );
 }

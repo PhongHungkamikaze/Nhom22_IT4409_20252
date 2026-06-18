@@ -12,12 +12,6 @@ export default function Dashboard() {
         { title: 'Pass Rate', value: '68%', icon: '📈', color: 'orange' },
     ];
 
-    const recentActivities = [
-        { id: 1, user: 'John Doe', action: 'completed Quiz: React Basics', time: '10 mins ago', status: 'passed' },
-        { id: 2, user: 'Jane Smith', action: 'registered a new account', time: '1 hour ago', status: 'neutral' },
-        { id: 3, user: 'Teacher Bob', action: 'created a new Quiz: Advanced Node.js', time: '2 hours ago', status: 'positive' },
-        { id: 4, user: 'Alice Brown', action: 'failed Quiz: CSS Flexbox', time: '3 hours ago', status: 'failed' },
-    ];
 
     return (
         <div className="admin-container">
@@ -42,26 +36,6 @@ export default function Dashboard() {
                     ))}
                 </div>
 
-                {/* Main Content Area */}
-                <div className="dashboard-main">
-                    <div className="admin-card recent-activity">
-                        <h2 className="card-title">Recent Activities</h2>
-                        <ul className="activity-list">
-                            {recentActivities.map(activity => (
-                                <li key={activity.id} className="activity-item">
-                                    <div className={`activity-indicator status-${activity.status}`}></div>
-                                    <div className="activity-details">
-                                        <p className="activity-text">
-                                            <strong>{activity.user}</strong> {activity.action}
-                                        </p>
-                                        <span className="activity-time">{activity.time}</span>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                        <button className="btn-view-all">View All Activities</button>
-                    </div>
-                </div>
             </div>
         </div>
     );

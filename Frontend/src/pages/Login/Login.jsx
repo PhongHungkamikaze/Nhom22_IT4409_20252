@@ -133,20 +133,6 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Social Login */}
-          <div className="social-login">
-            <div className="divider">
-              <span>{t('login_page.or_login_with')}</span>
-            </div>
-            <div className="social-buttons">
-              <button className="social-btn google">
-                📧 Google
-              </button>
-              <button className="social-btn facebook">
-                📘 Facebook
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

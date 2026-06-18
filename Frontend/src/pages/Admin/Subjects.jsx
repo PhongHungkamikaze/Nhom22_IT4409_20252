@@ -7,11 +7,16 @@ import './Admin.css';
 
 export default function Subjects() {
     const [subjects, setSubjects] = useState([]);
+    const [allSubjects, setAllSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentSubject, setCurrentSubject] = useState({ name: '', description: '' });
     const [isEdit, setIsEdit] = useState(false);
+
+    // Filter states
+    const [searchName, setSearchName] = useState('');
+    const [sortBy, setSortBy] = useState('id');
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -26,11 +31,14 @@ export default function Subjects() {
             };
             const data = await apiService.getSubjects(params);
             if (data.results) {
+                setAllSubjects(data.results);
                 setSubjects(data.results);
                 setTotalCount(data.count);
             } else {
-                setSubjects(Array.isArray(data) ? data : []);
-                setTotalCount(Array.isArray(data) ? data.length : 0);
+                const list = Array.isArray(data) ? data : [];
+                setAllSubjects(list);
+                setSubjects(list);
+                setTotalCount(list.length);
             }
             setError(null);
         } catch (err) {
@@ -41,6 +49,23 @@ export default function Subjects() {
         }
     };
 
+    // Apply filters whenever filter states or allSubjects change
+    useEffect(() => {
+        let filtered = [...allSubjects];
+        if (searchName.trim()) {
+            filtered = filtered.filter(s =>
+                s.name.toLowerCase().includes(searchName.trim().toLowerCase())
+            );
+        }
+        if (sortBy === 'name_asc') {
+            filtered.sort((a, b) => a.name.localeCompare(b.name));
+        } else if (sortBy === 'name_desc') {
+            filtered.sort((a, b) => b.name.localeCompare(a.name));
+        }
+        setSubjects(filtered);
+        setTotalCount(filtered.length);
+    }, [searchName, sortBy, allSubjects]);
+
     useEffect(() => {
         fetchSubjects(1);
     }, []);
@@ -48,6 +73,11 @@ export default function Subjects() {
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
         fetchSubjects(newPage);
+    };
+
+    const handleResetFilters = () => {
+        setSearchName('');
+        setSortBy('id');
     };
 
     const handleDelete = async (id) => {
@@ -115,6 +145,45 @@ export default function Subjects() {
                     <span className="btn-icon">+</span> Thêm môn học
                 </button>
             </header>
+
+            {/* Filter Bar */}
+            <div className="admin-card" style={{ marginBottom: '20px', padding: '20px' }}>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                    <div className="search-bar" style={{ flex: '1', minWidth: '220px' }}>
+                        <span className="search-icon">🔍</span>
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm theo tên môn học..."
+                            value={searchName}
+                            onChange={e => setSearchName(e.target.value)}
+                        />
+                    </div>
+                    <div style={{ minWidth: '180px' }}>
+                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--gray-500)', marginBottom: '4px', fontWeight: 600 }}>Sắp xếp theo</label>
+                        <select
+                            className="filter-select"
+                            value={sortBy}
+                            onChange={e => setSortBy(e.target.value)}
+                        >
+                            <option value="id">ID (mặc định)</option>
+                            <option value="name_asc">Tên A → Z</option>
+                            <option value="name_desc">Tên Z → A</option>
+                        </select>
+                    </div>
+                    <button
+                        className="secondary-btn"
+                        onClick={handleResetFilters}
+                        style={{ height: '46px', whiteSpace: 'nowrap' }}
+                    >
+                        ↺ Đặt lại
+                    </button>
+                </div>
+                {(searchName || sortBy !== 'id') && (
+                    <div style={{ marginTop: '10px', fontSize: '0.875rem', color: 'var(--gray-500)' }}>
+                        Tìm thấy <strong style={{ color: 'var(--primary-color)' }}>{subjects.length}</strong> môn học
+                    </div>
+                )}
+            </div>
 
             <div className="admin-card">
                 {loading && <p style={{ padding: '20px' }}>Đang tải...</p>}

@@ -221,20 +221,6 @@ const Register = () => {
             </p>
           </div>
 
-          {/* Social Register */}
-          <div className="social-register">
-            <div className="divider">
-              <span>{t('register_page.or_register_with')}</span>
-            </div>
-            <div className="social-buttons">
-              <button className="social-btn google">
-                📧 Google
-              </button>
-              <button className="social-btn facebook">
-                📘 Facebook
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

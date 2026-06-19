@@ -3,8 +3,10 @@ import './Teacher.css';
 import QuickSystem from '../../components/Teacher/QuickSystem/QuickSystem';
 import apiService from '../../services/api';
 import Pagination from '../../components/common/Pagination';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Attempts() {
+    const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [quizzes, setQuizzes] = useState([]);
     const [selectedQuiz, setSelectedQuiz] = useState(null);
@@ -29,7 +31,8 @@ export default function Attempts() {
                 search: searchTerm,
                 ordering: quizSorting,
                 page: page,
-                page_size: pageSize
+                page_size: pageSize,
+                author: user?.id
             };
             const data = await apiService.getQuizzes(params);
             if (data.results) {

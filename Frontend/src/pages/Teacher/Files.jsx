@@ -76,10 +76,27 @@ export default function TeacherFiles() {
         }
     };
 
-    const getFileUrl = (file) => {
-        if (file.file?.startsWith('http')) return file.file;
-        const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || '';
-        return `${baseUrl}${file.file}`;
+    const handleDownload = async (file) => {
+        try {
+            const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+            const token = localStorage.getItem('accessToken');
+            const response = await fetch(`${baseUrl}/filesets/${file.id}/download/`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            if (!response.ok) throw new Error('Download failed');
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.name || 'download';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Download failed', err);
+            toast.error('Tải xuống thất bại.');
+        }
     };
 
     const totalPages = Math.ceil(totalCount / pageSize);
@@ -129,9 +146,9 @@ export default function TeacherFiles() {
                                             <td>{file.id}</td>
                                             <td><strong>{file.name}</strong></td>
                                             <td>
-                                                <a href={getFileUrl(file)} target="_blank" rel="noopener noreferrer" className="text-btn" style={{ fontSize: '0.85rem' }}>
+                                                <button onClick={() => handleDownload(file)} className="text-btn" style={{ fontSize: '0.85rem', border: 'none', background: 'none', cursor: 'pointer' }}>
                                                     📥 Tải xuống
-                                                </a>
+                                                </button>
                                             </td>
                                             <td>{file.created_at ? new Date(file.created_at).toLocaleDateString('vi-VN') : '-'}</td>
                                             <td>

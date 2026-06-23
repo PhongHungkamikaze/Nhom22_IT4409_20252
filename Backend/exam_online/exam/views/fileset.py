@@ -1,5 +1,9 @@
+import os
+
+from django.http import FileResponse
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from ..models import FileSet
@@ -32,6 +36,20 @@ class FileSetViewSet(BaseViewSet):
         instance = input_serializer.save(uploaded_by=request.user)
         output_serializer = FileSetSerializer(instance)
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        summary="Download file",
+        description="Download the actual file with Content-Disposition: attachment",
+    )
+    @action(detail=True, methods=["get"])
+    def download(self, request, pk=None):
+        fileset = self.get_object()
+        response = FileResponse(
+            fileset.file.open(),
+            as_attachment=True,
+            filename=os.path.basename(fileset.file.name),
+        )
+        return response
 
     def get_queryset(self):
         user = self.request.user

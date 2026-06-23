@@ -1,6 +1,7 @@
 import os
 
 from django.http import FileResponse
+from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
@@ -43,7 +44,7 @@ class FileSetViewSet(BaseViewSet):
     )
     @action(detail=True, methods=["get"])
     def download(self, request, pk=None):
-        fileset = self.get_object()
+        fileset = get_object_or_404(FileSet, pk=pk)
         response = FileResponse(
             fileset.file.open(),
             as_attachment=True,

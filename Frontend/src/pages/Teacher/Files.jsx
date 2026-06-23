@@ -19,7 +19,7 @@ export default function TeacherFiles() {
     const fetchFiles = async (page = currentPage) => {
         setLoading(true);
         try {
-            const params = { page, page_size: pageSize };
+            const params = { page, page_size: pageSize, all: 'true' };
             const data = await apiService.getFiles(params);
             if (data.results) {
                 setFiles(data.results);
@@ -106,8 +106,8 @@ export default function TeacherFiles() {
             <QuickSystem />
             <header className="admin-header">
                 <div>
-                    <h1 className="admin-title">Tài liệu của tôi</h1>
-                    <p className="admin-subtitle">Quản lý tài liệu, file bạn đã tải lên.</p>
+                    <h1 className="admin-title">Quản lý tài liệu</h1>
+                    <p className="admin-subtitle">Quản lý tài liệu, file tải lên hệ thống.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     <input

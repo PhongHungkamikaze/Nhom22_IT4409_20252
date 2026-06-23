@@ -28,7 +28,7 @@ class FileSetViewSet(BaseViewSet):
     ordering = ["-created_at"]
     filterset_class = FileSetFilter
 
-    permission_classes = [IsAdminUser | IsTeacherUser | IsStudentUser]
+    permission_classes = [IsAdminUser | IsTeacherUser]
 
     def create(self, request, *args, **kwargs):
         input_serializer = FileSetCreateSerializer(data=request.data)
